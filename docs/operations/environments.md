@@ -35,7 +35,23 @@ Dùng Node.js 22.13+ (nhánh 22) hoặc 24.3+ (nhánh 24) với npm. Từ gốc 
 
 Chọn **Dùng tài khoản mô phỏng**, thử hủy hoặc đồng ý điều khoản, vào trang chính rồi thử hủy hoặc xác nhận đăng xuất. Tải lại trang để thử lại từ đầu. Bản xem trước chỉ cần Node.js và trình duyệt. Toàn bộ dữ liệu mô phỏng nằm trong bộ nhớ của trang. Đăng nhập Google, kết nối Core và lưu phiên trong kho hệ điều hành cần bản chạy trên Android hoặc iOS.
 
-## App Android/iOS
+## UC-01
+
+### Cấu hình Core và cơ sở dữ liệu
+
+Dùng một DB thử nghiệm riêng. Áp migration sau khi PostgreSQL sẵn sàng, trên DB chưa có schema nghiệp vụ. Lệnh dừng tại lỗi SQL và migration chạy trong giao dịch.
+
+```sh
+docker compose --env-file .env.example -p lf-local up -d db
+docker compose --env-file .env.example -p lf-local exec -T db \
+  psql -v ON_ERROR_STOP=1 -U lost_found -d lost_found < db/migrations/001_identity.sql
+```
+
+Cấu hình Core theo môi trường bằng `GOOGLE_CLIENT_ID` (Web OAuth client ID), `SESSION_REPLAY_KEY_VERSION` và `SESSION_REPLAY_KEYS`. Biến cuối là JSON ánh xạ phiên bản tới khóa ngẫu nhiên 32 byte mã hóa base64url. Cấp khóa qua cấu hình bí mật, dùng cùng một bộ khóa cho mọi instance trong môi trường và giữ phiên bản cũ tới khi mọi token Google của các lượt dùng khóa đó hết hạn. Đổi khóa đang dùng sau khi mọi instance đọc được cả hai phiên bản. Giữ kết nối HTTPS tới tập khóa Google và bật TLS ở cổng phục vụ thông tin xác thực thật. Các operation qua gateway có tiền tố `/api`. Cấu hình Compose loopback phục vụ kiểm tra local bằng fixture.
+
+Kiểm contract và phiên với `bash tests/integration/core-identity.sh`. Lệnh tạo PostgreSQL fixture tạm, áp migration và chạy kiểm thử qua Core HTTP handler với bộ xác minh được tiêm riêng. Đăng nhập Google thật và thử trên thiết bị cần cấu hình OAuth và gateway HTTPS của môi trường thử nghiệm.
+
+### App Android/iOS
 
 Trên Mac Apple Silicon, cài Node.js và JDK 17, rồi chạy từ gốc repo:
 

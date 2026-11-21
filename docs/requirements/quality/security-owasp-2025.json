@@ -1,0 +1,310 @@
+{
+  "catalog_id": "OWASP-2025-CWE-MITRE-4.20",
+  "catalog_version": "2026-09-26",
+  "source": {
+    "path": "lab-SQA-experience/docs/00-context/security/OWASP-2025-SECURITY-CATALOG.json",
+    "sha256": "e65cf9c7eb9e3eb5a6b6aa99f704dc52a7d55889d1addd69fbb27457565d8542"
+  },
+  "requirements": [
+    {
+      "sec_id": "SEC-A01-01",
+      "owasp": "A01:2025",
+      "cwe_id": "CWE-862",
+      "static_review_scope_vi": "Kiểm tra middleware/guard phân quyền ở các endpoint được bảo vệ."
+    },
+    {
+      "sec_id": "SEC-A01-02",
+      "owasp": "A01:2025",
+      "cwe_id": "CWE-639",
+      "static_review_scope_vi": "Kiểm tra quyền sở hữu bản ghi ở truy vấn dùng ID do người dùng gửi."
+    },
+    {
+      "sec_id": "SEC-A01-03",
+      "owasp": "A01:2025",
+      "cwe_id": "CWE-548",
+      "static_review_scope_vi": "Đọc cấu hình tắt directory listing và hạn chế thư mục nhạy cảm."
+    },
+    {
+      "sec_id": "SEC-A01-04",
+      "owasp": "A01:2025",
+      "cwe_id": "CWE-219",
+      "static_review_scope_vi": "Đối chiếu đường dẫn tệp nhạy cảm với web root và cấu hình truy cập."
+    },
+    {
+      "sec_id": "SEC-A01-05",
+      "owasp": "A01:2025",
+      "cwe_id": "CWE-1275",
+      "static_review_scope_vi": "Đọc thuộc tính SameSite của cookie nhạy cảm."
+    },
+    {
+      "sec_id": "SEC-A01-06",
+      "owasp": "A01:2025",
+      "cwe_id": "CWE-601",
+      "static_review_scope_vi": "Đối chiếu đích redirect với danh sách cho phép hoặc ánh xạ ID cố định."
+    },
+    {
+      "sec_id": "SEC-A01-07",
+      "owasp": "A01:2025",
+      "cwe_id": "CWE-276",
+      "static_review_scope_vi": "Đọc quyền mặc định khi tạo tài nguyên và cấu hình quyền truy cập."
+    },
+    {
+      "sec_id": "SEC-A02-01",
+      "owasp": "A02:2025",
+      "cwe_id": "CWE-614",
+      "static_review_scope_vi": "Đọc thuộc tính Secure của cookie dùng trong phiên HTTPS."
+    },
+    {
+      "sec_id": "SEC-A02-02",
+      "owasp": "A02:2025",
+      "cwe_id": "CWE-1004",
+      "static_review_scope_vi": "Đọc thuộc tính HttpOnly của cookie nhạy cảm."
+    },
+    {
+      "sec_id": "SEC-A02-03",
+      "owasp": "A02:2025",
+      "cwe_id": "CWE-611",
+      "static_review_scope_vi": "Đọc tùy chọn parser vô hiệu hóa external entity expansion."
+    },
+    {
+      "sec_id": "SEC-A02-04",
+      "owasp": "A02:2025",
+      "cwe_id": "CWE-260",
+      "static_review_scope_vi": "Đối chiếu chỗ lưu mật khẩu, quyền tệp cấu hình và cách bảo vệ giá trị."
+    },
+    {
+      "sec_id": "SEC-A02-05",
+      "owasp": "A02:2025",
+      "cwe_id": "CWE-547",
+      "static_review_scope_vi": "Tìm hằng số liên quan bảo mật và đối chiếu cơ chế lấy từ cấu hình."
+    },
+    {
+      "sec_id": "SEC-A02-06",
+      "owasp": "A02:2025",
+      "cwe_id": "CWE-776",
+      "static_review_scope_vi": "Đọc xử lý DTD/recursive entity trước khi parser xử lý XML."
+    },
+    {
+      "sec_id": "SEC-A03-01",
+      "owasp": "A03:2025",
+      "cwe_id": "CWE-1329",
+      "static_review_scope_vi": "Chỉ xét thành phần phần mềm: mã/cấu hình cho phép cập nhật hoặc thay phiên bản phụ thuộc. Loại hardware-fuse và quy trình nhà cung cấp khỏi phạm vi chấm."
+    },
+    {
+      "sec_id": "SEC-A04-01",
+      "owasp": "A04:2025",
+      "cwe_id": "CWE-323",
+      "static_review_scope_vi": "Đọc cơ chế bảo đảm nonce không lặp trong phạm vi khóa tương ứng."
+    },
+    {
+      "sec_id": "SEC-A04-02",
+      "owasp": "A04:2025",
+      "cwe_id": "CWE-329",
+      "static_review_scope_vi": "Đọc cách tạo IV cho CBC; đối chiếu ngẫu nhiên hoặc nonce mã hóa theo nguồn."
+    },
+    {
+      "sec_id": "SEC-A04-03",
+      "owasp": "A04:2025",
+      "cwe_id": "CWE-296",
+      "static_review_scope_vi": "Đọc cấu hình và lời gọi kiểm tra chuỗi chứng chỉ/trust store."
+    },
+    {
+      "sec_id": "SEC-A04-04",
+      "owasp": "A04:2025",
+      "cwe_id": "CWE-523",
+      "static_review_scope_vi": "Đọc cấu hình HTTPS/TLS của trang đăng nhập và đường truyền thông tin xác thực; không suy ra cấu hình máy chủ đang chạy nếu chưa có bằng chứng."
+    },
+    {
+      "sec_id": "SEC-A04-05",
+      "owasp": "A04:2025",
+      "cwe_id": "CWE-759",
+      "static_review_scope_vi": "Đối chiếu salting của thư viện hash hoặc salt ngẫu nhiên riêng cho từng mật khẩu."
+    },
+    {
+      "sec_id": "SEC-A04-06",
+      "owasp": "A04:2025",
+      "cwe_id": "CWE-916",
+      "static_review_scope_vi": "Đọc thuật toán hash mật khẩu và tham số workload; cần chuẩn tham số áp dụng đã công bố để kết luận độ mạnh."
+    },
+    {
+      "sec_id": "SEC-A05-01",
+      "owasp": "A05:2025",
+      "cwe_id": "CWE-89",
+      "static_review_scope_vi": "Theo luồng dữ liệu tới truy vấn, kiểm tra binding tham số; tập trung biện pháp Parameterization."
+    },
+    {
+      "sec_id": "SEC-A05-02",
+      "owasp": "A05:2025",
+      "cwe_id": "CWE-78",
+      "static_review_scope_vi": "Kiểm tra đầu vào tới lời gọi tiến trình; ưu tiên API thư viện thay shell, hoặc cơ chế tách tham số an toàn phù hợp."
+    },
+    {
+      "sec_id": "SEC-A05-03",
+      "owasp": "A05:2025",
+      "cwe_id": "CWE-79",
+      "static_review_scope_vi": "Theo dữ liệu tới HTML/JS/URL sink, đối chiếu encoding đúng ngữ cảnh và auto-escaping của framework."
+    },
+    {
+      "sec_id": "SEC-A05-04",
+      "owasp": "A05:2025",
+      "cwe_id": "CWE-93",
+      "static_review_scope_vi": "Đọc xử lý ký tự CR/LF trước khi dùng trong định dạng có phân cách CRLF."
+    },
+    {
+      "sec_id": "SEC-A05-05",
+      "owasp": "A05:2025",
+      "cwe_id": "CWE-95",
+      "static_review_scope_vi": "Tìm eval hoặc tương đương nhận dữ liệu ngoài; đối chiếu phương án loại bỏ eval."
+    },
+    {
+      "sec_id": "SEC-A06-01",
+      "owasp": "A06:2025",
+      "cwe_id": "CWE-598",
+      "static_review_scope_vi": "Đọc nơi truyền dữ liệu nhạy cảm: query string, body hay header."
+    },
+    {
+      "sec_id": "SEC-A06-02",
+      "owasp": "A06:2025",
+      "cwe_id": "CWE-539",
+      "static_review_scope_vi": "Đọc nội dung và thời hạn của persistent cookies."
+    },
+    {
+      "sec_id": "SEC-A06-03",
+      "owasp": "A06:2025",
+      "cwe_id": "CWE-525",
+      "static_review_scope_vi": "Đọc chính sách cache của trang/form chứa dữ liệu nhạy cảm."
+    },
+    {
+      "sec_id": "SEC-A06-04",
+      "owasp": "A06:2025",
+      "cwe_id": "CWE-1022",
+      "static_review_scope_vi": "Đọc rel của liên kết external target và cách xử lý window.opener."
+    },
+    {
+      "sec_id": "SEC-A06-05",
+      "owasp": "A06:2025",
+      "cwe_id": "CWE-602",
+      "static_review_scope_vi": "Đối chiếu kiểm tra phía client với kiểm tra tương ứng phía server."
+    },
+    {
+      "sec_id": "SEC-A06-06",
+      "owasp": "A06:2025",
+      "cwe_id": "CWE-1021",
+      "static_review_scope_vi": "Đọc header chống framing/CSP ở đường trả response; phân biệt chặn bị nhúng với chặn nội dung được nhúng."
+    },
+    {
+      "sec_id": "SEC-A07-01",
+      "owasp": "A07:2025",
+      "cwe_id": "CWE-613",
+      "static_review_scope_vi": "Đọc thời hạn session/token và đường kiểm tra hết hạn phía server."
+    },
+    {
+      "sec_id": "SEC-A07-02",
+      "owasp": "A07:2025",
+      "cwe_id": "CWE-620",
+      "static_review_scope_vi": "Đọc luồng đổi mật khẩu đã đăng nhập và kiểm tra mật khẩu hiện tại."
+    },
+    {
+      "sec_id": "SEC-A07-03",
+      "owasp": "A07:2025",
+      "cwe_id": "CWE-307",
+      "static_review_scope_vi": "Đọc cơ chế giới hạn lần đăng nhập sai, timeout/lockout hoặc kiểm soát tương đương."
+    },
+    {
+      "sec_id": "SEC-A07-04",
+      "owasp": "A07:2025",
+      "cwe_id": "CWE-297",
+      "static_review_scope_vi": "Đọc kiểm tra hostname trong certificate validation; không chỉ kiểm tra trust chain."
+    },
+    {
+      "sec_id": "SEC-A07-05",
+      "owasp": "A07:2025",
+      "cwe_id": "CWE-259",
+      "static_review_scope_vi": "Tìm mật khẩu hard-coded ở đường xác thực và cơ chế nạp bí mật thay thế."
+    },
+    {
+      "sec_id": "SEC-A08-01",
+      "owasp": "A08:2025",
+      "cwe_id": "CWE-353",
+      "static_review_scope_vi": "Chỉ xét tính toàn vẹn của thông điệp có checksum theo thiết kế; checksum không chứng minh tính xác thực chống kẻ tấn công."
+    },
+    {
+      "sec_id": "SEC-A08-02",
+      "owasp": "A08:2025",
+      "cwe_id": "CWE-427",
+      "static_review_scope_vi": "Đọc đường dẫn gọi chương trình/thư viện và kiểm soát search path."
+    },
+    {
+      "sec_id": "SEC-A08-03",
+      "owasp": "A08:2025",
+      "cwe_id": "CWE-502",
+      "static_review_scope_vi": "Đọc nguồn dữ liệu deserialize và kiểm soát loại đối tượng/đầu vào; không kết luận an toàn chỉ vì có chữ ký nếu khóa hoặc ranh giới tin cậy chưa rõ."
+    },
+    {
+      "sec_id": "SEC-A08-04",
+      "owasp": "A08:2025",
+      "cwe_id": "CWE-565",
+      "static_review_scope_vi": "Đọc cơ chế kiểm tra cookie dùng cho quyết định bảo mật và chống sửa dữ liệu."
+    },
+    {
+      "sec_id": "SEC-A08-05",
+      "owasp": "A08:2025",
+      "cwe_id": "CWE-915",
+      "static_review_scope_vi": "Đọc allowlist thuộc tính được mass-assign và ràng buộc phía server."
+    },
+    {
+      "sec_id": "SEC-A09-01",
+      "owasp": "A09:2025",
+      "cwe_id": "CWE-117",
+      "static_review_scope_vi": "Đọc xử lý dữ liệu không tin cậy trước log sink, encoding và cấu trúc bản ghi."
+    },
+    {
+      "sec_id": "SEC-A09-02",
+      "owasp": "A09:2025",
+      "cwe_id": "CWE-532",
+      "static_review_scope_vi": "Đọc đối số log và cơ chế loại/redact bí mật; không chấm thao tác dọn log hoặc vận hành production."
+    },
+    {
+      "sec_id": "SEC-A09-03",
+      "owasp": "A09:2025",
+      "cwe_id": "CWE-778",
+      "static_review_scope_vi": "Đọc logging ở các sự kiện bảo mật đã liệt kê trong phạm vi, cùng cấu hình log được cung cấp; không suy ra chất lượng vận hành từ code."
+    },
+    {
+      "sec_id": "SEC-A10-01",
+      "owasp": "A10:2025",
+      "cwe_id": "CWE-252",
+      "static_review_scope_vi": "Đọc kiểm tra return value và nhánh xử lý lỗi của các lời gọi trong phạm vi."
+    },
+    {
+      "sec_id": "SEC-A10-02",
+      "owasp": "A10:2025",
+      "cwe_id": "CWE-478",
+      "static_review_scope_vi": "Đọc switch/dispatch và xử lý giá trị không hợp lệ hoặc trường hợp chưa được bao phủ."
+    },
+    {
+      "sec_id": "SEC-A10-03",
+      "owasp": "A10:2025",
+      "cwe_id": "CWE-484",
+      "static_review_scope_vi": "Đọc break/return và fall-through có chủ ý trong switch."
+    },
+    {
+      "sec_id": "SEC-A10-04",
+      "owasp": "A10:2025",
+      "cwe_id": "CWE-460",
+      "static_review_scope_vi": "Đọc finally/defer/context manager/RAII và cleanup trên đường ném ngoại lệ."
+    },
+    {
+      "sec_id": "SEC-A10-05",
+      "owasp": "A10:2025",
+      "cwe_id": "CWE-215",
+      "static_review_scope_vi": "Đọc debug statements và build configuration có thể làm lộ thông tin nhạy cảm."
+    },
+    {
+      "sec_id": "SEC-A10-06",
+      "owasp": "A10:2025",
+      "cwe_id": "CWE-550",
+      "static_review_scope_vi": "Đọc cấu hình và error handler chặn lỗi server chi tiết trả về người dùng."
+    }
+  ]
+}

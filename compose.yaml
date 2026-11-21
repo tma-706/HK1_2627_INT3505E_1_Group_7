@@ -22,11 +22,14 @@ services:
       dockerfile: apps/core/Dockerfile
     environment:
       <<: *ai-mock-environment
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      SESSION_REPLAY_KEY_VERSION: ${SESSION_REPLAY_KEY_VERSION:-}
+      SESSION_REPLAY_KEYS: ${SESSION_REPLAY_KEYS:-}
       DATABASE_URL: postgres://${POSTGRES_USER:-lost_found}:${POSTGRES_PASSWORD:-local_dev_only}@db:5432/${POSTGRES_DB:-lost_found}
     depends_on:
       db:
         condition: service_healthy
-    networks: [application, data]
+    networks: [application, data, identity-egress]
   core-worker:
     build:
       context: .
@@ -67,3 +70,4 @@ networks:
     internal: true
   data:
     internal: true
+  identity-egress:

@@ -2,7 +2,8 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Core nguyên mẫu",
-    "version": "0.1.0"
+    "version": "0.3.0",
+    "description": "GET /health/ready là hợp đồng readiness hiện có. Các operation UC-01 và UC-02 là hợp đồng thiết kế cho bước triển khai UC."
   },
   "paths": {
     "/health/ready": {
@@ -72,6 +73,985 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/auth/sessions": {
+      "post": {
+        "operationId": "createGoogleSession",
+        "summary": "Cấp phiên Core từ ID token của Google",
+        "description": "Khách gửi ID token qua HTTPS khi dùng xác thực thật. Core kiểm chữ ký, issuer, audience và hạn token trước khi ghi tài khoản, hồ sơ hoặc phiên. Core định danh tài khoản theo Google sub đã xác minh và đồng bộ hồ sơ khi cấp phiên. Khi thử lại, gửi cùng attemptId, ID token gốc và loại thiết bị trong hạn token. Một lượt chỉ cấp tối đa một phiên dùng được. Lượt lặp hợp lệ trả cùng mã phiên còn hiệu lực và không cập nhật hoạt động phiên. Khi token gốc hết hạn, chọn lại tài khoản và dùng attemptId mới.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateGoogleSessionRequest"
+              },
+              "example": {
+                "idToken": "example-google-id-token",
+                "deviceType": "android",
+                "attemptId": "7c03b01b-c3ef-43ec-9dbd-d60ea6d5b39f"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Đã cấp phiên hoặc trả lại kết quả của cùng lượt còn hiệu lực.",
+            "headers": {
+              "Cache-Control": {
+                "$ref": "#/components/headers/AuthNoStore"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleSession"
+                },
+                "example": {
+                  "accountId": "example-account",
+                  "expiresAt": "2030-02-01T12:00:00Z",
+                  "sessionToken": "example-core-session-token"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Body sai schema hoặc Google ID token bị từ chối, kể cả token hết hạn.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/AuthError"
+                    },
+                    {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "INVALID_REQUEST",
+                            "GOOGLE_TOKEN_REJECTED"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                },
+                "examples": {
+                  "INVALID_REQUEST": {
+                    "value": {
+                      "code": "INVALID_REQUEST"
+                    }
+                  },
+                  "GOOGLE_TOKEN_REJECTED": {
+                    "value": {
+                      "code": "GOOGLE_TOKEN_REJECTED"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Lượt đã ràng buộc với đầu vào khác hoặc phiên của lượt đã mất hiệu lực.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/AuthError"
+                    },
+                    {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "LOGIN_ATTEMPT_CONFLICT"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                },
+                "examples": {
+                  "LOGIN_ATTEMPT_CONFLICT": {
+                    "value": {
+                      "code": "LOGIN_ATTEMPT_CONFLICT"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "$ref": "#/components/responses/AuthUnavailable"
+          }
+        }
+      }
+    },
+    "/auth/sessions/current/validate": {
+      "post": {
+        "operationId": "validateCurrentSession",
+        "summary": "Xác minh phiên hiện tại khi mở lại ứng dụng",
+        "description": "Core suy ra tài khoản từ mã phiên Bearer. Xác minh thành công được tính là hoạt động của phiên và expiresAt phản ánh mốc hết hạn sau lần gọi này. Phiên bị từ chối ngay tại mốc hết hạn theo đồng hồ Core. Yêu cầu đến muộn không hồi sinh phiên đã hết hạn hoặc đã bị thu hồi. Mobile chỉ mở màn hình chính sau khi xác minh thành công.",
+        "security": [
+          {
+            "CoreSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Phiên còn hiệu lực.",
+            "headers": {
+              "Cache-Control": {
+                "$ref": "#/components/headers/AuthNoStore"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentSession"
+                },
+                "example": {
+                  "accountId": "example-account",
+                  "expiresAt": "2030-02-01T12:00:00Z"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/InvalidCoreSession"
+          },
+          "503": {
+            "$ref": "#/components/responses/AuthUnavailable"
+          }
+        }
+      }
+    },
+    "/auth/sessions/current": {
+      "delete": {
+        "operationId": "revokeCurrentSession",
+        "summary": "Thu hồi phiên hiện tại",
+        "description": "Core chỉ thu hồi phiên được nhận diện bằng mã Bearer. Khi gửi lại cùng mã khớp bản ghi đã thu hồi còn được giữ, Core xác nhận bằng 204. Ngoại lệ này chỉ áp dụng cho thao tác thu hồi. Các phiên khác của cùng tài khoản tiếp tục hoạt động.",
+        "security": [
+          {
+            "CoreSession": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Đã thu hồi phiên hiện tại hoặc xác nhận phiên này đã được thu hồi."
+          },
+          "401": {
+            "$ref": "#/components/responses/InvalidCoreSession"
+          },
+          "503": {
+            "$ref": "#/components/responses/AuthUnavailable"
+          }
+        }
+      }
+    },
+    "/me/profile": {
+      "get": {
+        "operationId": "getMyProfile",
+        "summary": "Đọc hồ sơ của tài khoản trong phiên hiện tại",
+        "description": "Core lấy tài khoản từ mã phiên Bearer. Dùng HTTPS với thông tin xác thực thật. Lần đọc thành công được tính là hoạt động phiên. Yêu cầu đến muộn không hồi sinh phiên đã hết hạn hoặc bị thu hồi. Trả tên, email và URL ảnh đã đồng bộ từ Google ở lần đăng nhập thành công gần nhất. Nếu avatarUrl là null hoặc URL ảnh không tải được, ứng dụng hiển thị ảnh thay thế.",
+        "security": [
+          {
+            "CoreSession": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Hồ sơ của tài khoản gắn với phiên.",
+            "headers": {
+              "Cache-Control": {
+                "$ref": "#/components/headers/AuthNoStore"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyProfile"
+                },
+                "examples": {
+                  "withAvatar": {
+                    "summary": "Hồ sơ có URL ảnh đại diện",
+                    "value": {
+                      "displayName": "Minh Anh",
+                      "email": "minh.anh@example.com",
+                      "avatarUrl": "https://media.example.com/avatars/example-profile.jpg"
+                    }
+                  },
+                  "withoutAvatar": {
+                    "summary": "Hồ sơ dùng ảnh đại diện thay thế",
+                    "value": {
+                      "displayName": "Gia Hân",
+                      "email": "gia.han@example.com",
+                      "avatarUrl": null
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/InvalidCoreSession"
+          },
+          "503": {
+            "$ref": "#/components/responses/MyReadUnavailable"
+          }
+        }
+      }
+    },
+    "/me/items": {
+      "get": {
+        "operationId": "listMyItems",
+        "summary": "Đọc một trang Mục của tôi",
+        "description": "Core lấy tài khoản từ mã phiên Bearer. Dùng HTTPS với thông tin xác thực thật. Lần đọc thành công được tính là hoạt động phiên. Yêu cầu đến muộn không hồi sinh phiên đã hết hạn hoặc bị thu hồi. Lost và Found chỉ gồm bài do tài khoản đó đăng. Trong thực nghiệm, claims gồm yêu cầu do tài khoản gửi hoặc gửi đến bài của họ, mỗi yêu cầu một lần. Trạng thái hiển thị lấy từ fixture. Found chỉ tham chiếu thumbnail đã xử lý riêng tư. Khi bản xử lý chưa có, bỏ trường thumbnailUrl để app dùng ảnh thay thế. Core xác minh phiên và lọc quyền ở mỗi trang. Sắp theo thời điểm tạo giảm dần rồi ID giảm dần. Lấy 20 mục mỗi lần nếu còn đủ, với nextCursor là null khi hết dữ liệu. Bỏ cursor để xem trang đầu hoặc làm mới. Khi tải tiếp, gửi nextCursor cùng tab. Core đọc tiếp theo mốc sắp xếp của cursor kể cả khi mục tại mốc đã bị gỡ. Bài mới ở đầu xuất hiện khi làm mới.",
+        "security": [
+          {
+            "CoreSession": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tab",
+            "in": "query",
+            "required": true,
+            "description": "Loại danh sách cần đọc.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "lost",
+                "found",
+                "claims"
+              ]
+            },
+            "examples": {
+              "lost": {
+                "summary": "Bài báo mất",
+                "value": "lost"
+              },
+              "found": {
+                "summary": "Bài báo nhặt",
+                "value": "found"
+              },
+              "claims": {
+                "summary": "Yêu cầu nhận đồ",
+                "value": "claims"
+              }
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "description": "Giá trị nextCursor từ trang trước của cùng tài khoản và tab. Core kiểm tính toàn vẹn và phạm vi của cursor. Client gửi lại nguyên giá trị. Bỏ tham số để bắt đầu từ trang đầu.",
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            },
+            "example": "example-lost-next-cursor"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Trang của tab yêu cầu. Nếu còn dữ liệu, nextCursor chứa mốc tải tiếp.",
+            "headers": {
+              "Cache-Control": {
+                "$ref": "#/components/headers/AuthNoStore"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/MyLostItemsPage"
+                    },
+                    {
+                      "$ref": "#/components/schemas/MyFoundItemsPage"
+                    },
+                    {
+                      "$ref": "#/components/schemas/MyClaimsPage"
+                    }
+                  ]
+                },
+                "examples": {
+                  "lostWithNextPage": {
+                    "summary": "Trang bài báo mất còn dữ liệu",
+                    "value": {
+                      "tab": "lost",
+                      "items": [
+                        {
+                          "id": "example-lost-21",
+                          "title": "Ví vải xanh",
+                          "postedAt": "2026-11-20T08:30:00+07:00",
+                          "status": "Đang tìm",
+                          "thumbnailUrl": "https://media.example.com/lost/example-thumbnail.jpg"
+                        },
+                        {
+                          "id": "example-lost-20",
+                          "title": "Ví vải xanh",
+                          "postedAt": "2026-11-20T08:30:00+07:00",
+                          "status": "Đang tìm",
+                          "thumbnailUrl": "https://media.example.com/lost/example-thumbnail.jpg"
+                        },
+                        {
+                          "id": "example-lost-19",
+                          "title": "Ví vải xanh",
+                          "postedAt": "2026-11-20T08:30:00+07:00",
+                          "status": "Đang tìm",
+                          "thumbnailUrl": "https://media.example.com/lost/example-thumbnail.jpg"
+                        },
+                        {
+                          "id": "example-lost-18",
+                          "title": "Ví vải xanh",
+                          "postedAt": "2026-11-20T08:30:00+07:00",
+                          "status": "Đang tìm",
+                          "thumbnailUrl": "https://media.example.com/lost/example-thumbnail.jpg"
+                        },
+                        {
+                          "id": "example-lost-17",
+                          "title": "Ví vải xanh",
+                          "postedAt": "2026-11-20T08:30:00+07:00",
+                          "status": "Đang tìm",
+                          "thumbnailUrl": "https://media.example.com/lost/example-thumbnail.jpg"
+                        },
+                        {
+                          "id": "example-lost-16",
+                          "title": "Ví vải xanh",
+                          "postedAt": "2026-11-20T08:30:00+07:00",
+                          "status": "Đang tìm",
+                          "thumbnailUrl": "https://media.example.com/lost/example-thumbnail.jpg"
+                        },
+                        {
+                          "id": "example-lost-15",
+                          "title": "Ví vải xanh",
+                          "postedAt": "2026-11-20T08:30:00+07:00",
+                          "status": "Đang tìm",
+                          "thumbnailUrl": "https://media.example.com/lost/example-thumbnail.jpg"
+                        },
+                        {
+                          "id": "example-lost-14",
+                          "title": "Ví vải xanh",
+                          "postedAt": "2026-11-20T08:30:00+07:00",
+                          "status": "Đang tìm",
+                          "thumbnailUrl": "https://media.example.com/lost/example-thumbnail.jpg"
+                        },
+                        {
+                          "id": "example-lost-13",
+                          "title": "Ví vải xanh",
+                          "postedAt": "2026-11-20T08:30:00+07:00",
+                          "status": "Đang tìm",
+                          "thumbnailUrl": "https://media.example.com/lost/example-thumbnail.jpg"
+                        },
+                        {
+                          "id": "example-lost-12",
+                          "title": "Ví vải xanh",
+                          "postedAt": "2026-11-20T08:30:00+07:00",
+                          "status": "Đang tìm",
+                          "thumbnailUrl": "https://media.example.com/lost/example-thumbnail.jpg"
+                        },
+                        {
+                          "id": "example-lost-11",
+                          "title": "Ví vải xanh",
+                          "postedAt": "2026-11-20T08:30:00+07:00",
+                          "status": "Đang tìm",
+                          "thumbnailUrl": "https://media.example.com/lost/example-thumbnail.jpg"
+                        },
+                        {
+                          "id": "example-lost-10",
+                          "title": "Ví vải xanh",
+                          "postedAt": "2026-11-20T08:30:00+07:00",
+                          "status": "Đang tìm",
+                          "thumbnailUrl": "https://media.example.com/lost/example-thumbnail.jpg"
+                        },
+                        {
+                          "id": "example-lost-09",
+                          "title": "Ví vải xanh",
+                          "postedAt": "2026-11-20T08:30:00+07:00",
+                          "status": "Đang tìm",
+                          "thumbnailUrl": "https://media.example.com/lost/example-thumbnail.jpg"
+                        },
+                        {
+                          "id": "example-lost-08",
+                          "title": "Ví vải xanh",
+                          "postedAt": "2026-11-20T08:30:00+07:00",
+                          "status": "Đang tìm",
+                          "thumbnailUrl": "https://media.example.com/lost/example-thumbnail.jpg"
+                        },
+                        {
+                          "id": "example-lost-07",
+                          "title": "Ví vải xanh",
+                          "postedAt": "2026-11-20T08:30:00+07:00",
+                          "status": "Đang tìm",
+                          "thumbnailUrl": "https://media.example.com/lost/example-thumbnail.jpg"
+                        },
+                        {
+                          "id": "example-lost-06",
+                          "title": "Ví vải xanh",
+                          "postedAt": "2026-11-20T08:30:00+07:00",
+                          "status": "Đang tìm",
+                          "thumbnailUrl": "https://media.example.com/lost/example-thumbnail.jpg"
+                        },
+                        {
+                          "id": "example-lost-05",
+                          "title": "Ví vải xanh",
+                          "postedAt": "2026-11-20T08:30:00+07:00",
+                          "status": "Đang tìm",
+                          "thumbnailUrl": "https://media.example.com/lost/example-thumbnail.jpg"
+                        },
+                        {
+                          "id": "example-lost-04",
+                          "title": "Ví vải xanh",
+                          "postedAt": "2026-11-20T08:30:00+07:00",
+                          "status": "Đang tìm",
+                          "thumbnailUrl": "https://media.example.com/lost/example-thumbnail.jpg"
+                        },
+                        {
+                          "id": "example-lost-03",
+                          "title": "Ví vải xanh",
+                          "postedAt": "2026-11-20T08:30:00+07:00",
+                          "status": "Đang tìm",
+                          "thumbnailUrl": "https://media.example.com/lost/example-thumbnail.jpg"
+                        },
+                        {
+                          "id": "example-lost-02",
+                          "title": "Ví vải xanh",
+                          "postedAt": "2026-11-20T08:30:00+07:00",
+                          "status": "Đang tìm",
+                          "thumbnailUrl": "https://media.example.com/lost/example-thumbnail.jpg"
+                        }
+                      ],
+                      "nextCursor": "example-lost-next-cursor"
+                    }
+                  },
+                  "lostLastPage": {
+                    "summary": "Trang cuối bài báo mất",
+                    "value": {
+                      "tab": "lost",
+                      "items": [
+                        {
+                          "id": "example-lost-01",
+                          "title": "Túi đựng laptop",
+                          "postedAt": "2026-11-18T09:10:00+07:00",
+                          "status": "Đang tìm"
+                        }
+                      ],
+                      "nextCursor": null
+                    }
+                  },
+                  "found": {
+                    "summary": "Bài báo nhặt có ảnh đã xử lý hoặc đang chờ ảnh",
+                    "value": {
+                      "tab": "found",
+                      "items": [
+                        {
+                          "id": "example-found-02",
+                          "title": "Ô gấp",
+                          "postedAt": "2026-11-20T10:00:00+07:00",
+                          "status": "Đang giữ"
+                        },
+                        {
+                          "id": "example-found-01",
+                          "title": "Chùm chìa khóa",
+                          "postedAt": "2026-11-19T14:10:00+07:00",
+                          "status": "Đang giữ",
+                          "thumbnailUrl": "https://media.example.com/found/example-processed-thumbnail.jpg"
+                        }
+                      ],
+                      "nextCursor": null
+                    }
+                  },
+                  "claims": {
+                    "summary": "Yêu cầu gửi đi và gửi đến",
+                    "value": {
+                      "tab": "claims",
+                      "items": [
+                        {
+                          "id": "example-claim-02",
+                          "title": "Bình nước bạc",
+                          "sentAt": "2026-11-20T17:20:00+07:00",
+                          "status": "Đang chờ",
+                          "role": "sent"
+                        },
+                        {
+                          "id": "example-claim-01",
+                          "title": "Chùm chìa khóa",
+                          "sentAt": "2026-11-19T16:00:00+07:00",
+                          "status": "Đang chờ",
+                          "role": "received"
+                        }
+                      ],
+                      "nextCursor": null
+                    }
+                  },
+                  "empty": {
+                    "summary": "Trang đầu của tab rỗng",
+                    "value": {
+                      "tab": "lost",
+                      "items": [],
+                      "nextCursor": null
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Tab thiếu hoặc sai, hoặc cursor không dùng được. Với INVALID_CURSOR, bỏ cursor để tải lại trang đầu.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/AuthError"
+                    },
+                    {
+                      "properties": {
+                        "code": {
+                          "enum": [
+                            "INVALID_REQUEST",
+                            "INVALID_CURSOR"
+                          ]
+                        }
+                      }
+                    }
+                  ]
+                },
+                "examples": {
+                  "INVALID_REQUEST": {
+                    "summary": "Thiếu tab hoặc tab sai giá trị",
+                    "value": {
+                      "code": "INVALID_REQUEST"
+                    }
+                  },
+                  "INVALID_CURSOR": {
+                    "summary": "Cursor sai định dạng, không còn dùng được hoặc khác phạm vi tài khoản hay tab",
+                    "value": {
+                      "code": "INVALID_CURSOR"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/InvalidCoreSession"
+          },
+          "503": {
+            "$ref": "#/components/responses/MyReadUnavailable"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "CoreSession": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Dùng mã phiên do Core cấp trong header Authorization."
+      }
+    },
+    "headers": {
+      "AuthNoStore": {
+        "required": true,
+        "description": "Yêu cầu bên nhận không lưu phản hồi trong cache HTTP.",
+        "schema": {
+          "type": "string",
+          "const": "no-store"
+        },
+        "example": "no-store"
+      }
+    },
+    "responses": {
+      "InvalidCoreSession": {
+        "description": "Thiếu mã phiên hợp lệ. Phiên thiếu, sai, hết hạn hoặc bị thu hồi bị từ chối. Xem ngoại lệ xác nhận thu hồi lặp tại revokeCurrentSession.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/AuthError"
+                },
+                {
+                  "properties": {
+                    "code": {
+                      "enum": [
+                        "SESSION_INVALID"
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            "examples": {
+              "SESSION_INVALID": {
+                "value": {
+                  "code": "SESSION_INVALID"
+                }
+              }
+            }
+          }
+        },
+        "headers": {
+          "WWW-Authenticate": {
+            "required": true,
+            "description": "Bearer challenge cho mã phiên Core.",
+            "schema": {
+              "type": "string",
+              "const": "Bearer"
+            },
+            "example": "Bearer"
+          }
+        }
+      },
+      "AuthUnavailable": {
+        "description": "Core hoặc phụ thuộc cần thiết cho thao tác tạm thời chưa phục vụ được.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/AuthError"
+                },
+                {
+                  "properties": {
+                    "code": {
+                      "enum": [
+                        "AUTH_UNAVAILABLE"
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            "examples": {
+              "AUTH_UNAVAILABLE": {
+                "value": {
+                  "code": "AUTH_UNAVAILABLE"
+                }
+              }
+            }
+          }
+        }
+      },
+      "MyReadUnavailable": {
+        "description": "Core hoặc phụ thuộc cần thiết cho thao tác đọc tạm thời chưa phục vụ được.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/AuthError"
+                },
+                {
+                  "properties": {
+                    "code": {
+                      "enum": [
+                        "READ_UNAVAILABLE"
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            "examples": {
+              "READ_UNAVAILABLE": {
+                "summary": "Tạm thời không đọc được dữ liệu",
+                "value": {
+                  "code": "READ_UNAVAILABLE"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "CreateGoogleSessionRequest": {
+        "type": "object",
+        "required": [
+          "idToken",
+          "deviceType",
+          "attemptId"
+        ],
+        "properties": {
+          "idToken": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Google ID token của lượt đăng nhập."
+          },
+          "deviceType": {
+            "type": "string",
+            "enum": [
+              "android",
+              "ios"
+            ]
+          },
+          "attemptId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID ngẫu nhiên do mobile sinh cho mỗi lượt chọn tài khoản."
+          }
+        }
+      },
+      "GoogleSession": {
+        "type": "object",
+        "required": [
+          "sessionToken",
+          "accountId",
+          "expiresAt"
+        ],
+        "properties": {
+          "sessionToken": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Mã phiên bí mật do Core cấp để gửi qua Bearer."
+          },
+          "accountId": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Mã tài khoản nội bộ của Lost & Found."
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Mốc hết hiệu lực nếu không có thêm hoạt động thành công. Trong thực nghiệm, lấy mốc sớm hơn giữa 30 ngày từ hoạt động thành công gần nhất và 90 ngày từ lúc cấp phiên."
+          }
+        }
+      },
+      "CurrentSession": {
+        "type": "object",
+        "required": [
+          "accountId",
+          "expiresAt"
+        ],
+        "properties": {
+          "accountId": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Mã tài khoản nội bộ của Lost & Found."
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Mốc hết hiệu lực nếu không có thêm hoạt động thành công. Trong thực nghiệm, lấy mốc sớm hơn giữa 30 ngày từ hoạt động thành công gần nhất và 90 ngày từ lúc cấp phiên."
+          }
+        }
+      },
+      "AuthError": {
+        "type": "object",
+        "required": [
+          "code"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Mã kỹ thuật để mobile chọn cách xử lý và thông báo."
+          }
+        }
+      },
+      "MyProfile": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "displayName",
+          "email",
+          "avatarUrl"
+        ],
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "description": "Tên đã đồng bộ từ Google."
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Email đã đồng bộ từ Google."
+          },
+          "avatarUrl": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uri",
+            "description": "URL ảnh đã đồng bộ từ Google, hoặc null nếu thiếu ảnh."
+          }
+        }
+      },
+      "MyPostItem": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "title",
+          "postedAt",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "ID bài để mở chi tiết cho loại bài tương ứng."
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Tiêu đề bài hoặc tên món đồ."
+          },
+          "postedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Thời điểm đăng bài, dùng để sắp xếp theo thời điểm tạo."
+          },
+          "status": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Trạng thái dạng chữ từ fixture trong thực nghiệm."
+          },
+          "thumbnailUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL ảnh thu nhỏ nếu có. Với Found, URL chỉ trỏ đến bản đã xử lý riêng tư."
+          }
+        }
+      },
+      "MyClaimItem": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "title",
+          "sentAt",
+          "status",
+          "role"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "ID ổn định của yêu cầu nhận đồ trong danh sách."
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Tên món đồ hoặc tiêu đề bài báo nhặt liên quan."
+          },
+          "sentAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Thời điểm gửi yêu cầu, dùng để sắp xếp theo thời điểm tạo."
+          },
+          "status": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Trạng thái dạng chữ từ fixture trong thực nghiệm."
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "sent",
+              "received"
+            ],
+            "description": "sent hiển thị “Tôi gửi”. received hiển thị “Gửi đến bài của tôi”."
+          }
+        }
+      },
+      "MyLostItemsPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "tab",
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "tab": {
+            "type": "string",
+            "const": "lost"
+          },
+          "items": {
+            "type": "array",
+            "maxItems": 20,
+            "items": {
+              "$ref": "#/components/schemas/MyPostItem"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "description": "Giá trị để tải trang kế tiếp, hoặc null khi hết dữ liệu."
+          }
+        }
+      },
+      "MyFoundItemsPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "tab",
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "tab": {
+            "type": "string",
+            "const": "found"
+          },
+          "items": {
+            "type": "array",
+            "maxItems": 20,
+            "items": {
+              "$ref": "#/components/schemas/MyPostItem"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "description": "Giá trị để tải trang kế tiếp, hoặc null khi hết dữ liệu."
+          }
+        }
+      },
+      "MyClaimsPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "tab",
+          "items",
+          "nextCursor"
+        ],
+        "properties": {
+          "tab": {
+            "type": "string",
+            "const": "claims"
+          },
+          "items": {
+            "type": "array",
+            "maxItems": 20,
+            "items": {
+              "$ref": "#/components/schemas/MyClaimItem"
+            }
+          },
+          "nextCursor": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "minLength": 1,
+            "description": "Giá trị để tải trang kế tiếp, hoặc null khi hết dữ liệu."
           }
         }
       }

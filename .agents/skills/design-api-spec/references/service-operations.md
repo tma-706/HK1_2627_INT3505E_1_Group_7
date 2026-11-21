@@ -2,13 +2,25 @@
 
 For each important trust boundary, connect a risk to a control, the caller-visible result, evidence for the operator and an acceptance check. Fit the level of detail to the data and the scope of the request.
 
+## Select criteria for each operation
+
+1. Identify the caller, credential and trust boundary, resources and fields read or changed, inputs and outputs, downstream dependencies, and work triggered by the operation. Start with the applicable requirements and existing contract. Consult relevant catalog entries when these details give the criterion a concrete trigger and consequence. A criterion about session cookies applies where the operation uses those cookies. A list scoped to the signed-in caller calls for authorization and data filtering checks.
+2. Tie each selected criterion to a requirement, an agreed decision or an existing contract obligation. Preserve the source status. A relevant risk with an unsettled policy belongs in the Execution Prompt as a decision or question, with the operation affected and the remaining evidence needed. When considering an indirect performance requirement, identify the user journey, the operation's contribution and which layer can measure the stated outcome.
+3. Choose how to express the resulting obligation. Use `securitySchemes` and the operation's effective `security` for credentials, parameter or body schemas for accepted inputs, and response schemas, headers and grounded error cases for observable outcomes. State ownership, cursor binding and other behavioral rules in operation descriptions or linked contract notes, with acceptance checks. Put internal controls and instrumentation in linked handoff notes. For user-journey SLOs, carry forward the measurement boundary, target status and verification owner. Commit an endpoint latency budget, quota or retry response only with a source for that specific behavior. [OpenAPI 3.1.0](https://spec.openapis.org/oas/v3.1.0.html#operation-object)
+
+### Example from Lost & Found
+
+For the proposed My Items list operation, the signed-in session and the scoped cursor make `SEC-PRF-001` and `GAP-PRF-003` relevant. `SEC-A01-01` helps check that the server enforces access. Express the session requirement in `security`, the cursor in the request parameters, and allowed list fields in the response schema. Describe the account and tab scope and check it with authorized and unauthorized fixtures. Record the response for an unusable cursor in the design decision if its exact semantics are still open.
+
+`EI-06` supports the page size of up to 20 items. `PERF-PRF-001` carries a proposed PR-05 target of displaying the page on mobile within 2 seconds for at least 95% of attempts under the stated conditions. Hand off this measurement to mobile and QA. Measure Core response time as a contributing signal while the API budget remains open. [UC-01/02 analysis](../../../../docs/requirements/analysis/uc-01-02.md)
+
 ## Access and resource protection
 
 | Decision | What the specification should settle |
 | --- | --- |
 | Who can act on what | For each sensitive operation, state the principal, role/scope, object or tenant predicate and writable/readable fields. Apply policy on collection filters, nested resources, status and download links as well as individual records. Test allowed and denied cases with synthetic fixtures. |
 | Credential lifecycle | Specify TLS, credential issuance, validation, expiry, rotation and revocation as applicable. Identify the owner of each responsibility when it is known. Validate claims at the trusted boundary. Keep access tokens, keys and sensitive payload fields out of URLs, logs, examples and error details. |
-| Resource limits and dependencies | Bound page/body/batch sizes and costly work. State how quota is scoped, measured and presented to clients. Document 429 and retry guidance for throttling, timeouts and the client-visible result of transient dependency failure. Retry only eligible operations with bounded backoff. For external integrations define the trust/validation boundary. |
+| Resource limits and dependencies | Document applicable bounds on page, body, batch sizes and costly work. Where policy defines throttling, document the quota scope, how callers see it and any 429 and retry behavior. Describe applicable timeouts and the client-visible result of transient dependency failure. Retry only eligible operations with bounded backoff. For external integrations define the trust/validation boundary. |
 | Audit and response | Specify which security-sensitive actions produce audit events, who may read them and which identifiers may be retained. Distinguish audit trails from diagnostic telemetry. For an actionable event, name an owner or role, first diagnostic step and containment or recovery action. Mark unconfirmed retention periods and contacts as TBD. |
 
 ## Observability from a user journey
