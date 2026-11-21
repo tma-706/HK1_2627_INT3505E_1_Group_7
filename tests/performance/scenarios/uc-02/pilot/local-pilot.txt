@@ -1,0 +1,14 @@
+UC-02 | pilot | local-pilot
+Hồ sơ và Mục của tôi
+
+Mục tiêu: quan sát nhịp tải và đo kiểm ban đầu với 3 VU. Nhóm request bắt buộc: Hồ sơ và Lost/trang đầu.
+Môi trường: Core HTTPS fixture cô lập; chạy smoke đạt trên cùng bản build và bộ fixture trước pilot. Endpoint: GET /api/me/profile; GET /api/me/items theo tab lost, found, claims; giữ riêng nhóm trang đầu, trang sau và làm mới.
+Hành trình: 30% chỉ hồ sơ, 50% hồ sơ → Lost → Found/Claims (chia đều, 50% làm mới), 20% hồ sơ → Lost → trang sau. Chờ 0,5–1,5 giây giữa thao tác và 2–4 giây giữa hành trình.
+Fixture: Ba phiên fixture đã xác thực; mỗi tài khoản có 21 mục mỗi tab. Dọn fixture khi dừng môi trường test.
+Pha | VU đầu → VU đích | spawn rate (VU/s) | thời lượng | cửa sổ đo
+Ramp | 0 → 3 | 1 | khoảng 3 s | ghi trong số liệu toàn lượt
+Giữ tải | 3 → 3 | 0 | khoảng 42 s | ghi trong số liệu toàn lượt
+Tổng thời gian cấu hình: 45 giây gồm ramp. Chờ kết thúc tối đa 6 giây. Timeout của mỗi request là 5 giây.
+Trần: 3 VU. Locust dừng phát tải khi hết thời lượng. Kiểm số nhóm bắt buộc có mẫu, tổng lỗi và trạng thái runner.
+SLO: kết quả thăm dò, không dùng làm kết luận đạt SLO API hoặc năng lực tải staging.
+Cấu hình: tests/performance/uc-02/workloads.yml → local-pilot.

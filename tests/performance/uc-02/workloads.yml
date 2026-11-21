@@ -1,0 +1,39 @@
+fixture_tabs: [lost, found, claims]
+profiles:
+  smoke:
+    users: 1
+    spawn_rate: 1
+    run_seconds: 16
+    stop_timeout_seconds: 6
+    request_timeout_seconds: 5
+    required_requests:
+      - /api/me/profile
+      - /api/me/items [lost/first]
+      - /api/me/items [lost/next]
+      - /api/me/items [lost/refresh]
+      - /api/me/items [found/first]
+      - /api/me/items [found/next]
+      - /api/me/items [found/refresh]
+      - /api/me/items [claims/first]
+      - /api/me/items [claims/next]
+      - /api/me/items [claims/refresh]
+  local-pilot:
+    requires_smoke: true
+    users: 3
+    spawn_rate: 1
+    run_seconds: 45
+    stop_timeout_seconds: 6
+    request_timeout_seconds: 5
+    required_requests: [/api/me/profile, '/api/me/items [lost/first]']
+    weights:
+      profile_only: 3
+      open_items: 5
+      paginate: 2
+    wait_between_journeys_seconds: [2, 4]
+    wait_between_actions_seconds: [0.5, 1.5]
+
+# The representative workload depends on the pilot, traffic evidence and staging capacity.
+staging_target:
+  source: PR-01 / TBD-02
+  active_sessions_at_least: 200
+  state: design_pending_pilot_and_environment

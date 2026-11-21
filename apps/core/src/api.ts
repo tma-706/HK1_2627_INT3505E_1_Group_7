@@ -4,6 +4,7 @@ import { db } from './db.js';
 import { verifyGoogleToken } from './modules/identity/google.js';
 import { handleIdentity } from './modules/identity/routes.js';
 import { readReplayKeys, Sessions } from './modules/identity/sessions.js';
+import { handleMyArea } from './modules/my-area/routes.js';
 
 const { GOOGLE_CLIENT_ID, SESSION_REPLAY_KEY_VERSION, SESSION_REPLAY_KEYS } = process.env;
 const sessions = (() => {
@@ -30,5 +31,6 @@ createServer(async (req, res) => {
     return;
   }
   if (await handleIdentity(req, res, sessions)) return;
+  if (await handleMyArea(req, res, sessions)) return;
   res.writeHead(404).end(JSON.stringify({ error: 'not_found' }));
 }).listen(port, '0.0.0.0', () => console.log(`Core API listening on ${port}`));

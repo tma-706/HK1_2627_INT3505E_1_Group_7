@@ -1,0 +1,23 @@
+api:
+  GET /api/me/profile:
+    p95_ms: null
+    error_rate_pct: null
+  GET /api/me/items:
+    p95_ms: null
+    error_rate_pct: null
+mobile_proposed:
+  source: SRS 3.3 / TBD-02
+  PR-04:
+    completion: tap_profile_to_full_render
+    within_ms: 2000
+    minimum_pct_of_eligible_attempts: 95
+  PR-05:
+    completion: page_request_to_full_render
+    within_ms: 2000
+    minimum_pct_of_eligible_attempts: 95
+  PR-07:
+    network_deadline_ms: 15000
+  PR-08:
+    total_uc01_uc02_local_storage_max_mb: 20
+  PR-09:
+    minimum_items_per_tab_per_account: 1000

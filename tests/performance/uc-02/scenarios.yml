@@ -1,0 +1,220 @@
+# Kế hoạch staging đề xuất. workloads.yml giữ các profile local có runner.
+state: planned_requires_staging
+environment: staging-fixture
+load_model: closed_loop
+journey: "30% chỉ hồ sơ, 50% hồ sơ → Lost → Found/Claims (chia đều, 50% làm mới), 20% hồ sơ → Lost → trang sau. Chờ 0,5–1,5 giây giữa thao tác và 2–4 giây giữa hành trình."
+fixture: "Mỗi VU một tài khoản và một phiên hợp lệ. Seed 21 mục mỗi tab cho mẫu phân trang 20+1, dùng dữ liệu khác nhau giữa tài khoản; chạy cohort 1.000 mục/tab riêng nếu nghiệm thu PR-09. Dọn dữ liệu fixture sau bài."
+sizing: "PR-01/TBD-02 đề xuất ít nhất 200 phiên hoạt động đồng thời. Giả thuyết ở 200 VU: khoảng 114 RPS toàn luồng (2,65 request/vòng, 4,65 giây chờ/vòng, chưa cộng latency); hiệu chỉnh bằng pilot và nhu cầu thật."
+telemetry: "Core CPU/RAM, thời gian/chờ pool DB, timing truy vấn từng nhóm, tốc độ tạo cursor, kết nối đang dùng, lỗi và timeout."
+stop_policy: "Ngưỡng dừng thử nghiệm đề xuất: dừng khi readiness lỗi 3 lần liên tiếp (chu kỳ 5 giây), hoặc tỷ lệ 5xx + timeout ≥ 5% trên ít nhất 20 request trong 30 giây, hoặc vượt giới hạn tài nguyên đã chốt cho môi trường. Ghi thời điểm, bậc tải, tín hiệu và trạng thái hồi phục. Cần thử nhánh dừng trước khi dùng trên staging."
+scenarios:
+  steady-profile-items:
+    type: load
+    goal: "Đo độ trễ đọc hồ sơ, tải danh sách và phân trang ở mức phiên đồng thời theo PR-01."
+    planned_peak_vus: 200
+    min_samples_per_endpoint_per_window: 200
+    duration_seconds: 795
+    details: "Giữ cùng hỗn hợp hành trình, báo riêng hồ sơ, trang đầu, trang sau và làm mới theo tab. Nghiệm thu PR-04/05 cần thêm phép đo trên thiết bị."
+    phases:
+      - name: "Tăng tải"
+        users: [0, 200]
+        spawn_rate_vu_per_s: 4
+        seconds: 50
+        window: "Loại khỏi cửa sổ ổn định"
+      - name: "Giữ tải"
+        users: [200, 200]
+        spawn_rate_vu_per_s: 0
+        seconds: 720
+        window: "12 phút ổn định"
+      - name: "Hạ tải"
+        users: [200, 0]
+        spawn_rate_vu_per_s: 8
+        seconds: 25
+        window: "Theo dõi hạ tải"
+  items-query-pressure:
+    type: stress
+    goal: "Đo thời gian chờ pool và độ trễ các truy vấn danh sách khi tải đọc vượt giả thuyết nhu cầu."
+    planned_peak_vus: 320
+    min_samples_per_endpoint_per_window: 200
+    duration_seconds: 800
+    details: "Thử 130% và 160% tải mục tiêu 200 VU để tách ảnh hưởng tăng lượng truy vấn và tạo cursor; giữ cùng hỗn hợp hành trình để so bậc."
+    phases:
+      - name: "Tăng tải nền"
+        users: [0, 200]
+        spawn_rate_vu_per_s: 4
+        seconds: 50
+        window: "Loại"
+      - name: "Nền"
+        users: [200, 200]
+        spawn_rate_vu_per_s: 0
+        seconds: 180
+        window: "So sánh trước tăng"
+      - name: "Tăng bậc 1"
+        users: [200, 260]
+        spawn_rate_vu_per_s: 6
+        seconds: 10
+        window: "Theo dõi chuyển bậc"
+      - name: "Giữ bậc 1"
+        users: [260, 260]
+        spawn_rate_vu_per_s: 0
+        seconds: 180
+        window: "Bậc 260 VU"
+      - name: "Tăng bậc 2"
+        users: [260, 320]
+        spawn_rate_vu_per_s: 6
+        seconds: 10
+        window: "Theo dõi chuyển bậc"
+      - name: "Giữ bậc 2"
+        users: [320, 320]
+        spawn_rate_vu_per_s: 0
+        seconds: 180
+        window: "Bậc 320 VU"
+      - name: "Về tải nền"
+        users: [320, 200]
+        spawn_rate_vu_per_s: 12
+        seconds: 10
+        window: "Theo dõi hồi phục"
+      - name: "Hồi phục"
+        users: [200, 200]
+        spawn_rate_vu_per_s: 0
+        seconds: 180
+        window: "So với nền"
+  items-refresh-burst:
+    type: spike
+    goal: "Mô phỏng đợt người dùng đồng loạt kiểm tra Mục của tôi sau thông báo cập nhật; đo quá tải và hồi phục."
+    planned_peak_vus: 240
+    min_samples_per_endpoint_per_window: 100
+    duration_seconds: 302
+    details: "Đỉnh giả định từ 80 lên 240 VU trong 4 giây. User nền dùng hỗn hợp chung. Ở lượt đầu, user tăng thêm mở hồ sơ → Lost/trang đầu → làm mới, sau đó trở về hỗn hợp chung. Đếm riêng request đã gửi, đã hoàn tất và còn chờ."
+    phases:
+      - name: "Tăng tải nền"
+        users: [0, 80]
+        spawn_rate_vu_per_s: 8
+        seconds: 10
+        window: "Loại"
+      - name: "Nền"
+        users: [80, 80]
+        spawn_rate_vu_per_s: 0
+        seconds: 90
+        window: "Đường cơ sở"
+      - name: "Bùng tải"
+        users: [80, 240]
+        spawn_rate_vu_per_s: 40
+        seconds: 4
+        window: "Từ thời điểm bùng tải"
+      - name: "Giữ đỉnh"
+        users: [240, 240]
+        spawn_rate_vu_per_s: 0
+        seconds: 40
+        window: "Đo lỗi và tồn đọng"
+      - name: "Về tải nền"
+        users: [240, 80]
+        spawn_rate_vu_per_s: 20
+        seconds: 8
+        window: "Ghi hoàn tất và tồn đọng"
+      - name: "Hồi phục"
+        users: [80, 80]
+        spawn_rate_vu_per_s: 0
+        seconds: 150
+        window: "Đo thời gian hồi phục"
+  items-cursor-growth:
+    type: soak
+    goal: "Theo dõi p95 truy vấn, pool và tốc độ tăng bảng cursor khi tải danh sách kéo dài."
+    planned_peak_vus: 200
+    min_samples_per_endpoint_per_window: 300
+    duration_seconds: 5475
+    details: "Giữ 90 phút để so sáu cửa sổ 15 phút. Kiểm thay đổi độ trễ cùng số cursor tăng ở mỗi cửa sổ. Bài riêng cần vượt một vòng TTL 24 giờ hoặc có fixture đã đủ tuổi để xác nhận dọn cursor."
+    phases:
+      - name: "Tăng tải"
+        users: [0, 200]
+        spawn_rate_vu_per_s: 4
+        seconds: 50
+        window: "Loại"
+      - name: "Giữ dài"
+        users: [200, 200]
+        spawn_rate_vu_per_s: 0
+        seconds: 5400
+        window: "Sáu cửa sổ 15 phút"
+      - name: "Hạ tải"
+        users: [200, 0]
+        spawn_rate_vu_per_s: 8
+        seconds: 25
+        window: "Ghi tài nguyên sau tải"
+  items-capacity-steps:
+    type: breakpoint
+    goal: "Tìm bậc đầu tiên mà hồ sơ hoặc một nhóm danh sách vượt tiêu chí vận hành hoặc SLO đã chốt."
+    planned_peak_vus: 360
+    min_samples_per_endpoint_per_window: 200
+    duration_seconds: 1140
+    details: "Bước 40 VU quanh mục tiêu PR-01 để tìm bậc nhạy với truy vấn danh sách. Khi đủ mẫu, báo bậc cuối đạt và bậc đầu vi phạm theo từng API; chạm trần thì báo mức cao nhất đã đo."
+    phases:
+      - name: "Tăng bậc 120"
+        users: [0, 120]
+        spawn_rate_vu_per_s: 4
+        seconds: 30
+        window: "Loại"
+      - name: "Giữ 120"
+        users: [120, 120]
+        spawn_rate_vu_per_s: 0
+        seconds: 150
+        window: "Bậc 120 VU"
+      - name: "Tăng bậc 160"
+        users: [120, 160]
+        spawn_rate_vu_per_s: 4
+        seconds: 10
+        window: "Theo dõi điểm dừng"
+      - name: "Giữ 160"
+        users: [160, 160]
+        spawn_rate_vu_per_s: 0
+        seconds: 150
+        window: "Bậc 160 VU"
+      - name: "Tăng bậc 200"
+        users: [160, 200]
+        spawn_rate_vu_per_s: 4
+        seconds: 10
+        window: "Theo dõi điểm dừng"
+      - name: "Giữ 200"
+        users: [200, 200]
+        spawn_rate_vu_per_s: 0
+        seconds: 150
+        window: "Bậc 200 VU"
+      - name: "Tăng bậc 240"
+        users: [200, 240]
+        spawn_rate_vu_per_s: 4
+        seconds: 10
+        window: "Theo dõi điểm dừng"
+      - name: "Giữ 240"
+        users: [240, 240]
+        spawn_rate_vu_per_s: 0
+        seconds: 150
+        window: "Bậc 240 VU"
+      - name: "Tăng bậc 280"
+        users: [240, 280]
+        spawn_rate_vu_per_s: 4
+        seconds: 10
+        window: "Theo dõi điểm dừng"
+      - name: "Giữ 280"
+        users: [280, 280]
+        spawn_rate_vu_per_s: 0
+        seconds: 150
+        window: "Bậc 280 VU"
+      - name: "Tăng bậc 320"
+        users: [280, 320]
+        spawn_rate_vu_per_s: 4
+        seconds: 10
+        window: "Theo dõi điểm dừng"
+      - name: "Giữ 320"
+        users: [320, 320]
+        spawn_rate_vu_per_s: 0
+        seconds: 150
+        window: "Bậc 320 VU"
+      - name: "Tăng bậc 360"
+        users: [320, 360]
+        spawn_rate_vu_per_s: 4
+        seconds: 10
+        window: "Theo dõi điểm dừng"
+      - name: "Giữ 360"
+        users: [360, 360]
+        spawn_rate_vu_per_s: 0
+        seconds: 150
+        window: "Bậc 360 VU"

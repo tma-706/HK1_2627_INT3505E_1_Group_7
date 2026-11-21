@@ -1,0 +1,24 @@
+api:
+  POST /api/auth/sessions:
+    p95_ms: null
+    error_rate_pct: null
+  POST /api/auth/sessions/current/validate:
+    p95_ms: null
+    error_rate_pct: null
+  DELETE /api/auth/sessions/current:
+    p95_ms: null
+    error_rate_pct: null
+mobile_proposed:
+  source: SRS 3.3 / TBD-02
+  PR-01:
+    active_sessions_at_least: 200
+  PR-02:
+    within_ms: 3000
+    minimum_pct_of_eligible_attempts: 95
+  PR-03:
+    within_ms: 3000
+    minimum_pct_of_eligible_attempts: 95
+  PR-06:
+    within_ms_per_attempt: 1000
+  PR-07:
+    network_deadline_ms: 15000

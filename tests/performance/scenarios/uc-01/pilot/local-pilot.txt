@@ -1,0 +1,14 @@
+UC-01 | pilot | local-pilot
+Đăng nhập Google và quản lý phiên
+
+Mục tiêu: quan sát nhịp tải và đo kiểm ban đầu với 3 VU. Nhóm request bắt buộc: Cấp, xác minh, thu hồi.
+Môi trường: Core HTTPS fixture cô lập; chạy smoke đạt trên cùng bản build và bộ fixture trước pilot. Endpoint: POST /api/auth/sessions; POST /api/auth/sessions/current/validate; DELETE /api/auth/sessions/current.
+Hành trình: 100% vòng phiên gồm cấp → 2–3 lần mở lại/xác minh → thu hồi. Nghỉ 2–4 giây giữa các lần mở và trước vòng mới.
+Fixture: Ba JWT của ba danh tính tổng hợp, hạn 5 phút. Dọn fixture khi dừng môi trường test.
+Pha | VU đầu → VU đích | spawn rate (VU/s) | thời lượng | cửa sổ đo
+Ramp | 0 → 3 | 1 | khoảng 3 s | ghi trong số liệu toàn lượt
+Giữ tải | 3 → 3 | 0 | khoảng 37 s | ghi trong số liệu toàn lượt
+Tổng thời gian cấu hình: 40 giây gồm ramp. Chờ kết thúc tối đa 6 giây. Timeout của mỗi request là 5 giây.
+Trần: 3 VU. Locust dừng phát tải khi hết thời lượng. Kiểm số nhóm bắt buộc có mẫu, tổng lỗi và trạng thái runner.
+SLO: kết quả thăm dò, không dùng làm kết luận đạt SLO API hoặc năng lực tải staging.
+Cấu hình: tests/performance/uc-01/workloads.yml → local-pilot.

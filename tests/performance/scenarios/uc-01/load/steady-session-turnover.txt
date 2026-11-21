@@ -1,0 +1,25 @@
+UC-01 | load | steady-session-turnover
+Đăng nhập Google và quản lý phiên
+
+Mục tiêu: Đo cấp, xác minh và thu hồi khi tải giữ ổn định quanh mục tiêu PR-01.
+Môi trường: staging cô lập với dữ liệu tổng hợp. Trạng thái: thiết kế, chờ cấu hình chạy staging.
+Endpoint: POST /api/auth/sessions; POST /api/auth/sessions/current/validate; DELETE /api/auth/sessions/current.
+Hành trình: 100% vòng phiên gồm cấp → 2–3 lần mở lại/xác minh → thu hồi. Nghỉ 2–4 giây giữa các lần mở và trước vòng mới.
+Fixture và dọn dữ liệu: Mỗi VU một danh tính tổng hợp. Cấp JWT fixture còn hạn khi đăng nhập, làm mới trước hết hạn và tạo attemptId mới cho lượt mới. Thu hồi phiên còn mở và dọn bản ghi fixture sau bài.
+Căn cứ: PR-01/TBD-02 đề xuất ít nhất 200 phiên hoạt động đồng thời. Giả thuyết ở 200 VU: khoảng 86 RPS toàn luồng (4,5 request/vòng, 10,5 giây chờ/vòng, chưa cộng latency); hiệu chỉnh bằng pilot và nhu cầu thật. Theo dõi thêm số phiên đã cấp còn hoạt động trong cửa sổ đo, vì một phần VU đang đăng nhập lại hoặc đã thu hồi phiên.
+Chi tiết kịch bản: Giữ cùng nhịp thao tác để tách tác động concurrency, đo đủ mẫu riêng cho từng API.
+
+Pha | VU đầu → VU đích | spawn rate (VU/s) | thời lượng | cửa sổ đo
+Tăng tải | 0 → 200 | 5 | 40 s | Loại khỏi cửa sổ ổn định
+Giữ tải | 200 → 200 | 0 | 600 s | 10 phút ổn định
+Hạ tải | 200 → 0 | 10 | 20 s | Theo dõi hạ tải
+
+Tổng thời gian các pha (chưa cộng thời gian đợi request kết thúc): 660 s (11 phút 0 giây).
+Mô hình VU vòng kín. Spawn rate là tốc độ thêm/bớt VU. RPS lấy từ số request thật trong cửa sổ; ghi cả VU thực đạt và sai lệch so kế hoạch.
+Tiêu chí đo: ít nhất 200 request cho mỗi endpoint trong cửa sổ đánh giá. Ghi thêm cỡ mẫu từng nhóm hành trình. Đánh dấu thiếu bằng chứng nếu hụt VU, dữ liệu hoặc ngưỡng.
+SLO: API p95 và tỷ lệ lỗi chờ ngân sách. PR-02/03 ≤ 3.000 ms ở ít nhất 95% lượt và PR-06 ≤ 1.000 ms đo trên thiết bị theo SCN-AUTH-21; PR-07 giới hạn request mobile 15.000 ms.
+Telemetry: Core CPU/RAM, thời gian lấy kết nối và số request chờ pool, khóa giao dịch, tốc độ tăng session/login_attempt, số request lỗi và timeout.
+Trần thiết kế: 200 VU; trần staging thực tế cần xác nhận.
+Ngưỡng dừng thử nghiệm đề xuất: dừng khi readiness lỗi 3 lần liên tiếp (chu kỳ 5 giây), hoặc tỷ lệ 5xx + timeout ≥ 5% trên ít nhất 20 request trong 30 giây, hoặc vượt giới hạn tài nguyên đã chốt cho môi trường. Ghi thời điểm, bậc tải, tín hiệu và trạng thái hồi phục. Cần thử nhánh dừng trước khi dùng trên staging.
+Chạy smoke trên cùng build và fixture, xác minh URL, trần VU và telemetry của staging cô lập. Dùng máy phát tách khỏi Core. Cần cấu hình LoadTestShape, fixture đủ VU và thử điều kiện dừng trước khi chạy profile này.
+Cấu hình: tests/performance/uc-01/scenarios.yml → steady-session-turnover.

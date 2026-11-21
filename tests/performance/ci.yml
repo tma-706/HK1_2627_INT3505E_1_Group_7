@@ -1,0 +1,3 @@
+pre-deploy:
+  uc-01: [smoke, local-pilot]
+  uc-02: [smoke, local-pilot]

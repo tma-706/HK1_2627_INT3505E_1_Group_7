@@ -83,6 +83,16 @@ globalThis.fetch = (input, init) => {
   const validation = await validate(first);
   assert.equal(validation.status, 200);
   assert.equal(validation.headers.get('cache-control'), 'no-store');
+  const profile = await request('/api/me/profile', 'GET', { token: first.sessionToken });
+  assert.equal(profile.status, 200);
+  assert.equal(profile.headers.get('cache-control'), 'no-store');
+  assert.deepEqual(Object.keys(await profile.json()).sort(), ['avatarUrl', 'displayName', 'email']);
+  for (const tab of ['lost', 'found', 'claims']) {
+    const list = await request('/api/me/items?tab=' + tab, 'GET', { token: first.sessionToken });
+    assert.equal(list.status, 200);
+    assert.equal(list.headers.get('cache-control'), 'no-store');
+    assert.deepEqual(await list.json(), { tab, items: [], nextCursor: null });
+  }
   for (let trial = 0; trial < 2; trial++) {
     const revoked = await revoke(first);
     assert.equal(revoked.status, 204);
@@ -91,6 +101,10 @@ globalThis.fetch = (input, init) => {
   const denied = await validate(first);
   assert.equal(denied.status, 401);
   assert.equal(denied.headers.get('www-authenticate'), 'Bearer');
+  const profileDenied = await request('/api/me/profile', 'GET', { token: first.sessionToken });
+  assert.equal(profileDenied.status, 401);
+  assert.equal(profileDenied.headers.get('www-authenticate'), 'Bearer');
+  assert.deepEqual(await profileDenied.json(), { code: 'SESSION_INVALID' });
   assert.equal((await validate(second)).status, 200);
   assert.equal((await revoke(second)).status, 204);
   console.log('HTTPS fixture đạt: readiness, hai liên kết, cấp/lặp, xác minh, thu hồi lặp và cách ly hai phiên.');

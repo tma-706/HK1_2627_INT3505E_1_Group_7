@@ -1,0 +1,25 @@
+UC-02 | soak | items-cursor-growth
+Hồ sơ và Mục của tôi
+
+Mục tiêu: Theo dõi p95 truy vấn, pool và tốc độ tăng bảng cursor khi tải danh sách kéo dài.
+Môi trường: staging cô lập với dữ liệu tổng hợp. Trạng thái: thiết kế, chờ cấu hình chạy staging.
+Endpoint: GET /api/me/profile; GET /api/me/items theo tab lost, found, claims; giữ riêng nhóm trang đầu, trang sau và làm mới.
+Hành trình: 30% chỉ hồ sơ, 50% hồ sơ → Lost → Found/Claims (chia đều, 50% làm mới), 20% hồ sơ → Lost → trang sau. Chờ 0,5–1,5 giây giữa thao tác và 2–4 giây giữa hành trình.
+Fixture và dọn dữ liệu: Mỗi VU một tài khoản và một phiên hợp lệ. Seed 21 mục mỗi tab cho mẫu phân trang 20+1, dùng dữ liệu khác nhau giữa tài khoản; chạy cohort 1.000 mục/tab riêng nếu nghiệm thu PR-09. Dọn dữ liệu fixture sau bài.
+Căn cứ: PR-01/TBD-02 đề xuất ít nhất 200 phiên hoạt động đồng thời. Giả thuyết ở 200 VU: khoảng 114 RPS toàn luồng (2,65 request/vòng, 4,65 giây chờ/vòng, chưa cộng latency); hiệu chỉnh bằng pilot và nhu cầu thật.
+Chi tiết kịch bản: Giữ 90 phút để so sáu cửa sổ 15 phút. Kiểm thay đổi độ trễ cùng số cursor tăng ở mỗi cửa sổ. Bài riêng cần vượt một vòng TTL 24 giờ hoặc có fixture đã đủ tuổi để xác nhận dọn cursor.
+
+Pha | VU đầu → VU đích | spawn rate (VU/s) | thời lượng | cửa sổ đo
+Tăng tải | 0 → 200 | 4 | 50 s | Loại
+Giữ dài | 200 → 200 | 0 | 5400 s | Sáu cửa sổ 15 phút
+Hạ tải | 200 → 0 | 8 | 25 s | Ghi tài nguyên sau tải
+
+Tổng thời gian các pha (chưa cộng thời gian đợi request kết thúc): 5475 s (91 phút 15 giây).
+Mô hình VU vòng kín. Spawn rate là tốc độ thêm/bớt VU. RPS lấy từ số request thật trong cửa sổ; ghi cả VU thực đạt và sai lệch so kế hoạch.
+Tiêu chí đo: ít nhất 300 request cho mỗi endpoint trong cửa sổ đánh giá. Ghi thêm cỡ mẫu từng nhóm hành trình. Đánh dấu thiếu bằng chứng nếu hụt VU, dữ liệu hoặc ngưỡng.
+SLO: API p95 và tỷ lệ lỗi chờ ngân sách. PR-04/05 ≤ 2.000 ms ở ít nhất 95% lượt đo trên thiết bị theo SCN-PRF-17; PR-07 giới hạn request mobile 15.000 ms.
+Telemetry: Core CPU/RAM, thời gian/chờ pool DB, timing truy vấn từng nhóm, tốc độ tạo cursor, kết nối đang dùng, lỗi và timeout.
+Trần thiết kế: 200 VU; trần staging thực tế cần xác nhận.
+Ngưỡng dừng thử nghiệm đề xuất: dừng khi readiness lỗi 3 lần liên tiếp (chu kỳ 5 giây), hoặc tỷ lệ 5xx + timeout ≥ 5% trên ít nhất 20 request trong 30 giây, hoặc vượt giới hạn tài nguyên đã chốt cho môi trường. Ghi thời điểm, bậc tải, tín hiệu và trạng thái hồi phục. Cần thử nhánh dừng trước khi dùng trên staging.
+Chạy smoke trên cùng build và fixture, xác minh URL, trần VU và telemetry của staging cô lập. Dùng máy phát tách khỏi Core. Cần cấu hình LoadTestShape, fixture đủ VU và thử điều kiện dừng trước khi chạy profile này.
+Cấu hình: tests/performance/uc-02/scenarios.yml → items-cursor-growth.

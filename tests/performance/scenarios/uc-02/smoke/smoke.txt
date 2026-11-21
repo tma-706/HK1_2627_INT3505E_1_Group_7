@@ -1,0 +1,13 @@
+UC-02 | smoke | smoke
+Hồ sơ và Mục của tôi
+
+Mục tiêu: xác nhận luồng và hợp đồng trước pilot. Số request mong đợi: 10, không có lỗi ngoài dự kiến.
+Môi trường: Core HTTPS fixture cô lập. Endpoint: GET /api/me/profile; GET /api/me/items theo tab lost, found, claims; giữ riêng nhóm trang đầu, trang sau và làm mới.
+Hành trình: đọc hồ sơ, trang đầu, trang sau và làm mới ở đủ ba tab.
+Fixture: dữ liệu tổng hợp tách riêng. Chạy đúng một lượt, không chờ giữa thao tác.
+Pha | VU đầu → VU đích | spawn rate (VU/s) | thời lượng | cửa sổ đo
+Một lượt smoke | 0 → 1 | 1 | tối đa 16 s | từ request đầu đến request cuối
+Chờ kết thúc tối đa 6 giây. Timeout của mỗi request là 5 giây.
+Trần: 1 VU. Dừng khi hết một lượt hoặc chạm thời lượng. Khi smoke lỗi, dừng pilot của UC tương ứng.
+SLO: báo tình trạng hợp đồng của smoke và số mẫu. Dọn fixture khi dừng môi trường test.
+Cấu hình: tests/performance/uc-02/workloads.yml → smoke.

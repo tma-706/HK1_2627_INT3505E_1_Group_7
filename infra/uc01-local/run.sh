@@ -23,12 +23,15 @@ initialize() {
     cd "$fixture_dir/tls"
     if [ ! -s ca.key ] || [ ! -s ca.crt ]; then
       openssl req -x509 -newkey rsa:2048 -nodes -sha256 -days 365 -subj '/CN=UC-01 Local Fixture CA' \
+        -addext 'basicConstraints=critical,CA:TRUE' -addext 'keyUsage=critical,keyCertSign,cRLSign' \
+        -addext 'subjectKeyIdentifier=hash' \
         -keyout ca.key -out ca.crt 2>/dev/null
     fi
     if [ ! -s server.key ] || [ ! -s server.crt ] || ! openssl x509 -checkend 86400 -noout -in server.crt >/dev/null; then
       cat > server.ext <<'CERT'
 subjectAltName=IP:127.0.0.1,DNS:localhost
 extendedKeyUsage=serverAuth
+authorityKeyIdentifier=keyid
 CERT
       openssl req -new -newkey rsa:2048 -nodes -subj '/CN=localhost' -keyout server.key -out server.csr 2>/dev/null
       openssl x509 -req -sha256 -days 30 -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial \
@@ -50,6 +53,11 @@ case "${1:-}" in
       -c "SELECT to_regclass('public.login_attempts')")
     if [ "$schema" != login_attempts ]; then
       compose exec -T db psql -v ON_ERROR_STOP=1 -U lost_found -d lost_found < db/migrations/001_identity.sql
+    fi
+    schema=$(compose exec -T db psql -At -v ON_ERROR_STOP=1 -U lost_found -d lost_found \
+      -c "SELECT to_regclass('public.my_area_cursors')")
+    if [ "$schema" != my_area_cursors ]; then
+      compose exec -T db psql -v ON_ERROR_STOP=1 -U lost_found -d lost_found < db/migrations/002_my_area.sql
     fi
     for ((trial = 0; trial < 40; trial++)); do
       if curl -fsS --cacert "$fixture_dir/tls/ca.crt" "$local_url/api/health/ready" >/dev/null 2>&1; then
