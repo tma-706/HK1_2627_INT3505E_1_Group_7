@@ -1,0 +1,4 @@
+interface:
+  display_name: "Tổng hợp đặc tả UC"
+  short_description: "Hợp nhất SRS, SEC/PERF và API thành kịch bản UC"
+  default_prompt: "Dùng $compose-uc-spec với SRS, bản phân tích và API contract để lập kịch bản UC có thể truy vết."

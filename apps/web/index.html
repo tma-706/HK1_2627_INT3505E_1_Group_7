@@ -1,0 +1,4 @@
+<!doctype html>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Lost &amp; Found</title></head>
+<body><main><h1>Lost &amp; Found</h1><p>Môi trường thử nghiệm đã sẵn sàng. Chức năng nghiệp vụ chưa được triển khai.</p><p id="status">Đang kiểm tra Core API…</p></main>
+<script>fetch('/api/health/ready').then(r => { if (!r.ok) throw Error(); return r.json(); }).then(() => document.querySelector('#status').textContent = 'Core API và PostgreSQL đang kết nối.').catch(() => document.querySelector('#status').textContent = 'Không kết nối được Core API hoặc PostgreSQL.');</script></body></html>

@@ -1,0 +1,10 @@
+{
+  "name": "lost-and-found",
+  "private": true,
+  "workspaces": ["apps/core"],
+  "scripts": {
+    "build": "npm run build -w @lost-found/core",
+    "check": "npm run check -w @lost-found/core",
+    "test:ai-mock": "npm run build && node --test tests/unit/ai-mock.test.mjs"
+  }
+}

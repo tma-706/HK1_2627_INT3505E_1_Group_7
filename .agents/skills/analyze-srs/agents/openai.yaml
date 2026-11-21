@@ -1,0 +1,4 @@
+interface:
+  display_name: "Phân tích SRS"
+  short_description: "Tìm khoảng trống và suy yêu cầu SEC, PERF từ SRS"
+  default_prompt: "Dùng $analyze-srs để tìm tình huống gây hại còn thiếu và yêu cầu SEC/PERF có thể kiểm chứng."
