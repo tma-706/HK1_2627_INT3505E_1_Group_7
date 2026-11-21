@@ -18,3 +18,5 @@ bash infra/uc01-local/run.sh down
 ```
 
 Với thay đổi chưa commit, truyền định danh bản build tương ứng qua `--build`. File tổng hợp, HTML, CSV cuối phiên và log nằm trong `dist/performance/` và được upload từ workflow, kể cả khi job thất bại. Bí mật fixture nằm ở `dist/uc01-local/`, ngoài phạm vi artifact. Các profile ngắn ghi nhận hồi quy luồng và số đo thăm dò. Tải đại diện trên staging, SLO chính thức và mốc render mobile cần phép đo riêng theo SRS mục 3.3.
+
+Kế hoạch local bổ sung một bài theo rủi ro của mỗi UC. [UC-01](uc-01/test-plan.md) thử đợt kết nối lại và hồi phục sau khi hạ tải. [UC-02](uc-02/test-plan.md) kiểm đủ 1.000 mục mỗi tab qua chuỗi cursor. Các kế hoạch ghi lệnh chuẩn bị fixture và chạy từng kịch bản. Xem [kết quả các lần chạy](analysis.md) để đối chiếu phạm vi và báo cáo.

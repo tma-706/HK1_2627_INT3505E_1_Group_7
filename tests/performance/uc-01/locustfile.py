@@ -14,6 +14,7 @@ from locust import HttpUser, task
 from locust.exception import StopUser
 
 import locust_reports  # Registers the final CSV writer.
+from locust_phases import MeasuredShape
 
 CREATE = "/api/auth/sessions"
 REVOKE = CREATE + "/current"
@@ -22,6 +23,12 @@ PROFILE_NAME = os.environ["LF_PERF_PROFILE"]
 PROFILES = yaml.safe_load(Path(__file__).with_name("workloads.yml").read_text(encoding="utf-8"))["profiles"]
 PROFILE = PROFILES[PROFILE_NAME]
 IDENTITIES = iter(json.loads(Path(os.environ["LF_PERF_SESSIONS"]).read_text(encoding="utf-8"))["sessions"])
+
+
+if "phases" in PROFILE:
+    class SessionReconnectShape(MeasuredShape):
+        phases = PROFILE["phases"]
+        guard = PROFILE["stop_threshold"]
 
 
 def active_session(body):

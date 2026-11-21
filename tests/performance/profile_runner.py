@@ -40,7 +40,7 @@ def main(suite):
     fingerprint = hashlib.sha256(fixture_bytes).hexdigest()
     suite_revision = hashlib.sha256()
     shared = suite.parent
-    for path in (shared / "profile_runner.py", shared / "locust_reports.py", shared / "requirements.txt",
+    for path in (shared / "profile_runner.py", shared / "locust_reports.py", shared / "locust_phases.py", shared / "requirements.txt",
                  suite / "locustfile.py", config):
         suite_revision.update(hashlib.sha256(path.read_bytes()).digest())
     suite_fingerprint = suite_revision.hexdigest()
@@ -50,8 +50,13 @@ def main(suite):
     if len({entry["token"] for entry in sessions}) != len(sessions) or len(sessions) < profile["users"]:
         parser.error("Provide at least one distinct fixture session per user")
     tabs = suite_config.get("fixture_tabs", [])
-    if any(len(entry.get("items", {}).get(tab, [])) != 21 for entry in sessions for tab in tabs):
-        parser.error("Each session must have an account with exactly 21 fixture items per tab")
+    if tabs:
+        allowed_sizes = {profile.get("items_per_tab", 21)}
+        if args.profile == "smoke":
+            allowed_sizes.update(candidate["items_per_tab"] for candidate in profiles.values() if "items_per_tab" in candidate)
+        tab_sizes = {len(entry.get("items", {}).get(tab, [])) for entry in sessions for tab in tabs}
+        if len(tab_sizes) != 1 or not tab_sizes <= allowed_sizes:
+            parser.error(f"All fixture accounts and tabs must have the same item count in {sorted(allowed_sizes)}")
 
     results = root / "dist/performance" / suite.name
     if profile.get("requires_smoke", False):
@@ -70,11 +75,17 @@ def main(suite):
     relative_out = out.relative_to(root)
     command = [
         sys.executable, "-m", "locust", "-f", str((suite / "locustfile.py").relative_to(root)),
-        "--host", args.host, "--headless", "--only-summary", "--users", str(profile["users"]),
-        "--spawn-rate", str(profile["spawn_rate"]), "--run-time", f"{profile['run_seconds']}s",
+        "--host", args.host, "--headless", "--only-summary",
         "--stop-timeout", str(profile["stop_timeout_seconds"]), "--csv", str(relative_out / "locust"),
         "--html", str(relative_out / "locust.html"),
     ]
+    phases = profile.get("phases")
+    if phases:
+        if sum(phase["seconds"] for phase in phases) != profile["run_seconds"] or max(phase["users"] for phase in phases) != profile["users"]:
+            parser.error("Phase durations and peak users must agree with the profile")
+    else:
+        command.extend(["--users", str(profile["users"]), "--spawn-rate", str(profile["spawn_rate"]),
+                        "--run-time", f"{profile['run_seconds']}s"])
     env = os.environ | {
         "LF_PERF_PROFILE": args.profile, "LF_PERF_SESSIONS": str(args.sessions.resolve()),
         "LF_PERF_CA": str(args.ca.resolve()),
@@ -86,6 +97,7 @@ def main(suite):
         "uc": suite.name.upper(), "profile": args.profile, "config": profile, "command": ["python", *command[1:]],
         "status": "setup-failed", "slo_status": "insufficient_evidence", "locust_exit_code": None,
         "stats_file": "locust_final_stats.csv",
+        "start_utc": datetime.now(timezone.utc).isoformat(),
     }
     try:
         with urlopen(args.host + "/api/health/ready", context=ssl.create_default_context(cafile=args.ca), timeout=5) as ready:
@@ -93,7 +105,10 @@ def main(suite):
                 raise RuntimeError("Core readiness did not confirm the fixture database")
         with (out / "locust.log").open("wb") as log:
             report["status"] = "execution-failed"
-            report["locust_exit_code"] = subprocess.run(command, cwd=root, env=env, stdout=log, stderr=subprocess.STDOUT).returncode
+            report["locust_exit_code"] = subprocess.run(
+                command, cwd=root, env=env, stdout=log, stderr=subprocess.STDOUT,
+                timeout=profile["run_seconds"] + profile["stop_timeout_seconds"] + 30,
+            ).returncode
         with (out / report["stats_file"]).open(encoding="utf-8", newline="") as stats_file:
             rows = {row["Name"]: row for row in csv.DictReader(stats_file)}
         total = rows["Aggregated"]
@@ -104,12 +119,32 @@ def main(suite):
         ]
         report["p95_ms"] = float(total["95%"])
         report["requests_per_second"] = float(total["Requests/s"])
-        if report["locust_exit_code"] == 0 and report["failures"] == 0 and not report["missing_request_groups"]:
-            report["status"] = "smoke-passed" if args.profile == "smoke" else "pilot-completed"
-    except (OSError, ValueError, KeyError, RuntimeError) as exc:
+        enough_samples = report["requests"] == profile.get("required_total_requests", report["requests"])
+        if phases:
+            phase_file = out / "locust_phases.json"
+            phase_report = json.loads(phase_file.read_text(encoding="utf-8"))
+            report["phases_file"] = phase_file.name
+            report["early_stop"] = phase_report["early_stop"]
+            report["incomplete_windows"] = [
+                phase["name"] for phase in phase_report["phases"] if not phase["ticks"] or (
+                    "min_samples" in phase and (
+                        max(tick["users"] for tick in phase["ticks"]) != phase["users"] or any(
+                            phase["requests"].get(name, {}).get("count", 0) < phase["min_samples"]
+                            for name in profile["required_requests"]
+                        )
+                    )
+                )
+            ]
+            enough_samples = phase_report["completed"] and not report["incomplete_windows"]
+            if report["early_stop"]:
+                report["status"] = "guard-stopped"
+        if report["locust_exit_code"] == 0 and report["failures"] == 0 and not report["missing_request_groups"] and enough_samples:
+            report["status"] = {"smoke": "smoke-passed", "local-pilot": "pilot-completed"}.get(args.profile, "scenario-completed")
+    except (OSError, ValueError, KeyError, RuntimeError, subprocess.TimeoutExpired) as exc:
         report["error"] = str(exc)
     finally:
+        report["end_utc"] = datetime.now(timezone.utc).isoformat()
         (out / "run.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
 
     print(f"{report['uc']} {args.profile} {report['status']}: {relative_out}", flush=True)
-    return int(report["status"] not in ("smoke-passed", "pilot-completed"))
+    return int(report["status"] not in ("smoke-passed", "pilot-completed", "scenario-completed"))

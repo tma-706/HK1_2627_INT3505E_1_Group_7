@@ -1,0 +1,14 @@
+UC: UC-02
+Loại: load theo khối lượng dữ liệu
+Profile: local-deep-pagination
+Mục tiêu: kiểm chứng đủ ID, thứ tự và dấu hết trang qua 1.000 mục mỗi tab cho cùng tài khoản, đồng thời đo latency trang đầu và trang tiếp.
+Nguồn: SCN-PRF-18 và PR-09.
+Môi trường: Core HTTPS loopback. Ba phiên với ba tài khoản đo độc lập, mỗi tài khoản có 1.000 mục Lost, Found và Claims. Các mục cùng thời điểm để kiểm thứ tự phụ theo ID.
+Hành trình (100%): GET /api/me/profile một lần → GET /api/me/items đủ 50 trang cho từng tab lost, found, claims. Mỗi cursor nhận được chỉ dùng với trang tiếp của cùng tab. Mỗi VU duyệt một lượt rồi dừng.
+Nghỉ đều 0,08–0,12 giây trước mỗi trang để chạy nhanh hết tập dữ liệu. Timeout 5 giây mỗi request.
+
+Pha | VU đầu → VU đích | Spawn rate (VU/s) | Thời lượng | Cửa sổ đo
+Duyệt | 0 → tối đa 3 | 1 | tối đa 75 s kể cả ramp | Từ yêu cầu hồ sơ đến trang cuối của từng VU
+
+Tổng dự kiến 453 request, gồm 3 hồ sơ và 450 trang. Có thể kết thúc sớm sau khi ba VU hoàn tất. Timeout chạy 75 giây cộng tối đa 6 giây chờ tác vụ.
+Mỗi trang phải đúng ID và thứ tự từ fixture, tối đa 20 mục, cursor hợp lệ cho đến khi hết và null ở trang cuối. Kiểm 453 phản hồi hợp lệ và 0 lỗi. Báo số mẫu, lỗi và p95 theo hồ sơ, trang đầu và trang sau của từng tab. Khối lượng 1.000 mục lấy từ PR-09. Ba VU là tải thăm dò local. SLO API và ngưỡng render mobile được đánh giá riêng.

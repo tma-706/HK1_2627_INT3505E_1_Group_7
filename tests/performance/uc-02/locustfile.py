@@ -60,14 +60,15 @@ class MyAreaUser(HttpUser):
             and (body["avatarUrl"] is None or isinstance(body["avatarUrl"], str))
         ))
 
-    def page(self, tab, action, cursor=None):
+    def page(self, tab, action, cursor=None, page_index=0):
         params = {"tab": tab}
         if cursor is not None:
             params["cursor"] = cursor
+        offset = 20 * page_index
 
         def valid(body):
             expected = self.fixture["items"][tab]
-            expected_ids = expected[20:] if action == "next" else expected[:20]
+            expected_ids = expected[offset:offset + 20]
             items = body.get("items")
             if body.get("tab") != tab or not isinstance(items, list):
                 return False
@@ -81,11 +82,23 @@ class MyAreaUser(HttpUser):
             if tab == "claims" and any(item.get("role") not in ("sent", "received") for item in items):
                 return False
             next_cursor = body.get("nextCursor")
-            if len(expected) > 20 and action != "next":
+            if len(expected) > offset + 20:
                 return isinstance(next_cursor, str) and bool(next_cursor)
             return "nextCursor" in body and next_cursor is None
 
         return self.read("/api/me/items", f"/api/me/items [{tab}/{action}]", valid, params)
+
+    def read_all_tabs(self):
+        if self.profile() is None:
+            return
+        for tab in TAB_NAMES:
+            cursor = None
+            for index, _ in enumerate(range(0, len(self.fixture["items"][tab]), 20)):
+                self.think()
+                page = self.page(tab, "next" if index else "first", cursor, index)
+                if page is None:
+                    return
+                cursor = page["nextCursor"]
 
     @task
     def journey(self):
@@ -94,8 +107,12 @@ class MyAreaUser(HttpUser):
             for tab in TAB_NAMES:
                 first = self.page(tab, "first")
                 if first and first["nextCursor"]:
-                    self.page(tab, "next", first["nextCursor"])
+                    self.page(tab, "next", first["nextCursor"], 1)
                 self.page(tab, "refresh")
+            raise StopUser()
+
+        if PROFILE_NAME == "local-deep-pagination":
+            self.read_all_tabs()
             raise StopUser()
 
         weights = PROFILE["weights"]
@@ -109,7 +126,7 @@ class MyAreaUser(HttpUser):
         if journey == "paginate":
             self.think()
             if first["nextCursor"]:
-                self.page("lost", "next", first["nextCursor"])
+                self.page("lost", "next", first["nextCursor"], 1)
             return
 
         self.think()

@@ -8,7 +8,9 @@
 | --- | --- |
 | `smoke` | Một user, 9 request. Cấp phiên, gửi lại cùng lượt, cấp phiên cho thiết bị thứ hai, xác minh, thu hồi, lặp thu hồi, xác minh phiên đã thu hồi và kiểm phiên của thiết bị còn lại. Đối chiếu Core của SCN-AUTH-04/05/09/11/13 và FR-AUTH-12/14. |
 | `local-pilot` | Ba danh tính riêng, tăng 1 user/s, cấu hình 40 giây gồm ramp. Một vòng gồm cấp phiên, mô phỏng 2–3 lần mở lại, rồi thu hồi. Nghỉ 2–4 giây giữa lần mở và trước vòng mới. Dùng để quan sát các operation hỗ trợ SCN-AUTH-21 ở tải thăm dò. |
-| Staging | Khi có đích và fixture, chốt hỗn hợp số lần đăng nhập, xác minh, đăng xuất và đọc của UC-02. Dùng nguồn nhu cầu, chạy pilot để hiệu chỉnh và quan sát tải thực, áp dụng cửa sổ ổn định từ 200 phiên theo mục tiêu đề xuất PR-01/TBD-02. |
+| `local-session-reconnect` | Spike 3 → 12 → 3 VU trên Core fixture, 100 giây. Xác minh Core xử lý một đợt kết nối lại và quan sát độ trễ sau khi hạ tải (SCN-AUTH-21 và GAP-AUTH-006). |
+
+Ba ID trên là kế hoạch thực thi ở local. Smoke và pilot đồng thời là hồi quy CI. Hai profile ngắn cung cấp đường cơ sở để đọc kết quả spike.
 
 ## Hồ sơ từng kịch bản
 
@@ -16,13 +18,19 @@
 | --- | --- | --- |
 | Smoke | [smoke.txt](../scenarios/uc-01/smoke/smoke.txt) | Core fixture local và CI |
 | Pilot | [local-pilot.txt](../scenarios/uc-01/pilot/local-pilot.txt) | Core fixture local và CI |
+| Spike | [local-session-reconnect.txt](../scenarios/uc-01/spike/local-session-reconnect.txt) | Core fixture local. Kịch bản được chọn để đo burst và hồi phục. |
+
+## Thiết kế staging chờ điều kiện chạy
+
+| Loại | File thông số | Phạm vi dự kiến |
+| --- | --- | --- |
 | Load | [steady-session-turnover.txt](../scenarios/uc-01/load/steady-session-turnover.txt) | Giữ 200 phiên và đo vòng đời phiên |
 | Stress | [session-pool-pressure.txt](../scenarios/uc-01/stress/session-pool-pressure.txt) | Tìm dấu hiệu bão hòa pool đến 300 VU và đo hồi phục |
 | Spike | [session-reconnect-burst.txt](../scenarios/uc-01/spike/session-reconnect-burst.txt) | Tăng từ 60 lên 220 VU trong 4 giây |
 | Soak | [session-state-retention.txt](../scenarios/uc-01/soak/session-state-retention.txt) | Giữ 200 VU trong 2 giờ, theo dõi tài nguyên phiên |
 | Breakpoint | [session-capacity-steps.txt](../scenarios/uc-01/breakpoint/session-capacity-steps.txt) | Tăng từng bậc 50 VU đến trần thiết kế 350 VU |
 
-[workloads.yml](workloads.yml) cấu hình các profile đang chạy. [scenarios.yml](scenarios.yml) ghi các pha staging đề xuất. Mức 200 VU lấy từ mục tiêu thử nghiệm PR-01. Nhịp tăng, đỉnh và thời gian giữ cần được hiệu chỉnh theo nhu cầu thật, trần staging và bằng chứng từ pilot.
+[workloads.yml](workloads.yml) cấu hình các profile local đang chạy. [scenarios.yml](scenarios.yml) giữ các thiết kế staging để chọn khi có đích và fixture đại diện. Mức 200 VU lấy từ mục tiêu thử nghiệm PR-01. Nhịp tăng, đỉnh và thời gian giữ cần được hiệu chỉnh theo nhu cầu thật, trần staging và bằng chứng từ pilot.
 
 Fixture cấp JWT ký bằng khóa thử nghiệm cùng bộ xác minh Core để mô phỏng đầu vào Google, một danh tính độc lập mỗi user, hiệu lực 5 phút. Không gọi Google thật. Cấp phiên dùng `POST /api/auth/sessions`, mở lại dùng `POST /api/auth/sessions/current/validate`, đăng xuất dùng `DELETE /api/auth/sessions/current`. Smoke kiểm `200`, `204` và `401 SESSION_INVALID` ở đúng bước và kiểm tài khoản, trạng thái phiên, `Cache-Control: no-store`. Tỷ lệ lỗi tính trên số yêu cầu, kết quả `401` mong đợi ở bước xác minh sau thu hồi được ghi nhóm riêng. Pilot đặt timeout kết nối/đọc 5 giây để giới hạn bài thăm dò. Điều kiện thời gian của mobile được đo ở app.
 
@@ -35,4 +43,7 @@ sessions=$(node tests/performance/uc-01/fixture.mjs)
 build=$(git rev-parse HEAD)
 python tests/performance/uc-01/run.py smoke --sessions "$sessions" --build "$build" --environment compose-local
 python tests/performance/uc-01/run.py local-pilot --sessions "$sessions" --build "$build" --environment compose-local
+burst_sessions=$(node tests/performance/uc-01/fixture.mjs 12)
+python tests/performance/uc-01/run.py smoke --sessions "$burst_sessions" --build "$build" --environment compose-local
+python tests/performance/uc-01/run.py local-session-reconnect --sessions "$burst_sessions" --build "$build" --environment compose-local
 ```

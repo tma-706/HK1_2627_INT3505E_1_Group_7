@@ -1,0 +1,21 @@
+UC: UC-01
+Loại: spike
+Profile: local-session-reconnect
+Mục tiêu: đo phản hồi khi nhiều người dùng cùng quay lại ứng dụng, sau đó trở về tải nền.
+Nguồn: SCN-AUTH-21, PR-03 và rủi ro tải tập trung GAP-AUTH-006.
+Môi trường: Core HTTPS loopback, dữ liệu tổng hợp, một danh tính độc lập mỗi VU.
+Hành trình (100%): POST /api/auth/sessions → 2–3 lượt POST /api/auth/sessions/current/validate → DELETE /api/auth/sessions/current.
+Mô hình đóng. Nghỉ đều 2–4 giây trước mỗi lượt xác minh và trước vòng mới. Timeout 5 giây mỗi request.
+
+Pha | VU đầu → VU đích | Spawn/hạ tải (VU/s) | Thời lượng | Cửa sổ đo
+ramp | 0 → 3 | 3 | 3 s | Kiểm tra ramp
+baseline | 3 → 3 | 0 | 24 s | Đường cơ sở
+burst | 3 → 12 | 9 | 4 s | Đợt tăng
+peak | 12 → 12 | 0 | 33 s | Giữ đỉnh
+ramp-down | 12 → 3 | 9 | 6 s | Hạ tải
+recovery | 3 → 3 | 0 | 30 s | Hồi phục
+
+Tổng 100 giây cộng tối đa 6 giây chờ tác vụ khi dừng. Tải nền lấy mốc pilot 3 VU.
+Đỉnh gấp 4 lần để tách tín hiệu burst trong fixture local. Nhịp lý tưởng tính theo 4,5 request mỗi vòng 10,5 giây, khoảng 1,29 RPS nền và 5,14 RPS đỉnh khi phản hồi nhanh.
+Đo VU từng giây, số request, tỷ lệ lỗi, RPS và p95 theo endpoint và pha theo lúc gửi. Yêu cầu đạt đích VU và ít nhất 6 mẫu mỗi endpoint ở các pha baseline, peak và recovery.
+Dừng nếu lỗi ≥20% trên ít nhất 10 phản hồi hoàn tất trong cửa sổ 10 giây. Trần 12 VU. Đây là ngưỡng dừng thăm dò, SLO API chưa chốt.

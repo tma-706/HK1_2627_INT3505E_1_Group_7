@@ -31,6 +31,25 @@ profiles:
       paginate: 2
     wait_between_journeys_seconds: [2, 4]
     wait_between_actions_seconds: [0.5, 1.5]
+  local-deep-pagination:
+    requires_smoke: true
+    users: 3
+    spawn_rate: 1
+    run_seconds: 75
+    stop_timeout_seconds: 6
+    request_timeout_seconds: 5
+    items_per_tab: 1000
+    required_total_requests: 453
+    wait_between_journeys_seconds: [0, 0]
+    wait_between_actions_seconds: [0.08, 0.12]
+    required_requests:
+      - /api/me/profile
+      - /api/me/items [lost/first]
+      - /api/me/items [lost/next]
+      - /api/me/items [found/first]
+      - /api/me/items [found/next]
+      - /api/me/items [claims/first]
+      - /api/me/items [claims/next]
 
 # The representative workload depends on the pilot, traffic evidence and staging capacity.
 staging_target:

@@ -27,6 +27,26 @@ profiles:
       - /api/auth/sessions
       - /api/auth/sessions/current/validate
       - /api/auth/sessions/current
+  local-session-reconnect:
+    requires_smoke: true
+    users: 12
+    run_seconds: 100
+    stop_timeout_seconds: 6
+    request_timeout_seconds: 5
+    reopens_per_session: [2, 3]
+    wait_between_actions_seconds: [2, 4]
+    required_requests:
+      - /api/auth/sessions
+      - /api/auth/sessions/current/validate
+      - /api/auth/sessions/current
+    stop_threshold: {window_seconds: 10, min_requests: 10, failure_rate_pct: 20}
+    phases:
+      - {name: ramp, seconds: 3, users: 3, spawn_rate: 3}
+      - {name: baseline, seconds: 24, users: 3, spawn_rate: 3, min_samples: 6}
+      - {name: burst, seconds: 4, users: 12, spawn_rate: 9}
+      - {name: peak, seconds: 33, users: 12, spawn_rate: 9, min_samples: 6}
+      - {name: ramp-down, seconds: 6, users: 3, spawn_rate: 9}
+      - {name: recovery, seconds: 30, users: 3, spawn_rate: 9, min_samples: 6}
 
 staging_target:
   source: PR-01 / TBD-02

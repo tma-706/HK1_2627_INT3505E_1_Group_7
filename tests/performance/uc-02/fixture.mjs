@@ -7,8 +7,9 @@ import { importJWK, SignJWT } from 'jose';
 
 const tabs = ['lost', 'found', 'claims'];
 
-export async function prepareFixture(origin, privateJwk, seed) {
+export async function prepareFixture(origin, privateJwk, seed, itemsPerTab = 21) {
   assert.match(origin, /^https:\/\/127\.0\.0\.1:\d+$/u);
+  assert.ok(Number.isSafeInteger(itemsPerTab) && itemsPerTab > 0);
   const key = await importJWK(privateJwk, 'RS256');
   async function createAccount() {
     const subject = 'uc02-perf-' + randomUUID();
@@ -36,18 +37,19 @@ export async function prepareFixture(origin, privateJwk, seed) {
     const account = await createAccount();
     const items = {};
     for (const tab of tabs) {
-      const ids = Array.from({ length: 21 }, () => randomUUID()).sort().reverse();
+      const ids = Array.from({ length: itemsPerTab }, () => randomUUID()).sort().reverse();
       items[tab] = ids;
-      for (const [rowIndex, id] of ids.entries()) {
+      const rows = ids.map((id, rowIndex) => {
         if (tab === 'claims') {
           const [sender, owner] = rowIndex % 2 === 0 ? [account.id, peer.id] : [peer.id, account.id];
-          sql.push(`INSERT INTO my_area_fixture_claims (id, sender_id, post_owner_id, title, sent_at, status)
-            VALUES ('${id}', '${sender}', '${owner}', 'Fixture claim', '2026-01-01T00:00:00Z', 'Pending');`);
-        } else {
-          sql.push(`INSERT INTO my_area_fixture_posts (id, tab, author_id, title, created_at, status)
-            VALUES ('${id}', '${tab}', '${account.id}', 'Fixture post', '2026-01-01T00:00:00Z', 'Open');`);
+          return `('${id}', '${sender}', '${owner}', 'Fixture claim', '2026-01-01T00:00:00Z', 'Pending')`;
         }
-      }
+        return `('${id}', '${tab}', '${account.id}', 'Fixture post', '2026-01-01T00:00:00Z', 'Open')`;
+      });
+      const table = tab === 'claims'
+        ? 'my_area_fixture_claims (id, sender_id, post_owner_id, title, sent_at, status)'
+        : 'my_area_fixture_posts (id, tab, author_id, title, created_at, status)';
+      sql.push(`INSERT INTO ${table} VALUES ${rows.join(',\n')};`);
     }
     sessions.push({ token: account.token, email: account.email, items });
   }
@@ -64,6 +66,7 @@ async function main() {
   for (const name of ['GOOGLE_CLIENT_ID', 'SESSION_REPLAY_KEY_VERSION', 'SESSION_REPLAY_KEYS', 'POSTGRES_DB', 'POSTGRES_USER', 'POSTGRES_PASSWORD']) {
     delete fixtureEnv[name];
   }
+  const itemsPerTab = Number(process.argv[2] ?? 21);
   const fixture = await prepareFixture(origin, jwk, (sql) => {
     const result = spawnSync('docker', [
       'compose', '-p', 'lf-uc01-local', '--env-file', '.env.example', '--env-file', `${fixtureDirectory}/compose.env`,
@@ -72,7 +75,7 @@ async function main() {
     ], { input: sql, encoding: 'utf8', env: fixtureEnv });
     if (result.error) throw result.error;
     assert.equal(result.status, 0, result.stderr);
-  });
+  }, itemsPerTab);
   const sessionsPath = `${fixtureDirectory}/uc02-perf-${randomUUID()}.json`;
   await writeFile(sessionsPath, JSON.stringify(fixture), { flag: 'wx', mode: 0o600 });
   console.log(sessionsPath);
