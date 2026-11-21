@@ -3,6 +3,10 @@
   "private": true,
   "workspaces": ["apps/core"],
   "scripts": {
+    "mobile:setup": "npm ci --prefix apps/mobile",
+    "mobile:web": "npm run web --prefix apps/mobile",
+    "mobile:android:setup": "bash scripts/mobile-android.sh setup",
+    "mobile:android": "bash scripts/mobile-android.sh run",
     "build": "npm run build -w @lost-found/core",
     "check": "npm run check -w @lost-found/core",
     "test:ai-mock": "npm run build && node --test tests/unit/ai-mock.test.mjs"
