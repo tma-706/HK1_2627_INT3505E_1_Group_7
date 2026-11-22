@@ -1,0 +1,557 @@
+{
+  "version": 1,
+  "fixtureVersion": 1,
+  "inputs": {
+    "catalog": {
+      "path": "docs/requirements/quality/security-owasp-2025.json",
+      "version": "2026-09-26",
+      "sha256": "773ff2b424ad7d80366de337d2045a43908713f4369f6ce6217c8daee60f330e"
+    },
+    "srs": {
+      "path": "docs/requirements/lost-and-found-srs.pdf",
+      "version": "§3.1–3.3",
+      "sha256": "2f67606fba01394440f4ece54716541ce4188ce8a4564748fffdf048d8a5196b"
+    },
+    "analysis": {
+      "path": "docs/requirements/analysis/uc-01-02.md",
+      "version": "Essential 2026-11-22",
+      "sha256": "704b7618f9bfb88cc3ce741e41c3322ba3b6d72d29f04ec9d1b284199b34173f"
+    },
+    "uc01": {
+      "path": "docs/use-cases/uc-01-google-sign-in-and-session.md",
+      "version": "v2",
+      "sha256": "4680d833b00fc832765a61852bae96eca3cc30dcc92e8a553ab3a13546f73df6"
+    },
+    "uc02": {
+      "path": "docs/use-cases/uc-02-profile-and-my-items.md",
+      "version": "v2",
+      "sha256": "26ee67a335a77b3ca71be0c8a1660d33c183fd9cf2720ea32c86733908ffe75b"
+    },
+    "openapi": {
+      "path": "docs/api/core/openapi.json",
+      "version": "0.3.0",
+      "sha256": "837aac16902c2383a0d849eb2e2404048682f7fe8519a50dd65bbc35ce21ee25"
+    },
+    "architecture": {
+      "path": "docs/architecture/overview.md",
+      "version": "UC-01/02 Essential",
+      "sha256": "2a9584dbc0830979ddf8763ea959d7423b24e28c817c40b530942ab6732af823"
+    },
+    "authNotes": {
+      "path": "docs/api/core/uc-01-notes.md",
+      "version": "UC-01 Essential",
+      "sha256": "0d45c10534e2e68c51f374727527b806680f1b4c8f3685fbdcd30a2b9269c821"
+    },
+    "profileNotes": {
+      "path": "docs/api/core/uc-02-notes.md",
+      "version": "UC-02 Essential",
+      "sha256": "3aee221963f1dc4b0e7632c051631b5d080c974e2817a06d6dfd2a6a3c339676"
+    },
+    "authDecisions": {
+      "path": "docs/operations/runs/uc-01-essential.json",
+      "version": "v1",
+      "sha256": "b56fc19b04a06643e4becfe80740fa373caab00d0f0361bac6af81a489067f58"
+    },
+    "profileDecisions": {
+      "path": "docs/operations/runs/uc-02-essential.json",
+      "version": "v1",
+      "sha256": "cdcec7f5743786cac6bab14b394367e4b75ff6d1ae85b7da5d78be2725e03ccc"
+    },
+    "environments": {
+      "path": "docs/operations/environments.md",
+      "version": "UC-01/02 fixture",
+      "sha256": "3ac80d57b91c16578971a161680f5a943f6f0f62b285607ec932684a98c80b6f"
+    }
+  },
+  "surfaces": {
+    "core": "Core HTTP và kiểm phiên",
+    "db": "PostgreSQL và truy vấn vùng cá nhân",
+    "gateway-tls": "Nginx/TLS gateway fixture và triển khai",
+    "mobile": "Flow TypeScript, SDK và lưu trữ native",
+    "config": "Compose, lockfile, secrets và build",
+    "google": "Google Identity và JWKS"
+  },
+  "cases": [
+    {
+      "id": "UC01-SESSION",
+      "sourceRefs": [
+        {
+          "input": "uc01",
+          "locator": "SCN-AUTH-04",
+          "version": "v2"
+        },
+        {
+          "input": "uc01",
+          "locator": "SCN-AUTH-11",
+          "version": "v2"
+        },
+        {
+          "input": "uc02",
+          "locator": "SCN-PRF-01",
+          "version": "v2"
+        },
+        {
+          "input": "openapi",
+          "locator": "createGoogleSession",
+          "version": "0.3.0"
+        },
+        {
+          "input": "openapi",
+          "locator": "validateCurrentSession",
+          "version": "0.3.0"
+        },
+        {
+          "input": "openapi",
+          "locator": "getMyProfile",
+          "version": "0.3.0"
+        }
+      ],
+      "layer": "https",
+      "preconditions": "CA tin cậy và JWKS fixture; Core sẵn sàng.",
+      "fixture": "A trước và sau cập nhật cùng subject; B, C và D có subject riêng.",
+      "action": "Cấp hai phiên A bằng lượt Android/iOS, xác minh phiên thứ hai, đọc hồ sơ bằng cả hai token và cấp các phiên đối chứng.",
+      "expected": "HTTP 200; phiên có mã và hạn tương lai; ID tài khoản A nhất quán; mã hai phiên độc lập; hồ sơ chỉ gồm tên, email và avatar đồng bộ mới nhất.",
+      "requiredForPilot": true,
+      "http": [
+        {
+          "step": "first-a",
+          "operation": "createGoogleSession",
+          "status": 200
+        },
+        {
+          "step": "second-a",
+          "operation": "createGoogleSession",
+          "status": 200
+        },
+        {
+          "step": "validate-a",
+          "operation": "validateCurrentSession",
+          "status": 200
+        },
+        {
+          "step": "profile-a",
+          "operation": "getMyProfile",
+          "status": 200
+        },
+        {
+          "step": "profile-a-original-session",
+          "operation": "getMyProfile",
+          "status": 200
+        },
+        {
+          "step": "create-b",
+          "operation": "createGoogleSession",
+          "status": 200
+        },
+        {
+          "step": "create-c",
+          "operation": "createGoogleSession",
+          "status": 200
+        },
+        {
+          "step": "create-d",
+          "operation": "createGoogleSession",
+          "status": 200
+        },
+        {
+          "step": "profile-b",
+          "operation": "getMyProfile",
+          "status": 200
+        }
+      ],
+      "obligations": [
+        "SEC-A01-01/core",
+        "SEC-A04-04/gateway-tls",
+        "SEC-A06-05/core",
+        "SEC-A07-01/core"
+      ]
+    },
+    {
+      "id": "UC01-REVOKE",
+      "sourceRefs": [
+        {
+          "input": "uc01",
+          "locator": "SCN-AUTH-16",
+          "version": "v2"
+        },
+        {
+          "input": "openapi",
+          "locator": "revokeCurrentSession",
+          "version": "0.3.0"
+        },
+        {
+          "input": "openapi",
+          "locator": "InvalidCoreSession",
+          "version": "0.3.0"
+        },
+        {
+          "input": "uc02",
+          "locator": "SCN-PRF-12",
+          "version": "v2"
+        }
+      ],
+      "layer": "https",
+      "preconditions": "A có hai phiên hiệu lực; Core giữ bản ghi thu hồi.",
+      "fixture": "A Android và A iOS.",
+      "action": "Thu hồi và lặp lại phiên Android; dùng lại phiên đó và kiểm phiên iOS.",
+      "expected": "Thu hồi lần đầu và lần lặp trả 204 rỗng; phiên Android bị từ chối trên xác minh và hai đường đọc bằng 401 SESSION_INVALID kèm Bearer; iOS xác minh và đọc được.",
+      "requiredForPilot": true,
+      "http": [
+        {
+          "step": "revoke-a1",
+          "operation": "revokeCurrentSession",
+          "status": 204
+        },
+        {
+          "step": "repeat-a1",
+          "operation": "revokeCurrentSession",
+          "status": 204
+        },
+        {
+          "step": "validate-a1-denied",
+          "operation": "validateCurrentSession",
+          "status": 401
+        },
+        {
+          "step": "profile-a1-denied",
+          "operation": "getMyProfile",
+          "status": 401
+        },
+        {
+          "step": "items-a1-denied",
+          "operation": "listMyItems",
+          "status": 401
+        },
+        {
+          "step": "validate-a2",
+          "operation": "validateCurrentSession",
+          "status": 200
+        },
+        {
+          "step": "profile-a2",
+          "operation": "getMyProfile",
+          "status": 200
+        }
+      ],
+      "obligations": [
+        "SEC-A01-01/core",
+        "SEC-A06-05/core",
+        "SEC-A07-01/core"
+      ]
+    },
+    {
+      "id": "UC02-LOST",
+      "sourceRefs": [
+        {
+          "input": "uc02",
+          "locator": "SCN-PRF-04",
+          "version": "v2"
+        },
+        {
+          "input": "uc02",
+          "locator": "SCN-PRF-07",
+          "version": "v2"
+        },
+        {
+          "input": "openapi",
+          "locator": "listMyItems",
+          "version": "0.3.0"
+        }
+      ],
+      "layer": "https",
+      "preconditions": "A/B/D có phiên hợp lệ; DB đã nạp fixture tổng hợp.",
+      "fixture": "A có 21, B có 20, D có 0; C có mục ngoài quyền A và B; có trùng thời điểm.",
+      "action": "Đọc tất cả các trang của A, B và trang đầu của D cho tab lost.",
+      "expected": "Chỉ bài Lost do phiên hiện tại đăng. So toàn bộ trường và thứ tự thời điểm/ID theo fixture; xác nhận dấu hiệu hết trang và không có mục trùng.",
+      "requiredForPilot": true,
+      "http": [
+        {
+          "step": "a-page-1",
+          "operation": "listMyItems",
+          "status": 200
+        },
+        {
+          "step": "a-page-2",
+          "operation": "listMyItems",
+          "status": 200
+        },
+        {
+          "step": "b-page-1",
+          "operation": "listMyItems",
+          "status": 200
+        },
+        {
+          "step": "d-empty-page",
+          "operation": "listMyItems",
+          "status": 200
+        }
+      ],
+      "obligations": [
+        "SEC-A01-02/db"
+      ]
+    },
+    {
+      "id": "UC02-FOUND",
+      "sourceRefs": [
+        {
+          "input": "uc02",
+          "locator": "SCN-PRF-04",
+          "version": "v2"
+        },
+        {
+          "input": "uc02",
+          "locator": "SCN-PRF-05",
+          "version": "v2"
+        },
+        {
+          "input": "uc02",
+          "locator": "SCN-PRF-07",
+          "version": "v2"
+        },
+        {
+          "input": "openapi",
+          "locator": "listMyItems",
+          "version": "0.3.0"
+        }
+      ],
+      "layer": "https",
+      "preconditions": "A/B/D có phiên hợp lệ; DB đã nạp fixture tổng hợp.",
+      "fixture": "A có 21, B có 20, D có 0; C có mục ngoài quyền A và B; có trùng thời điểm.",
+      "action": "Đọc tất cả các trang của A, B và trang đầu của D cho tab found.",
+      "expected": "Chỉ bài Found do phiên hiện tại đăng; thumbnail fixture chỉ từ bản đã xử lý, hàng thiếu ảnh bỏ trường. So toàn bộ trường và thứ tự thời điểm/ID theo fixture; xác nhận dấu hiệu hết trang và không có mục trùng.",
+      "requiredForPilot": true,
+      "http": [
+        {
+          "step": "a-page-1",
+          "operation": "listMyItems",
+          "status": 200
+        },
+        {
+          "step": "a-page-2",
+          "operation": "listMyItems",
+          "status": 200
+        },
+        {
+          "step": "b-page-1",
+          "operation": "listMyItems",
+          "status": 200
+        },
+        {
+          "step": "d-empty-page",
+          "operation": "listMyItems",
+          "status": 200
+        }
+      ],
+      "obligations": [
+        "SEC-A01-02/db"
+      ]
+    },
+    {
+      "id": "UC02-CLAIMS",
+      "sourceRefs": [
+        {
+          "input": "uc02",
+          "locator": "SCN-PRF-06",
+          "version": "v2"
+        },
+        {
+          "input": "uc02",
+          "locator": "SCN-PRF-07",
+          "version": "v2"
+        },
+        {
+          "input": "openapi",
+          "locator": "listMyItems",
+          "version": "0.3.0"
+        }
+      ],
+      "layer": "https",
+      "preconditions": "A/B/D có phiên hợp lệ; DB đã nạp fixture tổng hợp.",
+      "fixture": "A có 21, B có 20, D có 0; C có mục ngoài quyền A và B; có trùng thời điểm.",
+      "action": "Đọc tất cả các trang của A, B và trang đầu của D cho tab claims.",
+      "expected": "Chỉ yêu cầu do tài khoản gửi hoặc gửi đến bài của họ; đúng vai trò và không có nội dung riêng. So toàn bộ trường và thứ tự thời điểm/ID theo fixture; xác nhận dấu hiệu hết trang và không có mục trùng.",
+      "requiredForPilot": true,
+      "http": [
+        {
+          "step": "a-page-1",
+          "operation": "listMyItems",
+          "status": 200
+        },
+        {
+          "step": "a-page-2",
+          "operation": "listMyItems",
+          "status": 200
+        },
+        {
+          "step": "b-page-1",
+          "operation": "listMyItems",
+          "status": 200
+        },
+        {
+          "step": "d-empty-page",
+          "operation": "listMyItems",
+          "status": 200
+        }
+      ],
+      "obligations": [
+        "SEC-A01-02/db"
+      ]
+    },
+    {
+      "id": "UC02-CURSOR",
+      "sourceRefs": [
+        {
+          "input": "uc02",
+          "locator": "SCN-PRF-09",
+          "version": "v2"
+        },
+        {
+          "input": "profileNotes",
+          "locator": "GAP-PRF-003",
+          "version": "UC-02 Essential"
+        },
+        {
+          "input": "openapi",
+          "locator": "listMyItems",
+          "version": "0.3.0"
+        }
+      ],
+      "layer": "https",
+      "preconditions": "A và B có phiên hiệu lực; cursor vừa cấp cho Lost của A.",
+      "fixture": "Cùng dữ liệu 21 mục Lost của A.",
+      "action": "Tiếp tục bằng cùng cursor với đúng phiên/tab, rồi đổi tab và đổi tài khoản.",
+      "expected": "Cùng phạm vi trả trang tiếp đúng fixture; sai tab hoặc tài khoản trả HTTP 400 INVALID_CURSOR và chỉ có mã lỗi.",
+      "requiredForPilot": true,
+      "http": [
+        {
+          "step": "cursor-first",
+          "operation": "listMyItems",
+          "status": 200
+        },
+        {
+          "step": "cursor-same-tab",
+          "operation": "listMyItems",
+          "status": 200
+        },
+        {
+          "step": "cursor-other-tab",
+          "operation": "listMyItems",
+          "status": 400
+        },
+        {
+          "step": "cursor-other-account",
+          "operation": "listMyItems",
+          "status": 400
+        }
+      ],
+      "obligations": [
+        "SEC-A01-02/db",
+        "SEC-A06-05/core"
+      ]
+    },
+    {
+      "id": "EDGE-FIXTURE-TLS",
+      "sourceRefs": [
+        {
+          "input": "architecture",
+          "locator": "API nghiệp vụ đi qua cổng HTTPS",
+          "version": "UC-01/02 Essential"
+        },
+        {
+          "input": "environments",
+          "locator": "Bật TLS khi dùng phiên thật",
+          "version": "UC-01/02 fixture"
+        },
+        {
+          "input": "openapi",
+          "locator": "getCoreReadiness",
+          "version": "0.3.0"
+        }
+      ],
+      "layer": "https+config",
+      "preconditions": "Gateway fixture ở loopback, CA fixture và overlay Compose cùng revision.",
+      "fixture": "Gateway TLS và CA fixture.",
+      "action": "Kiểm cấu hình cổng loopback và TLS; gọi readiness với CA fixture qua HTTPS.",
+      "expected": "Gateway lắng trên TLS 1.2/1.3 ở loopback; cổng HTTP upstream không được publish trong overlay; HTTPS tin CA và hostname, readiness 200.",
+      "requiredForPilot": true,
+      "http": [
+        {
+          "step": "gateway-ready",
+          "operation": "getCoreReadiness",
+          "status": 200
+        }
+      ],
+      "obligations": [
+        "SEC-A04-03/gateway-tls",
+        "SEC-A04-04/gateway-tls",
+        "SEC-A07-04/gateway-tls"
+      ]
+    },
+    {
+      "id": "MOBILE-SESSION-CLEANUP",
+      "sourceRefs": [
+        {
+          "input": "uc01",
+          "locator": "SCN-AUTH-16",
+          "version": "v2"
+        },
+        {
+          "input": "uc02",
+          "locator": "SCN-PRF-15",
+          "version": "v2"
+        },
+        {
+          "input": "analysis",
+          "locator": "SEC-AUTH-002",
+          "version": "Essential 2026-11-22"
+        }
+      ],
+      "layer": "mobile-unit",
+      "preconditions": "Mobile dùng injected store và API mock.",
+      "fixture": "Phiên A, truy vấn vùng cá nhân đang chờ hoặc trả lỗi phiên.",
+      "action": "Chạy test auth-flow và my-area-flow đã có, gồm đăng xuất khi Core chưa phản hồi và mất hiệu lực phiên.",
+      "expected": "Local token, hồ sơ và danh sách bị xóa; kết quả cũ không mở lại vùng cá nhân. Bằng chứng ở tầng flow TypeScript.",
+      "requiredForPilot": true,
+      "http": [],
+      "obligations": [
+        "SEC-A06-05/mobile"
+      ]
+    },
+    {
+      "id": "CORE-HTTP-PRIVACY",
+      "sourceRefs": [
+        {
+          "input": "analysis",
+          "locator": "SEC-AUTH-002",
+          "version": "Essential 2026-11-22"
+        },
+        {
+          "input": "analysis",
+          "locator": "SEC-PRF-001",
+          "version": "Essential 2026-11-22"
+        },
+        {
+          "input": "profileNotes",
+          "locator": "Cache-Control: no-store",
+          "version": "UC-02 Essential"
+        },
+        {
+          "input": "openapi",
+          "locator": "CoreSession",
+          "version": "0.3.0"
+        }
+      ],
+      "layer": "https",
+      "preconditions": "Có bản ghi HTTP từ các ca phiên và đọc cá nhân.",
+      "fixture": "Các lượt cấp, xác minh và đọc thành công qua gateway fixture.",
+      "action": "Đối chiếu Cache-Control và vị trí truyền credential trong các trao đổi đã ghi.",
+      "expected": "Phiên Core chỉ trong Bearer, ID token gửi trong JSON, không nằm trong URL; các phản hồi 200 có thông tin phiên/hồ sơ/danh sách dùng no-store.",
+      "requiredForPilot": true,
+      "http": [],
+      "obligations": [
+        "SEC-A06-01/core",
+        "SEC-A06-03/core"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,771 @@
+[
+  {
+    "chunkId": "SEC-A01-01",
+    "cwe": "CWE-862",
+    "surface": "core",
+    "ucs": [
+      "UC-01",
+      "UC-02"
+    ],
+    "scenarios": [
+      "SCN-AUTH-11",
+      "SCN-AUTH-16",
+      "SCN-PRF-12"
+    ],
+    "applicability": "covered",
+    "reason": "Đường xác minh, hồ sơ và danh sách có đối chứng hợp lệ; phiên đã thu hồi bị từ chối qua cùng gateway.",
+    "evidenceMethod": "runtime HTTPS",
+    "caseIds": [
+      "UC01-SESSION",
+      "UC01-REVOKE"
+    ]
+  },
+  {
+    "chunkId": "SEC-A01-02",
+    "cwe": "CWE-639",
+    "surface": "db",
+    "ucs": [
+      "UC-02"
+    ],
+    "scenarios": [
+      "SCN-PRF-04",
+      "SCN-PRF-05",
+      "SCN-PRF-06",
+      "SCN-PRF-07",
+      "SCN-PRF-09"
+    ],
+    "applicability": "covered",
+    "reason": "Đối chiếu quyền từng trang và hai vai trò; cursor do client gửi được ràng buộc theo tab và chủ thể.",
+    "evidenceMethod": "runtime HTTPS qua truy vấn fixture",
+    "caseIds": [
+      "UC02-LOST",
+      "UC02-FOUND",
+      "UC02-CLAIMS",
+      "UC02-CURSOR"
+    ]
+  },
+  {
+    "chunkId": "SEC-A01-03",
+    "cwe": "CWE-548",
+    "surface": "gateway-tls",
+    "ucs": [],
+    "scenarios": [],
+    "applicability": "missing",
+    "reason": "Cần rà cấu hình thừa kế của gateway và phạm vi nội dung tĩnh được phục vụ.",
+    "evidenceMethod": "static Nginx + runtime",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A01-04",
+    "cwe": "CWE-219",
+    "surface": "gateway-tls",
+    "ucs": [],
+    "scenarios": [],
+    "applicability": "missing",
+    "reason": "Cần đối chiếu từng mount và đường dẫn web root với artifact của môi trường triển khai.",
+    "evidenceMethod": "static Nginx + mount inventory",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A01-05",
+    "cwe": "CWE-1275",
+    "surface": "core",
+    "ucs": [],
+    "scenarios": [],
+    "applicability": "not-applicable",
+    "reason": "Phiên Core trong contract dùng Bearer, không dùng cookie.",
+    "evidenceMethod": "OpenAPI + kiến trúc",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A01-06",
+    "cwe": "CWE-601",
+    "surface": "mobile",
+    "ucs": [
+      "UC-01"
+    ],
+    "scenarios": [
+      "SCN-AUTH-19"
+    ],
+    "applicability": "missing",
+    "reason": "Cần rà đích mở liên kết chính sách và callback OAuth ở hai nền tảng.",
+    "evidenceMethod": "static + device",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A01-07",
+    "cwe": "CWE-276",
+    "surface": "db",
+    "ucs": [],
+    "scenarios": [],
+    "applicability": "missing",
+    "reason": "Cần kiểm quyền role và grant của phiên, hồ sơ, cursor trên DB đích.",
+    "evidenceMethod": "static migration + DB grants",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A02-01",
+    "cwe": "CWE-614",
+    "surface": "core",
+    "ucs": [],
+    "scenarios": [],
+    "applicability": "not-applicable",
+    "reason": "CoreSession dùng Bearer; tiêu chí thuộc tính Secure dành cho cookie phiên.",
+    "evidenceMethod": "OpenAPI + kiến trúc",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A02-02",
+    "cwe": "CWE-1004",
+    "surface": "core",
+    "ucs": [],
+    "scenarios": [],
+    "applicability": "not-applicable",
+    "reason": "CoreSession dùng Bearer; tiêu chí HttpOnly dành cho cookie phiên.",
+    "evidenceMethod": "OpenAPI + kiến trúc",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A02-03",
+    "cwe": "CWE-611",
+    "surface": "core",
+    "ucs": [],
+    "scenarios": [],
+    "applicability": "not-applicable",
+    "reason": "Hai UC dùng HTTP JSON, JWT/JWKS và PostgreSQL; không có giao diện nhận XML trong lát cắt.",
+    "evidenceMethod": "OpenAPI + kiến trúc",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A02-04",
+    "cwe": "CWE-260",
+    "surface": "config",
+    "ucs": [],
+    "scenarios": [],
+    "applicability": "missing",
+    "reason": "Cần xác minh nguồn và quyền đọc secret DB và khóa replay trên môi trường đích.",
+    "evidenceMethod": "static + deployment evidence",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A02-05",
+    "cwe": "CWE-547",
+    "surface": "config",
+    "ucs": [],
+    "scenarios": [],
+    "applicability": "missing",
+    "reason": "Cần đối chiếu hằng số với cấu hình thật và điều kiện demo/fixture.",
+    "evidenceMethod": "static source + config",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A02-06",
+    "cwe": "CWE-776",
+    "surface": "core",
+    "ucs": [],
+    "scenarios": [],
+    "applicability": "not-applicable",
+    "reason": "Các operation trong lát cắt không xử lý XML/DTD.",
+    "evidenceMethod": "OpenAPI + kiến trúc",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A03-01",
+    "cwe": "CWE-1329",
+    "surface": "config",
+    "ucs": [],
+    "scenarios": [],
+    "applicability": "missing",
+    "reason": "Cần đối chiếu khả năng nâng phiên bản của Node, npm và image triển khai.",
+    "evidenceMethod": "static lockfile + image inventory",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A04-01",
+    "cwe": "CWE-323",
+    "surface": "core",
+    "ucs": [
+      "UC-01"
+    ],
+    "scenarios": [
+      "SCN-AUTH-05"
+    ],
+    "applicability": "not-applicable",
+    "reason": "Core dùng HMAC khi cấp lại token phiên; đường này không có nonce của thuật toán mã hóa.",
+    "evidenceMethod": "static source",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A04-02",
+    "cwe": "CWE-329",
+    "surface": "core",
+    "ucs": [],
+    "scenarios": [],
+    "applicability": "not-applicable",
+    "reason": "Core dựng lại token phiên bằng HMAC trong apps/core/src/modules/identity/sessions.ts; lát cắt này không có mã hóa CBC.",
+    "evidenceMethod": "static source",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A04-03",
+    "cwe": "CWE-296",
+    "surface": "gateway-tls",
+    "ucs": [
+      "UC-01",
+      "UC-02"
+    ],
+    "scenarios": [],
+    "applicability": "covered",
+    "reason": "Đường gọi fixture dùng CA riêng và xác minh TLS của gateway cục bộ.",
+    "evidenceMethod": "runtime HTTPS + static Compose",
+    "caseIds": [
+      "EDGE-FIXTURE-TLS"
+    ]
+  },
+  {
+    "chunkId": "SEC-A04-03",
+    "cwe": "CWE-296",
+    "surface": "google",
+    "ucs": [
+      "UC-01"
+    ],
+    "scenarios": [
+      "SCN-AUTH-06"
+    ],
+    "applicability": "missing",
+    "reason": "Cần kiểm chuỗi chứng chỉ từ thiết bị và khi Core lấy JWKS thật.",
+    "evidenceMethod": "runtime Android/iOS + deployed TLS",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A04-04",
+    "cwe": "CWE-523",
+    "surface": "gateway-tls",
+    "ucs": [
+      "UC-01"
+    ],
+    "scenarios": [
+      "SCN-AUTH-04"
+    ],
+    "applicability": "covered",
+    "reason": "Luồng cấp phiên thực chạy qua gateway HTTPS loopback; rà giao thức và cổng của overlay fixture.",
+    "evidenceMethod": "runtime HTTPS + static Compose",
+    "caseIds": [
+      "EDGE-FIXTURE-TLS",
+      "UC01-SESSION"
+    ]
+  },
+  {
+    "chunkId": "SEC-A04-04",
+    "cwe": "CWE-523",
+    "surface": "config",
+    "ucs": [
+      "UC-01"
+    ],
+    "scenarios": [],
+    "applicability": "missing",
+    "reason": "Cần chứng cứ HTTPS và thuật toán giao thức tại gateway thử nghiệm dùng chung.",
+    "evidenceMethod": "deployed TLS",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A04-05",
+    "cwe": "CWE-759",
+    "surface": "core",
+    "ucs": [],
+    "scenarios": [],
+    "applicability": "not-applicable",
+    "reason": "Google sở hữu mật khẩu; Core không băm mật khẩu tài khoản của UC-01.",
+    "evidenceMethod": "SRS FR-AUTH-01/02 + kiến trúc",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A04-06",
+    "cwe": "CWE-916",
+    "surface": "core",
+    "ucs": [],
+    "scenarios": [],
+    "applicability": "not-applicable",
+    "reason": "Không có thuật toán hash mật khẩu tài khoản trong đường đăng nhập Google của Core.",
+    "evidenceMethod": "SRS FR-AUTH-01/02 + kiến trúc",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A05-01",
+    "cwe": "CWE-89",
+    "surface": "db",
+    "ucs": [
+      "UC-01",
+      "UC-02"
+    ],
+    "scenarios": [],
+    "applicability": "missing",
+    "reason": "Cần truy hết đầu vào tới query DB và xác minh parameter binding độc lập với phép kiểm quyền.",
+    "evidenceMethod": "static source",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A05-02",
+    "cwe": "CWE-78",
+    "surface": "core",
+    "ucs": [],
+    "scenarios": [],
+    "applicability": "missing",
+    "reason": "Cần kiểm đầy đủ sink tiến trình và nguồn tham số Core trong phạm vi build.",
+    "evidenceMethod": "static source",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A05-03",
+    "cwe": "CWE-79",
+    "surface": "mobile",
+    "ucs": [
+      "UC-01",
+      "UC-02"
+    ],
+    "scenarios": [],
+    "applicability": "missing",
+    "reason": "Cần truy URL ảnh, liên kết, nội dung profile và hàng mục tới sink web hoặc native.",
+    "evidenceMethod": "static source + web/device",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A05-04",
+    "cwe": "CWE-93",
+    "surface": "gateway-tls",
+    "ucs": [],
+    "scenarios": [],
+    "applicability": "missing",
+    "reason": "Cần rà header và log sink dùng phân tách CR/LF.",
+    "evidenceMethod": "static source/config",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A05-05",
+    "cwe": "CWE-95",
+    "surface": "core",
+    "ucs": [],
+    "scenarios": [],
+    "applicability": "missing",
+    "reason": "Cần kiểm toàn đường nhận JSON/JWT và chỗ có thể diễn giải dữ liệu thành mã.",
+    "evidenceMethod": "static source",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A06-01",
+    "cwe": "CWE-598",
+    "surface": "core",
+    "ucs": [
+      "UC-01",
+      "UC-02"
+    ],
+    "scenarios": [
+      "SCN-AUTH-04",
+      "SCN-AUTH-11",
+      "SCN-PRF-01",
+      "SCN-PRF-07"
+    ],
+    "applicability": "covered",
+    "reason": "Quan sát vị trí ID token và session Bearer, URL chỉ chứa tham số nghiệp vụ cho phép.",
+    "evidenceMethod": "runtime HTTPS",
+    "caseIds": [
+      "CORE-HTTP-PRIVACY"
+    ]
+  },
+  {
+    "chunkId": "SEC-A06-02",
+    "cwe": "CWE-539",
+    "surface": "core",
+    "ucs": [],
+    "scenarios": [],
+    "applicability": "not-applicable",
+    "reason": "Không dùng persistent cookie để quản lý phiên Core.",
+    "evidenceMethod": "OpenAPI + kiến trúc",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A06-03",
+    "cwe": "CWE-525",
+    "surface": "core",
+    "ucs": [
+      "UC-01",
+      "UC-02"
+    ],
+    "scenarios": [
+      "SCN-AUTH-04",
+      "SCN-AUTH-11",
+      "SCN-PRF-01",
+      "SCN-PRF-07"
+    ],
+    "applicability": "covered",
+    "reason": "Kiểm no-store trên phản hồi 200 chứa thông tin phiên và vùng cá nhân qua gateway fixture.",
+    "evidenceMethod": "runtime HTTPS",
+    "caseIds": [
+      "CORE-HTTP-PRIVACY"
+    ]
+  },
+  {
+    "chunkId": "SEC-A06-03",
+    "cwe": "CWE-525",
+    "surface": "mobile",
+    "ucs": [
+      "UC-01",
+      "UC-02"
+    ],
+    "scenarios": [
+      "SCN-PRF-15"
+    ],
+    "applicability": "missing",
+    "reason": "Chưa đo cache dữ liệu và ảnh trong OS sau đăng xuất.",
+    "evidenceMethod": "runtime Android/iOS",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A06-04",
+    "cwe": "CWE-1022",
+    "surface": "mobile",
+    "ucs": [
+      "UC-01"
+    ],
+    "scenarios": [
+      "SCN-AUTH-19"
+    ],
+    "applicability": "missing",
+    "reason": "Cần rà hành vi opener của liên kết chính sách trên bản Expo web.",
+    "evidenceMethod": "static + web",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A06-05",
+    "cwe": "CWE-602",
+    "surface": "core",
+    "ucs": [
+      "UC-01",
+      "UC-02"
+    ],
+    "scenarios": [
+      "SCN-AUTH-11",
+      "SCN-AUTH-16",
+      "SCN-PRF-09"
+    ],
+    "applicability": "covered",
+    "reason": "Core kiểm Bearer và phạm vi cursor cho các hành trình phiên và Mục của tôi.",
+    "evidenceMethod": "runtime HTTPS",
+    "caseIds": [
+      "UC01-SESSION",
+      "UC01-REVOKE",
+      "UC02-CURSOR"
+    ]
+  },
+  {
+    "chunkId": "SEC-A06-05",
+    "cwe": "CWE-602",
+    "surface": "mobile",
+    "ucs": [
+      "UC-01",
+      "UC-02"
+    ],
+    "scenarios": [
+      "SCN-AUTH-16",
+      "SCN-PRF-15"
+    ],
+    "applicability": "covered",
+    "reason": "Flow phản ứng với quyết định Core về mất phiên và dọn trạng thái khi đăng xuất.",
+    "evidenceMethod": "mobile TypeScript mock",
+    "caseIds": [
+      "MOBILE-SESSION-CLEANUP"
+    ]
+  },
+  {
+    "chunkId": "SEC-A06-06",
+    "cwe": "CWE-1021",
+    "surface": "gateway-tls",
+    "ucs": [],
+    "scenarios": [],
+    "applicability": "missing",
+    "reason": "Cần xác định bề mặt HTML được dùng và chính sách framing cho nội dung đó.",
+    "evidenceMethod": "passive scan + static + product decision",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A07-01",
+    "cwe": "CWE-613",
+    "surface": "core",
+    "ucs": [
+      "UC-01"
+    ],
+    "scenarios": [
+      "SCN-AUTH-11",
+      "SCN-AUTH-16"
+    ],
+    "applicability": "covered",
+    "reason": "Quan sát hạn trả về và vòng đời hai phiên khi thu hồi.",
+    "evidenceMethod": "runtime HTTPS",
+    "caseIds": [
+      "UC01-SESSION",
+      "UC01-REVOKE"
+    ]
+  },
+  {
+    "chunkId": "SEC-A07-01",
+    "cwe": "CWE-613",
+    "surface": "db",
+    "ucs": [
+      "UC-01"
+    ],
+    "scenarios": [
+      "SCN-AUTH-14"
+    ],
+    "applicability": "missing",
+    "reason": "Chưa chạy biên 30/90 ngày và yêu cầu đồng thời tại mốc hết hạn trong suite này.",
+    "evidenceMethod": "runtime clock + DB transaction",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A07-02",
+    "cwe": "CWE-620",
+    "surface": "google",
+    "ucs": [],
+    "scenarios": [],
+    "applicability": "not-applicable",
+    "reason": "Đổi mật khẩu không phải luồng sản phẩm của hai UC; Google sở hữu xác thực.",
+    "evidenceMethod": "SRS FR-AUTH-01/02 + kiến trúc",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A07-03",
+    "cwe": "CWE-307",
+    "surface": "core",
+    "ucs": [
+      "UC-01"
+    ],
+    "scenarios": [],
+    "applicability": "missing",
+    "reason": "Cần chốt quy tắc giới hạn lần sai theo GAP-AUTH-006 và quan sát ở gateway/Core.",
+    "evidenceMethod": "static source + product decision",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A07-04",
+    "cwe": "CWE-297",
+    "surface": "gateway-tls",
+    "ucs": [
+      "UC-01",
+      "UC-02"
+    ],
+    "scenarios": [],
+    "applicability": "covered",
+    "reason": "Client kiểm hostname 127.0.0.1 theo SAN của gateway fixture.",
+    "evidenceMethod": "runtime HTTPS",
+    "caseIds": [
+      "EDGE-FIXTURE-TLS"
+    ]
+  },
+  {
+    "chunkId": "SEC-A07-04",
+    "cwe": "CWE-297",
+    "surface": "mobile",
+    "ucs": [
+      "UC-01"
+    ],
+    "scenarios": [],
+    "applicability": "missing",
+    "reason": "Cần kiểm hostname của gateway và Google từ bản native trên môi trường tích hợp.",
+    "evidenceMethod": "runtime Android/iOS + Google boundary",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A07-05",
+    "cwe": "CWE-259",
+    "surface": "config",
+    "ucs": [
+      "UC-01"
+    ],
+    "scenarios": [],
+    "applicability": "missing",
+    "reason": "Cần rà literal và nguồn cấp bí mật; cấu hình fixture chỉ dùng dữ liệu tổng hợp.",
+    "evidenceMethod": "static source + config",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A08-01",
+    "cwe": "CWE-353",
+    "surface": "core",
+    "ucs": [],
+    "scenarios": [],
+    "applicability": "not-applicable",
+    "reason": "Các message UC dùng JSON và JWT có chữ ký; contract không định nghĩa checksum truyền tải.",
+    "evidenceMethod": "OpenAPI + kiến trúc",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A08-02",
+    "cwe": "CWE-427",
+    "surface": "config",
+    "ucs": [],
+    "scenarios": [],
+    "applicability": "missing",
+    "reason": "Cần rà PATH, executable, preload và thư viện được nạp ở bản triển khai.",
+    "evidenceMethod": "static build + images",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A08-03",
+    "cwe": "CWE-502",
+    "surface": "google",
+    "ucs": [
+      "UC-01"
+    ],
+    "scenarios": [
+      "SCN-AUTH-06"
+    ],
+    "applicability": "missing",
+    "reason": "Cần rà decode JWT/JWKS, dữ liệu cho phép và xử lý lỗi khóa.",
+    "evidenceMethod": "static source + runtime contract",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A08-04",
+    "cwe": "CWE-565",
+    "surface": "core",
+    "ucs": [],
+    "scenarios": [],
+    "applicability": "not-applicable",
+    "reason": "Quyền Core suy từ mã Bearer; không dùng thuộc tính cookie để quyết định quyền.",
+    "evidenceMethod": "OpenAPI + kiến trúc",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A08-05",
+    "cwe": "CWE-915",
+    "surface": "core",
+    "ucs": [
+      "UC-01"
+    ],
+    "scenarios": [
+      "SCN-AUTH-04"
+    ],
+    "applicability": "missing",
+    "reason": "Cần đối chiếu mapping các trường được phép ghi tài khoản và hồ sơ tại server.",
+    "evidenceMethod": "static source + runtime contract",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A09-01",
+    "cwe": "CWE-117",
+    "surface": "core",
+    "ucs": [],
+    "scenarios": [],
+    "applicability": "missing",
+    "reason": "Cần rà các trường không tin cậy đi vào log sink và xác minh định dạng bản ghi.",
+    "evidenceMethod": "static source + synthetic logs",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A09-02",
+    "cwe": "CWE-532",
+    "surface": "gateway-tls",
+    "ucs": [
+      "UC-01",
+      "UC-02"
+    ],
+    "scenarios": [],
+    "applicability": "missing",
+    "reason": "Cần rà log Core, gateway và client, gồm query cursor và header lỗi.",
+    "evidenceMethod": "static source/config + synthetic logs",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A09-03",
+    "cwe": "CWE-778",
+    "surface": "core",
+    "ucs": [
+      "UC-01",
+      "UC-02"
+    ],
+    "scenarios": [],
+    "applicability": "missing",
+    "reason": "Cần danh sách sự kiện cần lưu và đối chiếu bản ghi từng sự kiện.",
+    "evidenceMethod": "static source/config + event inventory",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A10-01",
+    "cwe": "CWE-252",
+    "surface": "core",
+    "ucs": [],
+    "scenarios": [],
+    "applicability": "missing",
+    "reason": "Cần rà lỗi ở I/O, thao tác DB và bước lưu phiên.",
+    "evidenceMethod": "static source + dependency failure",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A10-02",
+    "cwe": "CWE-478",
+    "surface": "core",
+    "ucs": [
+      "UC-02"
+    ],
+    "scenarios": [
+      "SCN-PRF-09"
+    ],
+    "applicability": "missing",
+    "reason": "Cần kiểm mọi nhánh dispatch và biến thể tab thiếu/sai ngoài ca cursor.",
+    "evidenceMethod": "static source + runtime contract",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A10-03",
+    "cwe": "CWE-484",
+    "surface": "mobile",
+    "ucs": [],
+    "scenarios": [],
+    "applicability": "missing",
+    "reason": "Cần rà switch và các nhánh fall-through của client.",
+    "evidenceMethod": "static source",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A10-04",
+    "cwe": "CWE-460",
+    "surface": "mobile",
+    "ucs": [
+      "UC-01",
+      "UC-02"
+    ],
+    "scenarios": [
+      "SCN-AUTH-16",
+      "SCN-PRF-15"
+    ],
+    "applicability": "missing",
+    "reason": "Cần chạy thất bại kho native theo quyết định nghiệm thu về dọn phiên.",
+    "evidenceMethod": "static source + device fault",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A10-05",
+    "cwe": "CWE-215",
+    "surface": "config",
+    "ucs": [],
+    "scenarios": [],
+    "applicability": "missing",
+    "reason": "Cần rà debug flag và đầu ra app trên bản phát hành.",
+    "evidenceMethod": "static build + release config",
+    "caseIds": []
+  },
+  {
+    "chunkId": "SEC-A10-06",
+    "cwe": "CWE-550",
+    "surface": "core",
+    "ucs": [
+      "UC-01",
+      "UC-02"
+    ],
+    "scenarios": [],
+    "applicability": "missing",
+    "reason": "Cần kiểm lỗi phụ thuộc và error handler fallback tại cả gateway và Core.",
+    "evidenceMethod": "runtime error responses + static source",
+    "caseIds": []
+  }
+]

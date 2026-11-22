@@ -4,8 +4,9 @@
 2. `$analyze-srs` dùng [tiêu chí tham chiếu](requirements/quality/README.md) để rà rủi ro và chọn phép đo. Ghi các SEC/PERF áp dụng và căn cứ tại [analysis](requirements/analysis/).
 3. `$design-api-spec` dùng SRS, SEC/PERF trong analysis và contract hiện có. Chọn tiêu chí theo bề mặt và hành vi quan sát được của từng operation, ghi căn cứ và nơi kiểm chứng. Duyệt Execution Prompt rồi cập nhật [OpenAPI của Core](api/core/openapi.json) và các ghi chú không biểu diễn được trong schema.
 4. `$compose-uc-spec` viết luồng chính, luồng thay thế và luồng ngoại lệ từ SRS, analysis và contract. Với UC có giao diện, bàn giao thêm `<slug>-ui.md` có phiên bản, ảnh nhúng và neo ổn định theo màn và trạng thái. Từng bước hoặc nhánh có UI dẫn thẳng tới hình tương ứng. Hai tài liệu ở trạng thái **Chờ duyệt** đến khi người dùng xác nhận phiên bản. Phần bàn giao nêu trách nhiệm từng tầng. Bảng SCN nối luồng với yêu cầu, operation hoặc tầng thực thi và tiêu chí đạt.
-5. `$run-secure-aidlc` dùng UC spec, phiên bản contract và SCN đã chọn để triển khai. Đích mã sản phẩm là `apps/`. Dùng fixture tổng hợp cho kiểm thử quyền và `$test-performance` khi cần đo theo PR. Đích nghiên cứu và bằng chứng theo quy định của skill, tách khỏi mã sản phẩm.
-6. Kiểm lại theo [hướng dẫn chạy](operations/environments.md) và các SCN của build đã triển khai. Ghi môi trường, lệnh, phiên bản fixture và kết quả quan sát được.
+5. `$test-security` dùng catalog đầy đủ, UC spec cùng contract và checkout để lập ma trận theo bề mặt, khai báo fixture và cập nhật ca hồi quy sau đặc tả. Xem [kế hoạch kiểm bảo mật](operations/security-test-plan.md).
+6. `$run-secure-aidlc` dùng UC spec, phiên bản contract và SCN đã chọn để triển khai. Đích mã sản phẩm là `apps/`. Dùng fixture tổng hợp cho kiểm thử quyền và `$test-performance` khi cần đo theo PR. Đích nghiên cứu và bằng chứng theo quy định của skill, tách khỏi mã sản phẩm.
+7. Kiểm lại theo [hướng dẫn chạy](operations/environments.md) và các SCN của build đã triển khai. Chạy `$test-security` trên build đã định danh và đọc báo cáo theo tiêu chí trong `dist/security/`. Ghi môi trường, lệnh, phiên bản fixture và kết quả quan sát được.
 
 ## Mã định danh và phiên bản
 

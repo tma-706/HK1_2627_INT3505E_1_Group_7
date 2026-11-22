@@ -46,3 +46,36 @@ jobs:
           if [[ -s dist/uc01-local/compose.env ]]; then
             bash infra/uc01-local/run.sh down
           fi
+  security:
+    name: UC-01/02 security regression
+    needs: core
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm run mobile:setup
+      - run: npm run security:validate
+      - run: npm run security:test
+      - name: Verify both report files
+        if: always()
+        run: |
+          test -s dist/security/summary.md
+          test -s dist/security/results.json
+      - name: Upload filtered security reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: uc-security-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            dist/security/summary.md
+            dist/security/results.json
+          if-no-files-found: error
+      - name: Finish isolated fixture cleanup
+        if: always()
+        run: node tests/security/run.mjs --cleanup

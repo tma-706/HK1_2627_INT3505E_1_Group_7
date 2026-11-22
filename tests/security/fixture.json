@@ -1,0 +1,19 @@
+{
+  "actors": {
+    "aInitial": {"subject": "actor-a", "email": "a-old@example.test", "displayName": "Fixture A Old", "avatarUrl": null},
+    "a": {"subject": "actor-a", "email": "a@example.test", "displayName": "Fixture A", "avatarUrl": "https://media.example.test/avatar-a.png"},
+    "b": {"subject": "actor-b", "email": "b@example.test", "displayName": "Fixture B", "avatarUrl": null},
+    "c": {"subject": "actor-c", "email": "c@example.test", "displayName": "Fixture C", "avatarUrl": null},
+    "d": {"subject": "actor-d", "email": "d@example.test", "displayName": "Fixture D", "avatarUrl": null}
+  },
+  "tabs": ["lost", "found", "claims"],
+  "countByActor": {"a": 21, "b": 20, "c": 1},
+  "newest": "2026-01-02T00:00:00.000Z",
+  "tied": "2026-01-01T00:00:00.000Z",
+  "pageOrder": {
+    "a": [[1,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3],[2]],
+    "b": [[1,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2]],
+    "d": [[]]
+  },
+  "claims": {"oddRole": "sent", "evenRole": "received", "otherParty": "c"}
+}

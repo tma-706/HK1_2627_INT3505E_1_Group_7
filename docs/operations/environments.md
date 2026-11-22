@@ -13,6 +13,22 @@ bash tests/integration/core-ready.sh
 
 Bộ kiểm AI mock dùng fixture tổng hợp. Kiểm tra integration dựng DB tạm, xác nhận Core trả 200 khi DB sẵn sàng và 503 sau khi DB dừng theo [OpenAPI](../api/core/openapi.json). Đặt `PORT` nếu cổng 8091 đã dùng.
 
+## Nghiệm thu bảo mật UC-01/02
+
+Dùng Node 22, Docker Compose và OpenSSL. Suite dựng một Compose project riêng,
+dùng CA của fixture và lưu báo cáo đã lọc trong `dist/security/`.
+
+```sh
+npm ci
+npm run mobile:setup
+npm run security:validate
+npm run security:test
+```
+
+Nếu cổng 8443 đang dùng, đặt `UC01_HTTPS_PORT` thành cổng loopback còn trống. Xem
+[skill test-security](../../.agents/skills/test-security/SKILL.md) để cập nhật
+suite hoặc điều tra bằng chứng ở revision đã chạy.
+
 ## Smoke test qua gateway
 
 ```sh
