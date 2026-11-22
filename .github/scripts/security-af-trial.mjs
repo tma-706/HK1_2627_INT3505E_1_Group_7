@@ -26,7 +26,7 @@ try {
   }], errors);
   const attempt = { local: { ok: local.ok, received: local.received.length, selfcheck: local.passiveSelfcheck, exit: local.exitCode, errors: [...errors] } };
   for (const name of ['input.har', 'plan.yaml']) writeFileSync(actionDir + '/' + name, readFileSync(directDir + '/zap/runner/' + name));
-  const script = dir + '/action.mjs';
+  const script = dir + '/action.cjs';
   const fetched = await command('curl', ['-fsSL', '-o', script, actionUrl], { timeout: 20_000 });
   if (fetched.status !== 0) throw new Error('Action source unavailable');
   const env = { PATH: process.env.PATH, GITHUB_WORKSPACE: actionDir, INPUT_PLAN: 'plan.yaml',

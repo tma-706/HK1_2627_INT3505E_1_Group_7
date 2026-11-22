@@ -108,12 +108,18 @@ async function performJourney(page, url, check, observe, details) {
   const firstRow = text(details.firstTitle).first();
   await visible('items-first-page', firstRow);
   if (details.nextTitle) check('next-page-absent-before-scroll', await text(details.nextTitle).count() === 0);
+  const endOfList = text('Đã hiển thị tất cả');
   await observe('next-page', async () => {
     await firstRow.hover();
-    await page.mouse.wheel(0, 4_000);
+    // FlatList mounts additional rows as scrolling progresses.
+    for (let turn = 0; turn < 6; turn++) {
+      await page.mouse.wheel(0, 550);
+      const reachedEnd = await endOfList.waitFor({ state: 'visible', timeout: 300 }).then(() => true, () => false);
+      if (reachedEnd) break;
+    }
   });
   if (details.nextTitle) await visible('items-second-page', text(details.nextTitle));
-  await visible('items-end', text('Đã hiển thị tất cả'));
+  await visible('items-end', endOfList);
 
   await button('Quay lại').click();
   await visible('profile-after-back', heading('Hồ sơ'));
