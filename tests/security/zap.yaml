@@ -1,0 +1,40 @@
+env:
+  contexts:
+    - name: uc-security-fixture
+      urls:
+        - "@ORIGIN@"
+      includePaths:
+        - '@ORIGIN_REGEX@/api/(?:health/ready|auth/sessions(?:/current(?:/validate)?)?|me/(?:profile|items)|_security_tool_selfcheck)(?:\?.*)?'
+  parameters:
+    failOnError: true
+    failOnWarning: true
+    continueOnFailure: false
+jobs:
+  - type: passiveScan-config
+    parameters:
+      scanOnlyInScope: true
+  - type: import
+    parameters:
+      type: har
+      fileName: /zap/wrk/input.har
+      sendRequests: false
+  - type: passiveScan-wait
+    parameters:
+      maxDuration: 2
+  - type: export
+    parameters:
+      context: uc-security-fixture
+      type: har
+      source: all
+      fileName: /zap/wrk/received.har
+  - type: report
+    parameters:
+      template: traditional-json
+      reportDir: /zap/wrk
+      reportFile: passive.json
+      displayReport: false
+  - type: exitStatus
+    parameters:
+      okExitValue: 0
+      errorExitValue: 1
+      warnExitValue: 2

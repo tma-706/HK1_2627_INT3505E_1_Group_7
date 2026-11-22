@@ -7,10 +7,10 @@ services:
     ports: ["127.0.0.1:${UC01_HTTPS_PORT:-8443}:443"]
     volumes:
       - ./infra/uc01-local/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./dist/uc01-local/tls:/etc/nginx/tls:ro
+      - ${LF_UC01_FIXTURE_DIR:-./dist/uc01-local}/tls:/etc/nginx/tls:ro
     networks: [edge]
   core-api:
     environment:
       NODE_OPTIONS: --import=/fixtures/google-jwks.mjs
     volumes:
-      - ./dist/uc01-local/google-jwks.mjs:/fixtures/google-jwks.mjs:ro
+      - ${LF_UC01_FIXTURE_DIR:-./dist/uc01-local}/google-jwks.mjs:/fixtures/google-jwks.mjs:ro

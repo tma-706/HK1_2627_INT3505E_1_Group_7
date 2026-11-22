@@ -1,14 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")/../.."
-fixture_dir="$PWD/dist/uc01-local"
+fixture_dir="${LF_UC01_FIXTURE_DIR:-$PWD/dist/uc01-local}"
+fixture_project="${LF_UC01_FIXTURE_PROJECT:-lf-uc01-local}"
+export LF_UC01_FIXTURE_DIR="$fixture_dir"
 local_url="https://127.0.0.1:${UC01_HTTPS_PORT:-8443}"
 
 compose() (
   # Ignore ambient production credentials. The overlay is a separate Compose project.
   unset GOOGLE_CLIENT_ID SESSION_REPLAY_KEY_VERSION SESSION_REPLAY_KEYS
   unset POSTGRES_DB POSTGRES_USER POSTGRES_PASSWORD
-  docker compose -p lf-uc01-local --env-file .env.example --env-file "$fixture_dir/compose.env" \
+  docker compose -p "$fixture_project" --env-file .env.example --env-file "$fixture_dir/compose.env" \
     -f compose.yaml -f infra/uc01-local/compose.yaml "$@"
 )
 
@@ -76,8 +78,12 @@ case "${1:-}" in
       infra/uc01-local/mobile-http-smoke.ts "$fixture_dir" "$local_url"
     ;;
   down) compose down ;;
+  down-isolated)
+    [[ $fixture_project =~ ^lf-security-[0-9a-f]{32}$ && $fixture_dir == "$PWD/dist/.security-run/fixture" ]]
+    compose down --volumes
+    ;;
   *)
-    printf 'Usage: bash infra/uc01-local/run.sh up|check|check-mobile|down\n' >&2
+    printf 'Usage: bash infra/uc01-local/run.sh up|check|check-mobile|down|down-isolated\n' >&2
     exit 2
     ;;
 esac
