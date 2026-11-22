@@ -553,5 +553,43 @@
         "SEC-A06-03/core"
       ]
     }
+  ],
+  "openQuestions": [
+    {
+      "input": "uc01",
+      "locator": "GAP-AUTH-005",
+      "question": "Mobile và Core xử lý tên thiếu, tên ngoài khoảng hoặc email thiếu từ Google như thế nào?",
+      "evidenceNeeded": "Quyết định đồng bộ và lượt Android/iOS với hồ sơ Google phù hợp."
+    },
+    {
+      "input": "uc01",
+      "locator": "GAP-AUTH-006",
+      "question": "Hạn mức cấp phiên và đọc danh sách áp theo chủ thể nào, ở tầng nào và trả 429 như thế nào?",
+      "evidenceNeeded": "Hợp đồng hạn mức và môi trường fixture đo được phản hồi."
+    },
+    {
+      "input": "uc01",
+      "locator": "Lỗi kho cục bộ",
+      "question": "Khi kho phiên không lưu hoặc không dọn được, hành vi retry nào được duyệt để nghiệm thu?",
+      "evidenceNeeded": "Quyết định UC-01 và lỗi kho phiên có thể tái lập trên hai OS."
+    },
+    {
+      "input": "uc02",
+      "locator": "TBD-03/04",
+      "question": "Nếu một tài khoản có hai vai trò trên cùng claim hoặc bài bị gỡ, claim có xuất hiện và hiển thị vai trò nào?",
+      "evidenceNeeded": "Quy tắc từ UC sở hữu claim và fixture dữ liệu thật tương ứng."
+    },
+    {
+      "input": "uc02",
+      "locator": "GAP-PRF-004",
+      "question": "Ai được tải thumbnail đã xử lý, từ mốc nào và khi nào URL ảnh mất hiệu lực?",
+      "evidenceNeeded": "Hợp đồng media cùng mẫu ảnh và quyền truy cập; ca hiện tại chỉ quan sát URL của fixture."
+    },
+    {
+      "input": "architecture",
+      "locator": "API nghiệp vụ đi qua cổng HTTPS",
+      "question": "Gateway tích hợp cần chính sách HSTS, ẩn phiên bản máy chủ và chống sniffing nào cho các phản hồi JSON?",
+      "evidenceNeeded": "Tiêu chuẩn header và quan sát ở gateway triển khai."
+    }
   ]
 }

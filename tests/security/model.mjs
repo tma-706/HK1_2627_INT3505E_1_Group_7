@@ -12,6 +12,7 @@ const unique = (items) => items.length === new Set(items).size;
 export function loadModel() {
   const manifest = readJSON('tests/security/manifest.json');
   const obligations = readJSON('tests/security/coverage.json');
+  const review = new Map();
   const inputs = new Map();
   assert.ok(Number.isSafeInteger(manifest.version) && Number.isSafeInteger(manifest.fixtureVersion));
   for (const [key, def] of Object.entries(manifest.inputs)) {
@@ -73,9 +74,21 @@ export function loadModel() {
     }
   }
   for (const id of operations.keys()) assert.ok(requiredOperations.has(id), `Chưa có ca bắt buộc với phản hồi thành công: ${id}`);
+  const openQuestions = manifest.openQuestions.map(({ input, locator, question, evidenceNeeded }) => {
+    assert.ok(inputs.get(input)?.text.includes(locator) && question && evidenceNeeded, locator);
+    return { sourcePath: inputs.get(input).path, locator, question, evidenceNeeded };
+  });
+  for (const item of readJSON('tests/security/review.json')) {
+    assert.ok(/^\d{1,8}$/u.test(item.rule) && !review.has(item.rule) && item.cause && item.refs.length, item.rule);
+    // A source edit invalidates the saved interpretation until the rule is reviewed again.
+    if (item.refs.every(({ path, sha256, line }) => {
+      const data = readFileSync(path);
+      return digest(data) === sha256 && Number.isInteger(line) && line > 0 && line <= data.toString().split('\n').length;
+    })) review.set(item.rule, item);
+  }
   const suiteFiles = readdirSync('tests/security').sort().map((name) => [name, digest(readFileSync(join('tests/security', name)))]);
   return {
-    manifest, cases, obligations, operations, chunks,
+    manifest, cases, obligations, operations, chunks, openQuestions, review,
     revisions: { sources: manifest.inputs, suite: digest(JSON.stringify(suiteFiles)), fixture: digest(readFileSync('tests/security/fixture.json')) },
   };
 }

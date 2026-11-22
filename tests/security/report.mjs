@@ -36,12 +36,18 @@ function safeFindings(zap, model, http) {
     const cases = [...new Set(http.filter((row) => row.operation === operation && row.method === method && row.path === path)
       .map(({ caseId }) => caseId))];
     if (!/^\d{1,8}$/u.test(rule) || !cases.length) return [];
+    const known = model.review.get(rule);
+    const reviewed = known && zap.addons?.[known.addon] === known.version ? known : null;
+    const chunkIds = [...model.chunks.values()].filter(({ cwe_id }) => cwe === cwe_id).map(({ sec_id }) => sec_id);
+    const surface = operation === 'getCoreReadiness' ? 'gateway-tls' : (reviewed?.catalogSurface ?? 'core');
     return [{
       rule, cwe: /^CWE-\d{1,6}$/u.test(cwe) ? cwe : null,
       risk: ['info', 'low', 'medium', 'high'].includes(risk) ? risk : 'unknown', operation, method, path, caseIds: cases,
-      chunkIds: [...model.chunks.values()].filter(({ cwe_id }) => cwe === cwe_id).map(({ sec_id }) => sec_id),
-      evidenceRef: 'results.json#zap/findings', outcome: 'REVIEW',
-      reason: 'Cảnh báo thụ động trên trao đổi fixture. Cần đối chiếu điều khoản và cấu hình tại SHA của build.',
+      chunkIds,
+      obligationIds: model.obligations.filter((row) => row.surface === surface && chunkIds.includes(row.chunkId)).map(obligationKey),
+      evidenceRef: 'results.json#/zap/findings', outcome: 'REVIEW',
+      reason: reviewed?.cause ?? 'Cảnh báo thụ động trên trao đổi fixture. Cần đối chiếu điều khoản và cấu hình tại SHA của build.',
+      sourceRefs: reviewed?.refs.map(({ path, line }) => ({ path, line })) ?? [],
     }];
   });
 }
@@ -85,7 +91,7 @@ export function buildReport(model, run) {
     if (row.applicability === 'not-applicable') outcome = 'N/A';
     else if (row.applicability === 'missing') outcome = 'MISSING';
     else outcome = outcomeFor(row.caseIds.map((id) => caseById.get(id).outcome));
-    if (outcome !== 'FAIL' && findings.some((entry) => entry.chunkIds.includes(row.chunkId))) outcome = 'REVIEW';
+    if (outcome !== 'FAIL' && findings.some((entry) => entry.obligationIds.includes(obligationKey(row)))) outcome = 'REVIEW';
     return { ...row, id: obligationKey(row), outcome };
   });
   const criteria = [...model.chunks.values()].map(({ sec_id, cwe_id, owasp, static_review_scope_vi }) => {
@@ -105,7 +111,7 @@ export function buildReport(model, run) {
     ...zapIntegration,
     ok: run.zap?.ok === true,
     version: /^\d+\.\d+\.\d+$/u.test(run.zap?.version) ? run.zap.version : null,
-    addons: Object.fromEntries(['automation', 'exim', 'pscan', 'pscanrules', 'reports']
+    addons: Object.fromEntries(['automation', 'authhelper', 'exim', 'pscan', 'pscanrules', 'reports']
       .filter((key) => /^\d+(?:\.\d+)*$/u.test(run.zap?.addons?.[key])).map((key) => [key, run.zap.addons[key]])),
     exitCode: Number.isSafeInteger(run.zap?.exitCode) ? run.zap.exitCode : null,
     completedJobs: ['passiveScan-config', 'import', 'passiveScan-wait', 'export', 'report', 'exitStatus']
@@ -120,7 +126,7 @@ export function buildReport(model, run) {
   return {
     buildSha, suiteVersion: model.manifest.version, fixtureVersion: model.manifest.fixtureVersion,
     revisions: model.revisions, catalogCount: model.chunks.size, counts, passed, toolErrors: errors,
-    fixture: fixtureState, zap, criteria, obligations, cases, failures,
+    fixture: fixtureState, zap, criteria, obligations, cases, failures, openQuestions: model.openQuestions,
   };
 }
 
@@ -140,7 +146,13 @@ function renderSummary(report) {
     if (item.outcome !== 'PASS') lines.push(`  - Sai lệch hoặc thiếu bằng chứng \`${item.reason}\``);
   }
   lines.push('', '## Cảnh báo và sai lệch', '');
-  for (const item of report.zap.findings) lines.push(`- REVIEW · ZAP ${item.rule} · ${item.risk} · ${item.method} ${item.path} · ${item.cwe ?? 'chưa ánh xạ CWE'} · ${item.chunkIds.join(', ') || 'ngoài ánh xạ catalog'}`);
+  const findingsByRule = Map.groupBy(report.zap.findings, (item) => item.rule);
+  for (const [rule, items] of findingsByRule) {
+    const first = items[0];
+    lines.push(`- REVIEW · ZAP ${rule} · ${first.risk} · ${first.cwe ?? 'chưa ánh xạ CWE'} · ${items.length} operation`,
+      `  - ${first.reason}`);
+    if (first.sourceRefs.length) lines.push(`  - Nguồn tại build SHA: ${first.sourceRefs.map(({ path, line }) => `\`${path}:${line}\``).join(', ')}`);
+  }
   for (const item of report.failures) lines.push(`- FAIL · ${item.caseId} · ${item.assertions.join(', ') || item.reason} · ${item.obligationIds.join(', ')}`);
   for (const error of report.toolErrors) lines.push(`- Lỗi công cụ · ${error}`);
   if (!report.zap.findings.length && !report.failures.length && !report.toolErrors.length) lines.push('- Không có mục cần điều tra trong lượt chạy.');
@@ -152,6 +164,10 @@ function renderSummary(report) {
         lines.push(`  - ${row.surface} · ${row.outcome} · ${row.reason} ${row.caseIds.join(', ')}`.trimEnd());
       }
     }
+  }
+  lines.push('', '## Quyết định còn mở', '');
+  for (const { sourcePath, locator, question, evidenceNeeded } of report.openQuestions) {
+    lines.push(`- ${question} (${sourcePath} · ${locator})`, `  - Cần ${evidenceNeeded}`);
   }
   lines.push('', '## Revision và bằng chứng', '', `- Suite SHA-256 \`${report.revisions.suite}\``,
     `- Fixture SHA-256 \`${report.revisions.fixture}\``, `- Image \`${report.zap.image}\``);

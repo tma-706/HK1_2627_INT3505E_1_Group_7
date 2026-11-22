@@ -43,7 +43,7 @@ export function recordedClient(origin, ca, operations) {
     const startedDateTime = new Date().toISOString();
     const started = performance.now();
     const response = await new Promise((resolve, reject) => {
-      const req = request(target, { method, headers, ca, signal: AbortSignal.timeout(10_000) }, (res) => {
+      const req = request(target, { method, headers, ca, rejectUnauthorized: true, signal: AbortSignal.timeout(10_000) }, (res) => {
         const chunks = [];
         res.on('data', (chunk) => chunks.push(chunk));
         res.on('error', reject);
