@@ -17,18 +17,26 @@ export class IdentityError extends Error {
   }
 }
 
-export function identityApi(baseUrl: string | undefined) {
-  async function request(path: string, method: string, options: { token?: string; body?: LoginAttempt }) {
+export function requestCore(baseUrl: string | undefined) {
+  return async (path: string, method: string, options: {
+    token?: string;
+    body?: LoginAttempt;
+    signal?: AbortSignal;
+  }) => {
     const base = baseUrl ? new URL(baseUrl) : undefined;
     if (base?.protocol !== 'https:' || base.username || base.password || base.search || base.hash) {
       throw new IdentityError('AUTH_UNAVAILABLE');
     }
     const abort = new AbortController();
-    const timer = setTimeout(() => abort.abort(), 15_000);
+    const cancel = () => abort.abort();
+    if (options.signal?.aborted) cancel();
+    else options.signal?.addEventListener('abort', cancel, { once: true });
+    const timer = setTimeout(cancel, 15_000);
     try {
       const response = await fetch(base.href.replace(/\/$/u, '') + path, {
         method,
         redirect: 'error',
+        ...(method === 'GET' ? { cache: 'no-store' } : {}),
         signal: abort.signal,
         headers: options.token ? { Authorization: `Bearer ${options.token}` }
           : options.body ? { 'Content-Type': 'application/json' } : undefined,
@@ -36,12 +44,25 @@ export function identityApi(baseUrl: string | undefined) {
       });
       if (response.status === 204) return;
       const body = await response.json() as Record<string, unknown>;
-      if (!response.ok) throw new IdentityError(typeof body?.code === 'string' ? body.code : 'AUTH_UNAVAILABLE');
+      if (!response.ok) {
+        const code = typeof body?.code === 'string' ? body.code : 'AUTH_UNAVAILABLE';
+        if (method === 'GET') {
+          if (response.status === 401 && code === 'SESSION_INVALID') throw new IdentityError(code);
+          if (response.status === 400 && code === 'INVALID_CURSOR') throw new IdentityError(code);
+          throw new IdentityError('READ_UNAVAILABLE');
+        }
+        throw new IdentityError(code);
+      }
       return body;
     } finally {
       clearTimeout(timer);
+      options.signal?.removeEventListener('abort', cancel);
     }
-  }
+  };
+}
+
+export function identityApi(baseUrl: string | undefined) {
+  const request = requestCore(baseUrl);
 
   function decodeSession(body: Awaited<ReturnType<typeof request>>): CurrentSession {
     if (typeof body?.accountId !== 'string' || !body.accountId ||

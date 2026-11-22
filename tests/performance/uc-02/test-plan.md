@@ -2,8 +2,8 @@
 
 ## Nguồn và phạm vi
 
-- [UC-02](../../../docs/use-cases/uc-02-profile-and-my-items.md), `sha256:a02983a33e58248f00d583e9860a2d40a8efeea5304dfaa305f3acdf47d5bc15`.
-- [OpenAPI Core 0.3.0](../../../docs/api/core/openapi.json), `sha256:2bc3ced154893f3e813abb7909737af1be9c5f326212a3d5528307c61648656e`.
+- [UC-02](../../../docs/use-cases/uc-02-profile-and-my-items.md), `sha256:21945bc6ef29ef01f5a806690ae5c783b037727bdea6a050fe96a44ed262b5c2`.
+- [OpenAPI Core 0.3.0](../../../docs/api/core/openapi.json), `sha256:837aac16902c2383a0d849eb2e2404048682f7fe8519a50dd65bbc35ce21ee25`.
 - [SRS, mục 3.3](../../../docs/requirements/lost-and-found-srs.pdf), `sha256:2f67606fba01394440f4ece54716541ce4188ce8a4564748fffdf048d8a5196b`.
 
 Core đọc hồ sơ qua `GET /api/me/profile` và danh sách qua `GET /api/me/items`. Hành trình tải dùng một phiên hợp lệ riêng cho mỗi người dùng ảo. Fixture hồi quy có 21 mục mỗi tab để kiểm biên 20/21. Bài duyệt sâu dùng 1.000 mục mỗi tab. Các mục cùng thời điểm tạo để kiểm thứ tự theo ID. Thời gian cấp phiên và nạp DB nằm ngoài số đo đọc API. Dữ liệu ảnh và hiển thị được đo riêng trên mobile.

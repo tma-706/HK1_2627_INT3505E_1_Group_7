@@ -12,7 +12,7 @@ Thực nghiệm UC-01 **Đăng nhập Google và quản lý phiên** và UC-02 *
 | Dựng local và chạy kiểm tra | [Hướng dẫn chạy](docs/operations/environments.md) |
 | Xem API đang chạy | [OpenAPI Core](docs/api/core/openapi.json) |
 
-Core có readiness với PostgreSQL và ba operation phiên của UC-01. App Android/iOS và migration UC-01 có hướng dẫn chạy trong tài liệu môi trường.
+Core có readiness với PostgreSQL, ba operation phiên và hai operation đọc vùng cá nhân. Xem tài liệu môi trường để chạy app Android/iOS, áp migration và kiểm UC-01/02.
 
 ## Chạy thử mobile trên trình duyệt
 
@@ -23,7 +23,7 @@ npm run mobile:setup
 npm run mobile:web
 ```
 
-Mở [localhost:8082](http://localhost:8082) và chọn **Dùng tài khoản mô phỏng**. Xem [hướng dẫn chạy mobile](docs/operations/environments.md#app-androidios) để thử Google thật trên Android hoặc iOS.
+Mở [localhost:8082](http://localhost:8082) và chọn **Dùng tài khoản mô phỏng**. Từ trang chính, mở **Hồ sơ** rồi **Mục của tôi** để thử ba tab với dữ liệu mẫu. Xem [hướng dẫn chạy mobile](docs/operations/environments.md#app-androidios) để thử Google thật trên Android hoặc iOS.
 
 ## Chạy Android trên Windows
 

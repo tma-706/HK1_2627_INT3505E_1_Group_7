@@ -1,0 +1,654 @@
+{
+  "run_id": "uc-02-essential",
+  "status": "blocked",
+  "verified_checkpoint": "Đã tích hợp UC-02, kiểm Chrome, Android fixture, migration và Core, sửa trạng thái tab web và hoàn tất audit revision kiểm chứng. Chờ bằng chứng nghiệm thu còn thiếu.",
+  "model_assignments": {
+    "drafting": {
+      "model": "GPT-6.1 Terra",
+      "reasoning": "medium"
+    }
+  },
+  "bundle_sha256": "f7f366d06c78811c64262b7dcf88f421af3553c53085dde3a6eddf70779676f7",
+  "bundle_hash_format": "Tính SHA-256 trên UTF-8 của bundle JSON, sắp xếp khóa, không escape Unicode, dùng dấu phân tách dấu phẩy và hai chấm không kèm khoảng trắng.",
+  "bundle": {
+    "version": "v1",
+    "sources": {
+      "uc": {
+        "path": "docs/use-cases/uc-02-profile-and-my-items.md",
+        "sha256": "b19edefc335e38756c9009d984dd54eaaab0c29c0e61b33b206b3318781c6076"
+      },
+      "api": {
+        "path": "docs/api/core/openapi.json",
+        "sha256": "837aac16902c2383a0d849eb2e2404048682f7fe8519a50dd65bbc35ce21ee25",
+        "version": "0.3.0"
+      },
+      "api_notes": {
+        "path": "docs/api/core/uc-02-notes.md",
+        "sha256": "3aee221963f1dc4b0e7632c051631b5d080c974e2817a06d6dfd2a6a3c339676",
+        "version": "Execution Prompt UC-02 v1"
+      },
+      "srs": {
+        "path": "docs/requirements/lost-and-found-srs.pdf",
+        "sha256": "2f67606fba01394440f4ece54716541ce4188ce8a4564748fffdf048d8a5196b",
+        "sections": [
+          "3.1",
+          "3.2.2",
+          "3.3",
+          "3.6"
+        ]
+      },
+      "analysis": {
+        "path": "docs/requirements/analysis/uc-01-02.md",
+        "sha256": "407cb40c107623c8e707635acd39c7a72bd7855e187a511f032be1bdf7ee0fcf"
+      },
+      "security_catalog": {
+        "path": "docs/requirements/quality/security-owasp-2025.json",
+        "sha256": "773ff2b424ad7d80366de337d2045a43908713f4369f6ce6217c8daee60f330e",
+        "version": "2026-09-26"
+      },
+      "constraints": [
+        {
+          "path": "AGENTS.md",
+          "sha256": "1b55aef92c0da234a6d2b9b94edefb7e48424a2377ea41a1a603a8a9e1f02432"
+        },
+        {
+          "path": "docs/skill-workflow.md",
+          "sha256": "7c95e191f62618d6ca5795b6b8f30dc227d173e577aef2cb89d439b5d85abac8"
+        },
+        {
+          "path": "docs/architecture/overview.md",
+          "sha256": "2a9584dbc0830979ddf8763ea959d7423b24e28c817c40b530942ab6732af823"
+        },
+        {
+          "path": "docs/operations/environments.md",
+          "sha256": "7d9e2a4f53835565da8bf8e3d67a6f46f8494e2229ce967cef5b60fbe79d0944"
+        },
+        {
+          "path": "docs/use-cases/uc-01-google-sign-in-and-session.md",
+          "sha256": "55665e1f507b66cf74fcf96a47d3e93f4cf0a544b896aa47e4e31a8d2e4f1515"
+        },
+        {
+          "path": "db/migrations/README.md",
+          "sha256": "b3fa0d9cf77ab24bf86713c45f7220fa76917bb8753af79928c2d86533f1e75e"
+        },
+        {
+          "path": "db/migrations/001_identity.sql",
+          "sha256": "fd3af3e312b722326d640e112788d489bfbffad540facad86be03a7250b91cad"
+        },
+        {
+          "path": "db/migrations/002_my_area.sql",
+          "sha256": "f82e2e575c80d99e60cf95ddbed718fbcf4395b054cbb683e6a955fd943e6439"
+        },
+        {
+          "path": "compose.yaml",
+          "sha256": "f4416985f0d931e5607c3dae0bfda5330abe64b436621392f0d8a8eaaf602fe4"
+        },
+        {
+          "path": "infra/nginx/default.conf",
+          "sha256": "560c8bbdf6eccd9cb732a7f279ce29639fd7ddda9923f0aa8f4b8cdb1e8d0b88"
+        },
+        {
+          "path": "package-lock.json",
+          "sha256": "00b778f5c3ab8b795001daddfbdb28d9fdc9f2306d94246ab05953adaa8fac50"
+        },
+        {
+          "path": "apps/mobile/package-lock.json",
+          "sha256": "096607cb629ff9d6d5b68f7381802e240aec809078bd9db88230c8125ba165bc"
+        },
+        {
+          "path": "tests/performance/uc-02/test-plan.md",
+          "sha256": "a03de2302e5cc5af79d5f61c4a4b560f234ec2be437ca795fe35a86798298db1"
+        },
+        {
+          "path": "tests/performance/uc-02/workloads.yml",
+          "sha256": "82e79cd081bd30077cce9bc6bdd07eebb4710902122a904c9a2dcb74f44dacbb"
+        },
+        {
+          "path": "tests/performance/uc-02/run.py",
+          "sha256": "791e8edea92a1476c88897a948754340366261eb33f8788612a73d38190c62bf"
+        },
+        {
+          "path": "tests/performance/uc-02/fixture.mjs",
+          "sha256": "c438f2b38a244225e29044409f141f06d69f9aa39a3ff12016973033a7e5f84e"
+        }
+      ]
+    },
+    "A_scope": {
+      "type": "product",
+      "functional": [
+        "SCN-PRF-01",
+        "SCN-PRF-02",
+        "SCN-PRF-03",
+        "SCN-PRF-04",
+        "SCN-PRF-05",
+        "SCN-PRF-06",
+        "SCN-PRF-07",
+        "SCN-PRF-08",
+        "SCN-PRF-09",
+        "SCN-PRF-10",
+        "SCN-PRF-11",
+        "SCN-PRF-12",
+        "SCN-PRF-13",
+        "SCN-PRF-14",
+        "SCN-PRF-15",
+        "SCN-PRF-16",
+        "SCN-PRF-18"
+      ],
+      "qa_acceptance": [
+        "SCN-PRF-17",
+        "SCN-PRF-19"
+      ],
+      "destination": [
+        "apps/mobile",
+        "apps/core"
+      ],
+      "existing_core_baseline": "4b7e78b218227868e1e57fc85a0734773cf58d55",
+      "scope_decisions": [
+        "Tích hợp màn Hồ sơ và Mục của tôi cho phạm vi Essential với fixture. Tái dùng hai route Core, lớp phiên, migration và bộ kiểm hiện có. Giữ các thay đổi UC-01 đang làm dở trong App.tsx và run record UC-01.",
+        "FR-PRF-03/04/16 và UI-05 ở mức C. Chỉnh sửa, xóa, đóng bài, chi tiết yêu cầu nhận đồ và backend chi tiết bài thuộc phạm vi khác. Chính sách dữ liệu Google không hợp lệ, vai trò/trạng thái thật, media thật và hạn mức 429 lấy quyết định từ các UC sở hữu."
+      ]
+    },
+    "B_design": {
+      "operations": [
+        {
+          "id": "getMyProfile",
+          "path": "GET /me/profile",
+          "behavior": "Chủ thể từ Bearer. Trả displayName, email, avatarUrl theo lần đồng bộ Google thành công gần nhất. Mobile hiển thị ảnh thay thế khi thiếu hoặc hỏng ảnh."
+        },
+        {
+          "id": "listMyItems",
+          "path": "GET /me/items",
+          "behavior": "Tab lost/found/claims và cursor tùy chọn. Lọc bài theo tác giả, claim theo người gửi hoặc chủ bài. Chiếu đúng schema theo tab. Sắp giảm dần theo thời điểm và ID, tối đa 20 mục mỗi trang, nextCursor null khi hết."
+        }
+      ],
+      "api_rules": [
+        "Dùng CoreSession qua Bearer và cùng giao dịch kiểm quyền phiên/cập nhật hoạt động khi đọc thành công. Giữ giới hạn 30/90 ngày và quy tắc thu hồi. Trả 200 với Cache-Control: no-store, 401 SESSION_INVALID với WWW-Authenticate: Bearer và 503 READ_UNAVAILABLE theo hợp đồng. Phiên hợp lệ nhận 400 INVALID_REQUEST khi tab sai/thiếu, hoặc 400 INVALID_CURSOR khi cursor không dùng được.",
+        "Giữ cursor opaque hiện có. Mã ngẫu nhiên 32 byte, chỉ lưu băm, ràng buộc account/tab và hiệu lực 24 giờ kể từ lúc cấp. Mốc timestamptz và UUID vẫn dùng được khi hàng tại mốc đã bị gỡ. Truy vấn áp lại quyền mỗi trang. Mục mới ở đầu xuất hiện khi làm mới."
+      ],
+      "schema": {
+        "plan": "Tái dùng 001_identity.sql và 002_my_area.sql. Kiểm cài sạch và áp 002 sau 001 trên DB fixture đã có dữ liệu. Trình lại bundle để duyệt nếu bằng chứng cho thấy cần sửa schema hoặc thay đổi chính sách đã duyệt.",
+        "fixtures": "Dùng tài khoản A, B và bên thứ ba, có bài thuộc từng tác giả và claims của cả hai vai trò. Fixture giữ người gửi khác chủ bài. Với Found, cung cấp thumbnail tổng hợp đã xử lý và trường hợp thiếu hoặc tải lỗi. Kiểm URL và bytes so với mẫu đã xử lý. Vòng đời và chính sách truy cập media thật thuộc tầng media."
+      },
+      "mobile_rules": [
+        "Mở SCR-02 qua Hồ sơ trên điều hướng chính. SCR-02 có ảnh, tên, email, Mục của tôi và Đăng xuất dùng luồng SCR-04 hiện hữu. SCR-03 mở trong hai lần chạm từ màn chính, có ba tab theo thứ tự Bài báo mất, Bài báo nhặt, Yêu cầu nhận đồ, đánh dấu tab hiện hành và mặc định Lost.",
+        "Hiển thị trạng thái tải, tiêu đề/tên, thời điểm và trạng thái bằng chữ. Bài dùng thumbnail hoặc ảnh thay thế. Claim có nhãn Tôi gửi hoặc Gửi đến bài của tôi và hàng chỉ đọc. Bài Lost/Found chuyển đúng loại và ID đến đích thử nghiệm kể cả khi ảnh lỗi. Kiểm quyền dữ liệu ở đích thuộc UC chi tiết bài.",
+        "Cuộn cuối tải trang sau khi còn cursor và tránh yêu cầu trùng. Kéo làm mới và phục hồi INVALID_CURSOR cùng tab bắt đầu từ trang đầu, thay danh sách khi thành công. Trang đầu rỗng có thông báo theo tab. Danh sách có mục và cursor null hiển thị Đã hiển thị tất cả, kể cả khi trang cuối trả mảng rỗng.",
+        "Giữ nội dung hiện hành khi lỗi tạm thời, báo lỗi mất mạng hoặc máy chủ không phản hồi bằng tiếng Việt và Thử lại đúng lượt tải. Giới hạn từng yêu cầu mạng 15.000 ms, gồm yêu cầu ảnh. Lỗi ảnh dùng ảnh thay thế và giữ khả năng xem hàng hay hồ sơ.",
+        "Dữ liệu đọc thuộc phiên hiện hành trong bộ nhớ. Cách ly yêu cầu theo phiên, tab và lượt tải, đồng thời bỏ phản hồi ảnh, dữ liệu hay lỗi khi ngữ cảnh tương ứng đã đổi. 401 SESSION_INVALID của phiên hiện hành dùng luồng dọn UC-01 và đưa về SCR-01 kèm thông báo trong 2.000 ms từ lúc phát hiện. Xác nhận đăng xuất theo PR-06 của UC-01.",
+        "Dùng tiếng Việt có dấu. Vùng chạm tối thiểu 48 × 48 dp Android hoặc 44 × 44 pt iOS, tương phản chữ thường tối thiểu 4,5:1. Giữ nguyên phạm vi quyền hệ điều hành của hai UC."
+      ]
+    },
+    "C_security_scope": [
+      {
+        "sec_id": "SEC-PRF-001",
+        "catalog_ids": [
+          "SEC-A01-01",
+          "SEC-A01-02",
+          "SEC-A06-03"
+        ],
+        "sr_ids": [
+          "SR-01",
+          "SR-02",
+          "SR-03",
+          "SR-04",
+          "SR-07"
+        ],
+        "rationale": "Hồ sơ và trang danh sách cần kiểm chủ thể, quyền ở mọi lần đọc, tính toàn vẹn của cursor, giới hạn trường, nguồn ảnh Found và vòng đời dữ liệu phía mobile."
+      },
+      {
+        "sec_id": "SEC-AUTH-002",
+        "catalog_ids": [
+          "SEC-A06-01",
+          "SEC-A07-01"
+        ],
+        "sr_ids": [
+          "SR-04",
+          "SR-05",
+          "SR-06"
+        ],
+        "rationale": "Hai route đọc dùng phiên Core và được tính là hoạt động phiên. Kiểm Bearer, thời hạn/thu hồi, dọn dữ liệu và bảo vệ thông tin xác thực theo UC-01."
+      }
+    ],
+    "D_implementation": [
+      "Sau duyệt, dùng entry point Expo hiện hữu, luồng auth và kho phiên UC-01 cho native. Dùng mô phỏng trong bộ nhớ cho web preview. Giữ Node.js 22 theo CI, TypeScript, PostgreSQL và phiên bản theo lockfile/Compose.",
+      "Dùng apps/core/src/api.ts, modules/identity và modules/my-area làm đường API hiện có. Core suy ra tài khoản từ phiên. Dùng cấu hình môi trường riêng, thông tin xác thực thật qua HTTPS, và dữ liệu/khóa thử nghiệm ngoài Git. Đối chiếu các nguồn ràng buộc đã ghim cùng bundle.",
+      "Chạy check và bộ kiểm hiện hữu của Core/mobile, core-identity.sh, core-ready.sh, smoke HTTPS fixture và UC-02 smoke/pilot/deep pagination khi cấu hình cho phép. Bổ sung kiểm tập trung cho ranh giới hành vi UC-02 chưa được bộ kiểm bao phủ, dùng giao diện HTTP/mobile bình thường với dữ liệu tổng hợp.",
+      "Hai SHA trong test-plan hiệu năng UC-02 lệch bản UC và OpenAPI hiện tại. Đối chiếu operation, schema và SCN trước khi tái sử dụng, cập nhật tham chiếu bàn giao khi xác nhận khớp và chạy lại trên revision đã ghi. Kết quả Core cung cấp bằng chứng phần API của SCN-PRF-18. Nghiệm thu UI cần đối chiếu đủ ID và thứ tự khi cuộn qua ít nhất 1.000 mục mỗi tab, gồm nhiều mục trùng thời điểm.",
+      "Kiểm thao tác, lỗi, thay ảnh, Back, logout và đổi phiên qua bản tích hợp. Dùng runtime Android/iOS phù hợp cho hành vi và cấu hình native. Ghi build, fixture, thiết bị, môi trường, lệnh và kết quả."
+    ],
+    "E_audit": {
+      "scoring": "Mỗi SR ghi revision, nguồn, bằng chứng, điều kiện quan sát, trạng thái met/unmet/not_evaluable và khoảng trống. Đánh giá cả ràng buộc dự án. Kiểm thực thi khi tiêu chí yêu cầu bằng chứng runtime.",
+      "criteria": [
+        {
+          "sr_id": "SR-01",
+          "sec_ids": [
+            "SEC-PRF-001"
+          ],
+          "scenarios": [
+            "SCN-PRF-01",
+            "SCN-PRF-04",
+            "SCN-PRF-06",
+            "SCN-PRF-12"
+          ],
+          "expected": "Core suy chủ thể từ phiên, lọc hồ sơ/bài/claims đúng chủ thể ở mọi trang. Yêu cầu nhận đồ dùng cả hai vai trò và mỗi claim liên quan xuất hiện một lần.",
+          "required_evidence": "Route, transaction, truy vấn và đối soát payload với fixture A/B/bên thứ ba."
+        },
+        {
+          "sr_id": "SR-02",
+          "sec_ids": [
+            "SEC-PRF-001"
+          ],
+          "scenarios": [
+            "SCN-PRF-07",
+            "SCN-PRF-08",
+            "SCN-PRF-09",
+            "SCN-PRF-18"
+          ],
+          "expected": "Cursor toàn vẹn, gắn tài khoản/tab và kiểm hạn, lỗi chung theo contract. Phân trang tiếp từ mốc ổn định và chỉ trả mục còn quyền.",
+          "required_evidence": "Mã/migration, kiểm cursor hợp lệ và không dùng được, biên 0/20/21, đồng thời điểm, thêm/gỡ và đối soát ID."
+        },
+        {
+          "sr_id": "SR-03",
+          "sec_ids": [
+            "SEC-PRF-001"
+          ],
+          "scenarios": [
+            "SCN-PRF-05",
+            "SCN-PRF-06"
+          ],
+          "expected": "Payload đúng schema tối thiểu. Claims chỉ có trường hiển thị và vai trò. Found chỉ trả thumbnail đã xử lý trong fixture hoặc bỏ trường khi chưa có.",
+          "required_evidence": "Mapping, schema, payload và kiểm URL lẫn nội dung thumbnail thành công so với fixture đã xử lý."
+        },
+        {
+          "sr_id": "SR-04",
+          "sec_ids": [
+            "SEC-PRF-001",
+            "SEC-AUTH-002"
+          ],
+          "scenarios": [
+            "SCN-PRF-01",
+            "SCN-PRF-10",
+            "SCN-PRF-11",
+            "SCN-PRF-12",
+            "SCN-PRF-15"
+          ],
+          "expected": "Đọc thành công có no-store. Dữ liệu, ảnh và lỗi hiển thị chỉ áp cho phiên/tab/lượt tải hiện hành. 401 SESSION_INVALID của phiên hiện hành kích hoạt dọn toàn phiên. Dữ liệu đang xem được giữ khi lỗi tạm thời.",
+          "required_evidence": "Header runtime, luồng quản lý state và kịch bản phản hồi trễ khi đổi tab, làm mới, đăng xuất và đổi tài khoản."
+        },
+        {
+          "sr_id": "SR-05",
+          "sec_ids": [
+            "SEC-AUTH-002"
+          ],
+          "scenarios": [
+            "SCN-PRF-12",
+            "SCN-PRF-15"
+          ],
+          "expected": "Phiên thiếu, sai, hết hạn hoặc thu hồi nhận 401 và Bearer challenge. Chỉ lần đọc thành công ghi hoạt động. Yêu cầu muộn giữ nguyên hiệu lực thu hồi và hết hạn 30/90 ngày.",
+          "required_evidence": "Giao dịch Core và kiểm HTTP/DB bằng fixture phiên và thời gian điều khiển."
+        },
+        {
+          "sr_id": "SR-06",
+          "sec_ids": [
+            "SEC-AUTH-002"
+          ],
+          "scenarios": [
+            "SCN-PRF-15",
+            "SCN-PRF-16"
+          ],
+          "expected": "Mobile dọn dữ liệu cá nhân và kho phiên theo UC-01. Bearer đi qua header và HTTPS với thông tin xác thực thật. URL, log và lỗi không chứa thông tin xác thực. App giữ phạm vi quyền OS đã chốt.",
+          "required_evidence": "Mã và manifest, cấu hình môi trường, kiểm TLS fixture, kiểm output đã lược thông tin nhạy cảm và kiểm dọn dữ liệu qua runtime native."
+        },
+        {
+          "sr_id": "SR-07",
+          "sec_ids": [
+            "SEC-PRF-001"
+          ],
+          "scenarios": [
+            "SCN-PRF-13",
+            "SCN-PRF-14"
+          ],
+          "expected": "Bài Lost/Found mở đích thử nghiệm theo đúng loại/ID. Hàng claim chỉ đọc và không kích hoạt điều hướng hoặc API.",
+          "required_evidence": "Kiểm điều hướng, API và vai trò trợ năng qua UI."
+        }
+      ]
+    },
+    "F_repair_and_acceptance": {
+      "workflow": [
+        "Ghi revision đầu, thu chứng cứ và đóng băng first_pass_security đủ SR trước repair. Mỗi repair có ID, lỗi, revision đầu, sửa nhỏ nhất, kiểm lại và tái audit SR liên quan.",
+        "Dừng tự động ở 10 lượt bắt đầu. Tạm dừng lỗi cụ thể sau ba lượt liên tiếp vẫn còn cùng lỗi hoặc khi thiếu bằng chứng để sửa. Mọi lượt bổ sung cần duyệt rõ theo workflow.",
+        "Nghiệm thu trên cùng revision với audit cuối bao phủ mọi SR, điều kiện dự án và runtime bắt buộc. Ghi revision, tổng hợp kết quả và phần thiếu bằng chứng. Dùng trạng thái blocked hoặc repair_required khi điều kiện hoàn tất chưa đạt."
+      ],
+      "SCN-PRF-17": "Đo hồ sơ, trang đầu, trang sau và làm mới theo từng tab, cache nguội/ấm. Ghi Core nhận, client nhận, UI đủ nội dung và kết quả ảnh. Kiểm mục tiêu từng hành trình đạt ít nhất 95% trong 2.000 ms trên toàn lượt hợp lệ, PR-07 tối đa 15.000 ms từng yêu cầu, báo lỗi/timeout và p95 riêng. Cần build tích hợp, thiết bị tầm trung RAM từ 4 GB, mạng ổn định, fixture ảnh đại diện, đường cơ sở và cửa sổ ổn định ít nhất 200 phiên hoạt động đồng thời. QA/sản phẩm chốt cách tính ảnh thay thế. QA/kỹ thuật chốt cửa sổ, tải nền và mẫu sau pilot. Ngân sách endpoint còn mở.",
+      "SCN-PRF-19": "Sau SCN-PRF-18, xem đủ ba tab, làm mới nhiều lần và khởi động lại. Đo phiên, thiết lập, hồ sơ, danh sách và cache ảnh của hai UC theo quy đổi MB và phạm vi cache OS do QA chốt, đối chiếu ngân sách 20 MB và kiểm dọn sau logout. Ghi thiếu bằng chứng nếu chưa có phép đo native hoặc quy ước."
+    }
+  },
+  "approval": {
+    "response": "approve",
+    "date": "2026-11-22",
+    "bundle_sha256": "f7f366d06c78811c64262b7dcf88f421af3553c53085dde3a6eddf70779676f7"
+  },
+  "baseline_checks": {
+    "scope": "Kiểm chuẩn bị trên workspace hiện tại trước duyệt.",
+    "commands_passed": [
+      "npm run check",
+      "npm run test:ai-mock (3/3)",
+      "npm run check --prefix apps/mobile",
+      "npm test --prefix apps/mobile (4/4)",
+      "bash tests/integration/core-identity.sh (3/3)",
+      "PORT=18091 bash tests/integration/core-ready.sh (200 và 503)"
+    ],
+    "evidence_gap": "Chưa kiểm nghiệm thu ứng dụng UC-02, runtime Android/iOS của tích hợp hoặc hiệu năng theo SCN-PRF-17/19."
+  },
+  "initial_source_revision": {
+    "sha256": "b1d5407ef4ad8610904e2def2c5d4bde8c00f1afc1db2edaacef23341dabf05b",
+    "files": {
+      "README.md": "fe9266e1da56316378081b90b66dda918038642964b4625e7e43c5d6390cc9b9",
+      "apps/core/src/ai/mock.ts": "626fdb0b37b93dd8b7b00b35e3feaee937b2862c1b66482b8f8433be5dfd711a",
+      "apps/core/src/ai/redacted-fixture.ts": "f5b301c98f74f10306f0aaf96b8116b86b8bf9133aaddb664dee384dc5e17bd7",
+      "apps/core/src/api.ts": "eaa4bf4450844275568bb91e3c574c821b119594c86d53476dbf8ca0d1c99a35",
+      "apps/core/src/db.ts": "bac0b20349a20f60b1a715bf3af5d247b3f5a663899cbd915541cc1ea19317d5",
+      "apps/core/src/modules/chat/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/core/src/modules/claims/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/core/src/modules/geo/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/core/src/modules/identity/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/core/src/modules/identity/google.ts": "70e5c0fc6e1e1a0595c43c6e77dae264d9bd4098d275eaf572de15ba620636bb",
+      "apps/core/src/modules/identity/routes.ts": "b47653fcc4c197760fa41287690cb3aeff3bd53cf23afc6018432966876b2010",
+      "apps/core/src/modules/identity/sessions.ts": "0804077b4695cf4b030efbef37bb5f54206c26e07d4aae07be3d372ac101c2da",
+      "apps/core/src/modules/inbox/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/core/src/modules/lifecycle/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/core/src/modules/media/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/core/src/modules/my-area/reads.ts": "745ce2f8b3fb8bbceeee3c657e01ff2772cf8bdc9dcfdd289d57f84b7cbc64f9",
+      "apps/core/src/modules/my-area/routes.ts": "0abaeb9de4011f0475ebd60d99ca6c951d4d850839ca4a7fce848b13c142ed85",
+      "apps/core/src/modules/posts/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/core/src/worker.ts": "dbeb368dd5a770857d2a36b3cad2037dfbafc90d0926f663bddaa98710d6d56b",
+      "apps/mobile/App.tsx": "a322b7ae4dd2e751c0d286c95a5bfd9db7f44bc49d4fbe3d00a406f7d87ec241",
+      "apps/mobile/app.config.ts": "8fec19e5bd8ecc33fda27d4d1bfaee57e54285f4810baf16449c372571bb3fde",
+      "apps/mobile/index.ts": "3cc816440c81db1b45a7d796c25ee6b45e19cfa2d64f1f934e42b1384c82d90b",
+      "apps/mobile/modules/install-state/android/build.gradle": "c5fe63d4281d92b36040e81804d144b79170932afac740c6db45765356e7a125",
+      "apps/mobile/modules/install-state/android/src/main/java/expo/modules/installstate/InstallStateModule.kt": "f476bffe57e37443b68032767431b237ce6836269aee620f6e8d9b265e74ed30",
+      "apps/mobile/modules/install-state/expo-module.config.json": "c314a396c25ae394c1e6f4d4eff507d262646e7ec694270bc3c93a0f4c3a0998",
+      "apps/mobile/modules/install-state/ios/InstallState.podspec": "658496be78bdaacbe3cb03ebb709fe1a44ae549250c39ea7e80049d555f650c8",
+      "apps/mobile/modules/install-state/ios/InstallStateModule.swift": "3c0ba9441d2a6aed324b09db0b51fc7dc6ed6a08468a5a092d5a3dab49c408d6",
+      "apps/mobile/package-lock.json": "096607cb629ff9d6d5b68f7381802e240aec809078bd9db88230c8125ba165bc",
+      "apps/mobile/package.json": "664f7ac8cbf3bab49eea4388061ab0b9b6483de4033faeb4ea8e9eaa5476b6e6",
+      "apps/mobile/src/auth-flow.ts": "1506fbad05f0c0efacba543079e42464565a8130e0162981c8bb2652002520bb",
+      "apps/mobile/src/auth-platform.tsx": "e5943d70aad4575aa802d6644444cc3a6d92872fb81a135423bf004f03df8399",
+      "apps/mobile/src/auth-platform.web.tsx": "d7485ab6fccd0347407f3fa3f1da9cd6604ad9eb3b5af3e8a0402cc76ed196b4",
+      "apps/mobile/src/identity-api.ts": "8127494a509c01fcdeef6c53b38f751706574915f8ef61906cce1f78a369c2bd",
+      "apps/mobile/src/installation.ts": "acf7520ecd3ac273f889267271dd9c09aaf510bea945c58c3e3a5485efb5cde0",
+      "apps/mobile/src/my-area-api.ts": "29284167094b04faf9b70c5a25afafa2b96f66581cfa83cad49a9b29446ff0e7",
+      "apps/mobile/src/my-area-flow.ts": "aa93c5e4d380f855f116f7fb27929f9518d990af1a792f2374544f106548739c",
+      "apps/mobile/src/my-area-screens.tsx": "02f526d3485b7314254bed4598e8d3893eb09291888a2068c48cc43ea2c4facb",
+      "apps/mobile/tests/auth-flow.test.ts": "fb01b986d44d2425075dbf098db3643853e8dd2ef8c2aa3cae6b4a73ad4df0f4",
+      "apps/mobile/tests/my-area-flow.test.ts": "027779507d8894a41a79d2a808a36a0cb863c979cb21a4f481c5662a4358dbbc",
+      "apps/mobile/tsconfig.json": "ebbb676f2dffbd4bb20fcb3ad6b775c525d4a8398f7280c17e6e58601a3ab0fb",
+      "db/migrations/001_identity.sql": "fd3af3e312b722326d640e112788d489bfbffad540facad86be03a7250b91cad",
+      "db/migrations/002_my_area.sql": "f82e2e575c80d99e60cf95ddbed718fbcf4395b054cbb683e6a955fd943e6439",
+      "db/migrations/README.md": "40cb5269a678a37fd02a7eae701ff0d512bdcf0a869139e5199a7625b406ae06",
+      "docs/operations/environments.md": "03dbcf3fd2f870353b52f89da47ed9161b99be68f75fa02acd767d0fa0a17d71",
+      "infra/nginx/default.conf": "560c8bbdf6eccd9cb732a7f279ce29639fd7ddda9923f0aa8f4b8cdb1e8d0b88",
+      "infra/uc01-local/README.md": "2c8182e3b865b3f23d33a9290bc21b39b87a49e8bf146c3f7439ded7a00868bb",
+      "infra/uc01-local/compose.yaml": "cc9e834724739d9fa87aa257f37672d853015061edf367ba926adbdfcd8daa39",
+      "infra/uc01-local/fixtures.mjs": "bcb8bb132f64ec10dfa92db0231a6d44a65149944a3b9e70b4c52c71855248d4",
+      "infra/uc01-local/mobile-http-smoke.ts": "1aa70ad84933603d21bacbff5a51eccb174a99fbb8c834b8bbc6688436899c6e",
+      "infra/uc01-local/nginx.conf": "b0b672bdcb9c393699074c0b56451f5f31cd201967b325e90a23398865e01816",
+      "infra/uc01-local/run.sh": "0a0c737605998fe22d9462c0cb3fdf4d697a0f575b9aad6eaca99680302b3c60",
+      "tests/integration/assert-ready.mjs": "6b803a48db87c0ff2787cf5d1d29b882979b54dd90c50aefb76dc7e9b05c4c02",
+      "tests/integration/core-identity.sh": "d0b7c112c78c636ea8ba596ce2d424347dc61e76e17bac1034f13e423b967d85",
+      "tests/integration/core-identity.test.mjs": "00409cd66882a2e4cc65e2758433e861063a02d48a1255aab3b14788b706521b",
+      "tests/integration/core-ready.sh": "d5339ddf09fb2bb9a654ee70d3a13258aaca34ff5cbf70867ea6b5a38aaa26e3",
+      "tests/performance/uc-02/test-plan.md": "14018e239c648dbb06db8bdc7ec5c87ad0fd6947d25116ece943fe1f3e0b78b5"
+    }
+  },
+  "first_pass_checks": {
+    "passed": [
+      "Core TypeScript",
+      "AI mock 3/3",
+      "mobile TypeScript",
+      "mobile tests 8/8",
+      "core-identity 4/4 trên PostgreSQL, áp migration 002 sau dữ liệu 001",
+      "core-ready 200/503",
+      "HTTPS gateway fixture smoke",
+      "Chrome fixture UI mở hồ sơ, cả ba tab, cuộn, làm mới, Found detail, claim chỉ đọc và logout"
+    ],
+    "open": [
+      "Chrome UI đang rà selector tab",
+      "Locust smoke đang xử lý setup",
+      "runtime native"
+    ]
+  },
+  "first_pass_security": {
+    "revision": "b1d5407ef4ad8610904e2def2c5d4bde8c00f1afc1db2edaacef23341dabf05b",
+    "auditor": "GPT-6.1 Terra medium",
+    "counts": {
+      "met": 1,
+      "unmet": 0,
+      "not_evaluable": 6
+    },
+    "rows": [
+      {
+        "sr_id": "SR-01",
+        "status": "met",
+        "evidence": "routes.ts:19–35, sessions.ts:138–162, reads.ts:33–39,68–90,103–115 và core-identity.test.mjs:130–177,218 xác nhận chủ thể cùng lọc hồ sơ/bài/claims A/B/C."
+      },
+      {
+        "sr_id": "SR-02",
+        "status": "not_evaluable",
+        "evidence": "reads.ts:44–99 và core-identity.test.mjs:179–203 kiểm cursor và mốc ổn định. Thiếu đối soát toàn bộ biên trang và 1.000 mục trên mobile."
+      },
+      {
+        "sr_id": "SR-03",
+        "status": "not_evaluable",
+        "evidence": "reads.ts:103–115 và core-identity.test.mjs:169–176 kiểm giới hạn trường và URL. Thiếu đối soát bytes của ảnh Found qua runtime."
+      },
+      {
+        "sr_id": "SR-04",
+        "status": "not_evaluable",
+        "evidence": "Header và unit mobile kiểm dữ liệu/lỗi trễ, làm mới, logout và 401. Thiếu ảnh trễ/đổi A sang B qua native."
+      },
+      {
+        "sr_id": "SR-05",
+        "status": "not_evaluable",
+        "evidence": "sessions.ts:138–176 và core-identity.test.mjs:204–218 kiểm từ chối, expiry tuyệt đối và hoạt động. Thiếu kiểm read ở mốc 30 ngày và cuộc đọc đồng thời với thu hồi."
+      },
+      {
+        "sr_id": "SR-06",
+        "status": "not_evaluable",
+        "evidence": "identity-api.ts:20–42, auth-flow.ts:195–237, app.config.ts:15–22 và gateway fixture chứng minh HTTPS/header, luồng dọn và quy tắc Android. Thiếu runtime native, manifest và đối soát log/cache."
+      },
+      {
+        "sr_id": "SR-07",
+        "status": "not_evaluable",
+        "evidence": "my-area-screens.tsx:120–143,185–189 và Chrome fixture kiểm Found tới đúng ID/claim chỉ đọc. Thiếu Lost và đối soát không gọi API khi chạm claim qua UI đầy đủ."
+      }
+    ],
+    "constraints": [
+      "Đúng đường Expo/Core và PostgreSQL 001/002. Fixture tổng hợp, Core và gateway smoke đạt. Phần native, dữ liệu ảnh, độ tương phản/mục tiêu thời gian và độ phủ bảo mật còn phải đo.",
+      "Chrome xác nhận luồng UI cơ bản và phát hiện thiếu aria-selected dưới role=tab. Đây là sai lệch SCN-PRF-03/16."
+    ]
+  },
+  "repairs": [
+    {
+      "id": "repair-001",
+      "started": true,
+      "status": "verified",
+      "starting_revision": "b1d5407ef4ad8610904e2def2c5d4bde8c00f1afc1db2edaacef23341dabf05b",
+      "affected": [
+        "SCN-PRF-03",
+        "SCN-PRF-16",
+        "ràng buộc trạng thái tab qua trợ năng"
+      ],
+      "defect": "Chrome DOM role=tab không có aria-selected dù mobile truyền accessibilityState. Nhãn tab chọn không được bộc lộ cho trình đọc màn hình web.",
+      "plan": "Truyền aria-selected qua Pressable và kiểm DOM sau mở/chuyển tab.",
+      "resulting_revision": "91c8706e63f96398eb7c517b20850385a8be80e8adadb3a6b77160387fbe3af5",
+      "checks": [
+        "Mobile TypeScript pass",
+        "Chrome DOM marks only the active tab with aria-selected=true on Lost, Found and Claims",
+        "Chrome fixture UI pass, Lost and Found route by ID, claim click is read-only without a new request"
+      ],
+      "focused_reaudit": "GPT-6.1 Terra medium verified bundle revision and scope; browser accessibility defect corrected. Native accessibility tree is separate."
+    }
+  ],
+  "verification_revision": {
+    "sha256": "91c8706e63f96398eb7c517b20850385a8be80e8adadb3a6b77160387fbe3af5",
+    "files": {
+      "README.md": "fe9266e1da56316378081b90b66dda918038642964b4625e7e43c5d6390cc9b9",
+      "apps/core/src/ai/mock.ts": "626fdb0b37b93dd8b7b00b35e3feaee937b2862c1b66482b8f8433be5dfd711a",
+      "apps/core/src/ai/redacted-fixture.ts": "f5b301c98f74f10306f0aaf96b8116b86b8bf9133aaddb664dee384dc5e17bd7",
+      "apps/core/src/api.ts": "eaa4bf4450844275568bb91e3c574c821b119594c86d53476dbf8ca0d1c99a35",
+      "apps/core/src/db.ts": "bac0b20349a20f60b1a715bf3af5d247b3f5a663899cbd915541cc1ea19317d5",
+      "apps/core/src/modules/chat/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/core/src/modules/claims/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/core/src/modules/geo/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/core/src/modules/identity/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/core/src/modules/identity/google.ts": "70e5c0fc6e1e1a0595c43c6e77dae264d9bd4098d275eaf572de15ba620636bb",
+      "apps/core/src/modules/identity/routes.ts": "b47653fcc4c197760fa41287690cb3aeff3bd53cf23afc6018432966876b2010",
+      "apps/core/src/modules/identity/sessions.ts": "0804077b4695cf4b030efbef37bb5f54206c26e07d4aae07be3d372ac101c2da",
+      "apps/core/src/modules/inbox/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/core/src/modules/lifecycle/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/core/src/modules/media/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/core/src/modules/my-area/reads.ts": "745ce2f8b3fb8bbceeee3c657e01ff2772cf8bdc9dcfdd289d57f84b7cbc64f9",
+      "apps/core/src/modules/my-area/routes.ts": "0abaeb9de4011f0475ebd60d99ca6c951d4d850839ca4a7fce848b13c142ed85",
+      "apps/core/src/modules/posts/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/core/src/worker.ts": "dbeb368dd5a770857d2a36b3cad2037dfbafc90d0926f663bddaa98710d6d56b",
+      "apps/mobile/App.tsx": "a322b7ae4dd2e751c0d286c95a5bfd9db7f44bc49d4fbe3d00a406f7d87ec241",
+      "apps/mobile/app.config.ts": "8fec19e5bd8ecc33fda27d4d1bfaee57e54285f4810baf16449c372571bb3fde",
+      "apps/mobile/index.ts": "3cc816440c81db1b45a7d796c25ee6b45e19cfa2d64f1f934e42b1384c82d90b",
+      "apps/mobile/modules/install-state/android/build.gradle": "c5fe63d4281d92b36040e81804d144b79170932afac740c6db45765356e7a125",
+      "apps/mobile/modules/install-state/android/src/main/java/expo/modules/installstate/InstallStateModule.kt": "f476bffe57e37443b68032767431b237ce6836269aee620f6e8d9b265e74ed30",
+      "apps/mobile/modules/install-state/expo-module.config.json": "c314a396c25ae394c1e6f4d4eff507d262646e7ec694270bc3c93a0f4c3a0998",
+      "apps/mobile/modules/install-state/ios/InstallState.podspec": "658496be78bdaacbe3cb03ebb709fe1a44ae549250c39ea7e80049d555f650c8",
+      "apps/mobile/modules/install-state/ios/InstallStateModule.swift": "3c0ba9441d2a6aed324b09db0b51fc7dc6ed6a08468a5a092d5a3dab49c408d6",
+      "apps/mobile/package-lock.json": "096607cb629ff9d6d5b68f7381802e240aec809078bd9db88230c8125ba165bc",
+      "apps/mobile/package.json": "664f7ac8cbf3bab49eea4388061ab0b9b6483de4033faeb4ea8e9eaa5476b6e6",
+      "apps/mobile/src/auth-flow.ts": "1506fbad05f0c0efacba543079e42464565a8130e0162981c8bb2652002520bb",
+      "apps/mobile/src/auth-platform.tsx": "e5943d70aad4575aa802d6644444cc3a6d92872fb81a135423bf004f03df8399",
+      "apps/mobile/src/auth-platform.web.tsx": "d7485ab6fccd0347407f3fa3f1da9cd6604ad9eb3b5af3e8a0402cc76ed196b4",
+      "apps/mobile/src/identity-api.ts": "8127494a509c01fcdeef6c53b38f751706574915f8ef61906cce1f78a369c2bd",
+      "apps/mobile/src/installation.ts": "acf7520ecd3ac273f889267271dd9c09aaf510bea945c58c3e3a5485efb5cde0",
+      "apps/mobile/src/my-area-api.ts": "29284167094b04faf9b70c5a25afafa2b96f66581cfa83cad49a9b29446ff0e7",
+      "apps/mobile/src/my-area-flow.ts": "aa93c5e4d380f855f116f7fb27929f9518d990af1a792f2374544f106548739c",
+      "apps/mobile/src/my-area-screens.tsx": "50790effc19d4d6664e9e6b0ee02a946cea01ab9944eec9120a24b9094271044",
+      "apps/mobile/tests/auth-flow.test.ts": "fb01b986d44d2425075dbf098db3643853e8dd2ef8c2aa3cae6b4a73ad4df0f4",
+      "apps/mobile/tests/my-area-flow.test.ts": "027779507d8894a41a79d2a808a36a0cb863c979cb21a4f481c5662a4358dbbc",
+      "apps/mobile/tsconfig.json": "ebbb676f2dffbd4bb20fcb3ad6b775c525d4a8398f7280c17e6e58601a3ab0fb",
+      "db/migrations/001_identity.sql": "fd3af3e312b722326d640e112788d489bfbffad540facad86be03a7250b91cad",
+      "db/migrations/002_my_area.sql": "f82e2e575c80d99e60cf95ddbed718fbcf4395b054cbb683e6a955fd943e6439",
+      "db/migrations/README.md": "40cb5269a678a37fd02a7eae701ff0d512bdcf0a869139e5199a7625b406ae06",
+      "docs/operations/environments.md": "03dbcf3fd2f870353b52f89da47ed9161b99be68f75fa02acd767d0fa0a17d71",
+      "infra/nginx/default.conf": "560c8bbdf6eccd9cb732a7f279ce29639fd7ddda9923f0aa8f4b8cdb1e8d0b88",
+      "infra/uc01-local/README.md": "2c8182e3b865b3f23d33a9290bc21b39b87a49e8bf146c3f7439ded7a00868bb",
+      "infra/uc01-local/compose.yaml": "cc9e834724739d9fa87aa257f37672d853015061edf367ba926adbdfcd8daa39",
+      "infra/uc01-local/fixtures.mjs": "bcb8bb132f64ec10dfa92db0231a6d44a65149944a3b9e70b4c52c71855248d4",
+      "infra/uc01-local/mobile-http-smoke.ts": "1aa70ad84933603d21bacbff5a51eccb174a99fbb8c834b8bbc6688436899c6e",
+      "infra/uc01-local/nginx.conf": "b0b672bdcb9c393699074c0b56451f5f31cd201967b325e90a23398865e01816",
+      "infra/uc01-local/run.sh": "0a0c737605998fe22d9462c0cb3fdf4d697a0f575b9aad6eaca99680302b3c60",
+      "tests/integration/assert-ready.mjs": "6b803a48db87c0ff2787cf5d1d29b882979b54dd90c50aefb76dc7e9b05c4c02",
+      "tests/integration/core-identity.sh": "d0b7c112c78c636ea8ba596ce2d424347dc61e76e17bac1034f13e423b967d85",
+      "tests/integration/core-identity.test.mjs": "d868fa5eb2ad376deb2a83ab6b6e3a200888aaa8bbcf5ed6983e17c85a123213",
+      "tests/integration/core-ready.sh": "d5339ddf09fb2bb9a654ee70d3a13258aaca34ff5cbf70867ea6b5a38aaa26e3",
+      "tests/performance/uc-02/test-plan.md": "14018e239c648dbb06db8bdc7ec5c87ad0fd6947d25116ece943fe1f3e0b78b5"
+    }
+  },
+  "verification_evidence": {
+    "passed": [
+      "Core TypeScript, AI mock 3/3, Core readiness HTTP 200/503",
+      "Mobile TypeScript, mobile tests 8/8",
+      "core-identity 4/4 with 0/20/21 boundary, 30/90 day refused reads and concurrent revoke/read on PostgreSQL 16",
+      "HTTPS Docker fixture smoke",
+      "Chrome web UI smoke with accessibility, refresh, pagination, detail, claims and logout",
+      "Locust Core smoke, local pilot and deep pagination; 3 VUs x 1.000 items per tab",
+      "Mobile MyAreaFlow over real fixture HTTPS asserted all 1.000 IDs and 50 pages in order for each tab, refresh restarts from page 1; UI full scrolling not measured",
+      "Fresh PostgreSQL 16 applied migrations 001 and 002 (six tables); populated database applied 002 in core-identity suite",
+      "Core HTTPS smoke 10/0, local-pilot 84/0 and deep pagination 453/0 requests/failures",
+      "Authenticated Found fixture URL returned the processed synthetic PNG, matched SHA-256 5caf3c3d3517685d81b4c9d4e6f392ed66d3be4188f14167465309e97ff916a3 and differed from its original. Pending thumbnail was omitted and unavailable fixture URL returned 404.",
+      "Android aapt checks on APK 773b47d880b4a1f2c66ba034cde970e4ad61f1854154d6657fd489c1787837f9 found no camera, location, contacts, storage or media read permissions in those groups",
+      "Source palette had minimum normal-text contrast 6.29:1 for assessed UC-02 text/background pairs",
+      "Android API 36 emulator and synthetic real Core HTTPS fixture: profile, avatar fallback, three tabs, processed/missing/failed Found requests, Found detail ID, Android Back, and empty Claims",
+      "Android run returned 503 READ_UNAVAILABLE on profile and retry succeeded. Core expiration returned 401 on items, signed-out screen displayed the session notice and a SecureStore presence check confirmed the key was gone",
+      "Android A→B identity switch through the Core fixture verified an in-flight A thumbnail was cancelled before the response, logout revoked A with 204, and SCR-02 displayed B with no old profile. Unit tests cover stale page and error branches."
+    ],
+    "paths": [
+      "dist/uc02-run/web-smoke.mjs",
+      "dist/uc02-run/deep-mobile-flow.ts",
+      "dist/performance/uc-02/20261122T033837Z-74c0d251/smoke/run.json",
+      "dist/performance/uc-02/20261122T033902Z-7658df4a/local-pilot/run.json",
+      "dist/performance/uc-02/20261122T034007Z-bfa8c8e9/local-deep-pagination/run.json",
+      "dist/uc02-run/android-smoke.py",
+      "dist/uc02-run/relay.mjs",
+      "dist/uc02-run/fixture-processed.png",
+      "dist/uc02-run/android-switch.py",
+      "dist/uc02-run/android-switch.log"
+    ],
+    "environment_gap": "Android fixture smoke passed. iOS lacks Xcode/simctl. Chưa kiểm ngoài emulator, chưa cuộn đối soát đủ 1.000 mục/tab bằng UI, chưa có cửa sổ 200 phiên, thiết bị/mạng và quy ước SCN-17/19.",
+    "performance_setup_recovery": "CA local cũ thiếu keyUsage theo Python 3.13. Dùng bản CA fixture cục bộ có cùng định danh và khóa, thêm keyUsage để xác minh SSL bằng --ca. Không đổi mã sản phẩm cho lần chạy pilot.",
+    "android_fixture": {
+      "debug_apk_sha256": "773b47d880b4a1f2c66ba034cde970e4ad61f1854154d6657fd489c1787837f9",
+      "metro_bundle_sha256": "4165381fb03cf6386a4876358ba4b8f338e35454006007ae32b207ac84abc3d1",
+      "adapter_sha256": "d1db3d107572ed1f6e5c79ecb800bab544533f36717f1f7c9b015e5169d59236",
+      "relay_sha256": "ae3cb091962643577602529ffff8c2f6dd604b09294170f1ee9a833c9140a56f",
+      "scope": "Isolated emulator Android API 36 user and normal HTTPS Core reads; development-only entry adapter supplies synthetic Google identity. The source implementation uses the ordinary auth, screens and data client.",
+      "smoke_status": "passed",
+      "switch_relay_sha256": "812540c83fa5259c5641232264967352659dbe6b7b2c23f07289a5663a82b718",
+      "switch_trace_sha256": "f7f47ab1ebf3b51285babaa7e6ec49a2a22d2317e7bc03ed0285e093e499cf8b"
+    }
+  },
+  "final_security_assessment": {
+    "revision": "91c8706e63f96398eb7c517b20850385a8be80e8adadb3a6b77160387fbe3af5",
+    "auditor": "GPT-6.1 Terra medium",
+    "counts": {
+      "met": 5,
+      "unmet": 0,
+      "not_evaluable": 2
+    },
+    "rows": [
+      {
+        "sr_id": "SR-01",
+        "status": "met",
+        "evidence": "Core route/query và integration 4/4 đối chiếu quyền hồ sơ, bài và cả hai vai trò claims trên fixture A/B/bên thứ ba."
+      },
+      {
+        "sr_id": "SR-02",
+        "status": "met",
+        "evidence": "Core kiểm cursor theo tài khoản/tab, hết hạn, 0/20/21 và biên trùng thời điểm, thêm/gỡ. Locust và MyAreaFlow qua HTTPS khớp từng ID của 1.000 mục/tab. Nghiệm thu cuộn hết UI được theo dõi riêng."
+      },
+      {
+        "sr_id": "SR-03",
+        "status": "met",
+        "evidence": "Core schema/payload cho thấy dữ liệu tối thiểu. URL Found đọc qua phiên hợp lệ và PNG trả đúng SHA fixture đã xử lý, khác ảnh nguồn. Android đã đi qua biến thể có ảnh, thiếu và lỗi URL. Đối chiếu chỉ áp dụng cho fixture."
+      },
+      {
+        "sr_id": "SR-04",
+        "status": "not_evaluable",
+        "evidence": "HTTP no-store, unit tests cách ly trang/lỗi trễ và Android A→B xác nhận yêu cầu ảnh A đã bị hủy, 204 thu hồi và hồ sơ B. Chưa quan sát nhánh phản hồi ảnh A vẫn tới sau đổi phiên."
+      },
+      {
+        "sr_id": "SR-05",
+        "status": "met",
+        "evidence": "Integration PostgreSQL kiểm 401/Bearer, hai mốc 30/90 ngày, trạng thái hoạt động khi bị từ chối, cuộc đọc đồng thời với revoke và quyền thiết bị/phiên khác. Android đã đi qua 401 từ Core."
+      },
+      {
+        "sr_id": "SR-06",
+        "status": "not_evaluable",
+        "evidence": "HTTPS fixture, trace đã lược dữ liệu, aapt Android và kiểm SCR-01/SecureStore sau 401 đã có. Còn iOS, đối soát log toàn đường đọc và dọn cache ảnh/kho theo hai nền tảng."
+      },
+      {
+        "sr_id": "SR-07",
+        "status": "met",
+        "evidence": "Chrome fixture kiểm đích Lost/Found theo loại và ID. Click claim giữ màn, vai trò chỉ đọc và số request giữ nguyên. Android Back và đích Found cũng đã kiểm."
+      }
+    ],
+    "constraints": [
+      "Đúng stack, entry point và hợp đồng Core 0.3.0. Mobile dùng vùng cá nhân theo phiên, fixture tổng hợp và luồng auth UC-01.",
+      "Áp được migration 001 và 002 từ DB rỗng và nâng cấp DB đã có dữ liệu 001. Gateway HTTPS fixture cùng build Core hiện hành.",
+      "Chrome đã xác nhận trợ năng trạng thái tab sau repair-001. Tương phản nguồn tối thiểu 6,29:1 cho các cặp đã tính. Android đã thử hành vi mobile và kiểm nhóm quyền APK. Còn xác nhận kích thước vùng chạm và trợ năng trên thiết bị, iOS và mốc thời gian logout/401.",
+      "SCN-PRF-18 đạt đối soát Core và dữ liệu client, còn kiểm đủ mục trên UI. SCN-PRF-17/19 cần môi trường, phép đo thiết bị và quyết định QA đã nêu trong bundle."
+    ]
+  },
+  "blockers": [
+    "iOS cần máy có Xcode/simctl và bản tích hợp để xác minh runtime, quyền, kho và dọn cache. Còn đối soát log đã lược thông tin xác thực và kiểm phản hồi ảnh cũ đến muộn sau đổi phiên.",
+    "SCN-PRF-18 cần nghiệm thu thao tác cuộn/hiển thị đủ 1.000 mục mỗi tab trên UI. Core và luồng dữ liệu mobile đã đối soát đủ ID.",
+    "SCN-PRF-17/19 cần thiết bị và mạng theo SRS, cửa sổ ít nhất 200 phiên, cách tính ảnh thay thế và cache OS/MB, rồi đo độ trễ và lưu cục bộ."
+  ]
+}

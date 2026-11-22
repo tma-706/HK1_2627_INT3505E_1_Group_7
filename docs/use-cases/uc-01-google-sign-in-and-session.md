@@ -1,29 +1,99 @@
 # UC-01 · Đăng nhập Google và quản lý phiên
 
-Phạm vi Essential của thực nghiệm UC-01/02. Dùng ID của file theo SHA-256 tại thời điểm bàn giao cho mã và bộ kiểm.
+**UC spec v2 · Chờ duyệt** · 2026-11-22 · [Tài liệu UI v2](uc-01-google-sign-in-and-session-ui.md)
+
+## Mục tiêu và phạm vi
+
+Khách đăng nhập bằng Google để vào ứng dụng. Người dùng có thể mở lại app với phiên đã lưu, hoặc kết thúc phiên của thiết bị hiện tại. Phạm vi Essential gồm xác nhận điều khoản theo bản cài, cấp và khôi phục phiên, xử lý phiên mất hiệu lực và đăng xuất. Google Identity xác thực danh tính. Core cấp và kiểm quyền phiên. UC-02 sử dụng phiên để đọc vùng cá nhân và cùng thực hiện dọn dữ liệu khi kết thúc phiên.
 
 ## Nguồn
 
-- [SRS](../requirements/lost-and-found-srs.pdf), mục 3.1, 3.2.1 và 3.3, bảng màn hình và mockup trang 2, sơ đồ phiên trang 7 · `sha256:2f67606fba01394440f4ece54716541ce4188ce8a4564748fffdf048d8a5196b`.
-- [Phân tích UC-01/02](../requirements/analysis/uc-01-02.md), quyết định Essential ngày 2026-11-21 · `sha256:407cb40c107623c8e707635acd39c7a72bd7855e187a511f032be1bdf7ee0fcf`.
-- [OpenAPI Core 0.3.0](../api/core/openapi.json) · `sha256:837aac16902c2383a0d849eb2e2404048682f7fe8519a50dd65bbc35ce21ee25`. [Ghi chú UC-01](../api/core/uc-01-notes.md), Execution Prompt v1 đã duyệt · `sha256:0d45c10534e2e68c51f374727527b806680f1b4c8f3685fbdcd30a2b9269c821`. Ghi chú gắn bản 0.2.0 lúc thiết kế UC-01. [Ghi chú UC-02](../api/core/uc-02-notes.md) ghi nhận ba operation UC-01 giữ nguyên trong 0.3.0 · `sha256:3aee221963f1dc4b0e7632c051631b5d080c974e2817a06d6dfd2a6a3c339676`. Các operation bên dưới được kiểm trực tiếp trên 0.3.0.
-- [Kiến trúc](../architecture/overview.md) và [môi trường](../operations/environments.md) · `commit:f32e7c6e1e0c0f09283811ab79410efb22925d0e`.
+- [SRS](../requirements/lost-and-found-srs.pdf), mục 3.1, 3.2.1 và 3.3, bảng màn hình và mockup trang 2–3, sơ đồ phiên trang 7 · `sha256:2f67606fba01394440f4ece54716541ce4188ce8a4564748fffdf048d8a5196b`.
+- [Phân tích UC-01/02](../requirements/analysis/uc-01-02.md), quyết định Essential và bố cục Hồ sơ dùng khi đăng xuất · `sha256:704b7618f9bfb88cc3ce741e41c3322ba3b6d72d29f04ec9d1b284199b34173f`.
+- [OpenAPI Core 0.3.0](../api/core/openapi.json) · `sha256:837aac16902c2383a0d849eb2e2404048682f7fe8519a50dd65bbc35ce21ee25`. [Ghi chú UC-01](../api/core/uc-01-notes.md) ghi Execution Prompt v1 đã duyệt ở bản 0.2.0 · `sha256:0d45c10534e2e68c51f374727527b806680f1b4c8f3685fbdcd30a2b9269c821`. [Ghi chú UC-02](../api/core/uc-02-notes.md) xác nhận ba operation UC-01 giữ nguyên trong 0.3.0 · `sha256:3aee221963f1dc4b0e7632c051631b5d080c974e2817a06d6dfd2a6a3c339676`.
+- [Kiến trúc](../architecture/overview.md) · `commit:f32e7c6e1e0c0f09283811ab79410efb22925d0e`. [Quy trình bảo trì phiên](../../db/migrations/README.md#bảng-định-danh-và-phiên), phần UC-01 · `commit:4b7e78b218227868e1e57fc85a0734773cf58d55`.
+- [Bundle triển khai UC-01 v1 đã duyệt, mục B](../operations/runs/uc-01-essential.json#L118) · SHA-256 của bundle `68de5aea578a643a1e4b7af680735dfa51c6a5723d802de8d78b1ad73715085b`.
+- Đối chiếu mobile tại [App.tsx](../../apps/mobile/App.tsx) · `sha256:a322b7ae4dd2e751c0d286c95a5bfd9db7f44bc49d4fbe3d00a406f7d87ec241`, [auth-flow.ts](../../apps/mobile/src/auth-flow.ts) · `sha256:1506fbad05f0c0efacba543079e42464565a8130e0162981c8bb2652002520bb` và [auth-platform.tsx](../../apps/mobile/src/auth-platform.tsx) · `sha256:e5943d70aad4575aa802d6644444cc3a6d92872fb81a135423bf004f03df8399`.
 
-## Tác nhân, quyền và trạng thái
+<a name="giao-dien-main"></a>
 
-- **Khách** có thể bắt đầu đăng nhập Google trên app đã cài. Đăng nhập thành công cần Internet. **Google Identity** xác thực người dùng và trả ID token qua SDK. **Core** xác minh token, tạo hoặc lấy tài khoản, đồng bộ hồ sơ và cấp phiên. PostgreSQL giữ tài khoản, hồ sơ và trạng thái phiên.
-- **Người dùng** vào vùng cá nhân sau khi mobile đã lưu hoặc xác minh phiên. Core suy ra tài khoản từ phiên Bearer và chỉ cho thu hồi phiên khớp mã được gửi. Hai thiết bị có phiên riêng. Kho bảo mật của OS giữ phiên qua đóng app và khởi động lại thiết bị.
-- Luồng cấp phiên đi từ SCR-01 đến trình chọn Google, qua xác nhận điều khoản nếu bản cài chưa hoàn tất thiết lập, rồi chờ cấp phiên. Sau khi lưu phiên, app mở màn hình chính. Hủy hoặc từ chối quay về SCR-01. Lỗi đăng nhập giữ vùng cá nhân đóng và cho thử lại. Cờ thiết lập được ghi sau khi lượt đã đồng ý đăng nhập thành công.
-- Mở nguội có mã phiên đi vào trạng thái đang xác minh. Lỗi tạm giữ mã trong kho và ẩn vùng cá nhân. Phiên mất hiệu lực đưa về SCR-01. Hủy SCR-04 giữ phiên và màn hiện tại. Xác nhận SCR-04 dọn phiên và dữ liệu cá nhân cục bộ, về SCR-01 và yêu cầu Core thu hồi nếu gửi được. Hậu điều kiện cục bộ đạt cả khi tình trạng thu hồi ở Core chưa xác nhận được.
-- Core tính hết hạn theo mốc sớm hơn giữa hoạt động thành công gần nhất cộng 30 ngày và lúc cấp phiên cộng 90 ngày. `expiresAt` phản ánh mốc hiện hành nếu thiếu hoạt động mới. Thu hồi và hết hạn chặn yêu cầu cần định danh ngay ở Core. Yêu cầu đến muộn phải tuân thủ trạng thái đó.
+## Luồng chính
 
-## Operation trong OpenAPI
+### Đăng nhập Google
+
+- **Kích hoạt và tiền điều kiện.** Khách mở app đã cài, chưa có mã phiên cục bộ. Google Identity và mạng sẵn sàng cho lượt thành công.
+- **Hậu điều kiện.** Core có một phiên dùng được cho lượt và app mở [Trang chính](uc-01-google-sign-in-and-session-ui.md#app-home) sau khi lưu phiên vào kho bảo mật của OS.
+
+1. Mobile hiển thị [SCR-01 · Đăng nhập](uc-01-google-sign-in-and-session-ui.md#scr-01-ready). Khách chạm **Đăng nhập bằng Google**.
+2. Mobile báo [đang mở trình chọn](uc-01-google-sign-in-and-session-ui.md#scr-01-selecting) và chuyển quyền hiển thị sang Google SDK. Khách chọn tài khoản trên UI của Google. SDK trả ID token cho lượt hoặc thông báo đã hủy.
+3. Nếu bản cài chưa hoàn tất bước điều khoản, Mobile mở [Điều khoản và quyền riêng tư](uc-01-google-sign-in-and-session-ui.md#scr-01-consent). Khách đọc chính sách và chọn **Đồng ý và tiếp tục**.
+4. Mobile hiển thị [đang xác thực với Core](uc-01-google-sign-in-and-session-ui.md#scr-01-issuing) và gửi ID token, mã lượt cùng loại thiết bị qua `createGoogleSession`. Core xác minh token, tìm hoặc tạo tài khoản theo Google `sub`, đồng bộ hồ sơ, cấp phiên và trả `200`.
+5. Mobile lưu mã phiên và ghi cờ điều khoản nếu đây là lần đầu bản cài hoàn tất. Sau khi lưu thành công, Mobile mở [Trang chính](uc-01-google-sign-in-and-session-ui.md#app-home). Người dùng có thể mở Hồ sơ theo [UC-02](uc-02-profile-and-my-items.md#giao-dien-main).
+
+SCN-AUTH-01–05 kiểm trình tự màn hình, xác nhận tài khoản và phiên.
+
+### Khôi phục phiên khi mở nguội
+
+- **Kích hoạt và tiền điều kiện.** Người dùng mở lại app sau khi đóng app hoặc khởi động lại thiết bị. Kho bảo mật của OS có mã phiên.
+- **Hậu điều kiện.** Người dùng thấy [Trang chính](uc-01-google-sign-in-and-session-ui.md#app-home) của phiên đã xác minh.
+
+1. Mobile hiển thị [đang xác minh phiên](uc-01-google-sign-in-and-session-ui.md#scr-01-restoring) khi đọc kho. Vùng cá nhân ẩn trong lúc chờ.
+2. Mobile gọi `validateCurrentSession` với Bearer. Core kiểm hiệu lực và cập nhật hoạt động của phiên hợp lệ trong trần hết hạn tuyệt đối.
+3. Core trả `200` với tài khoản và mốc hết hạn hiện hành. Mobile mở [Trang chính](uc-01-google-sign-in-and-session-ui.md#app-home) trực tiếp.
+
+SCN-AUTH-11/14 kiểm khôi phục và ranh giới thời hạn.
+
+### Đăng xuất thiết bị hiện tại
+
+- **Kích hoạt và tiền điều kiện.** Người dùng có phiên và chạm **Đăng xuất** trong [SCR-02 · Hồ sơ](uc-02-profile-and-my-items-ui.md#scr-02-ready).
+- **Hậu điều kiện.** Thiết bị về [SCR-01 sạch dữ liệu cá nhân](uc-01-google-sign-in-and-session-ui.md#scr-01-ready). Core thu hồi phiên hiện tại khi xử lý lệnh thành công. Các phiên thiết bị khác vẫn dùng được.
+
+1. Mobile mở [SCR-04 · Xác nhận đăng xuất](uc-01-google-sign-in-and-session-ui.md#scr-04-confirm). Người dùng xác nhận **Đăng xuất**.
+2. Mobile chuyển sang [đang dọn phiên](uc-01-google-sign-in-and-session-ui.md#scr-01-clearing), ẩn vùng cá nhân, chặn Quay lại vùng này và bỏ phản hồi muộn của phiên cũ. Mobile đồng thời gửi `revokeCurrentSession` với mã phiên vừa kết thúc nếu gửi được.
+3. Core thu hồi phiên khớp mã và trả `204`. Mobile về [SCR-01 · Đăng nhập](uc-01-google-sign-in-and-session-ui.md#scr-01-ready) khi dọn xong, độc lập với thời điểm nhận phản hồi Core.
+
+SCN-AUTH-16 kiểm dọn cục bộ, thu hồi và cách ly hai thiết bị.
+
+<a name="giao-dien-alt"></a>
+
+## Luồng thay thế
+
+- **Mở app chưa có mã phiên.** Tại bước Khôi phục 1, kho trống đưa về [SCR-01 · Đăng nhập](uc-01-google-sign-in-and-session-ui.md#scr-01-ready). Khách có thể bắt đầu bước Đăng nhập 1. SCN-AUTH-01.
+- **Hủy trình chọn.** Tại bước Đăng nhập 2, khách đóng hoặc hủy giao diện Google SDK. Mobile bỏ lượt, về [SCR-01 sạch lỗi](uc-01-google-sign-in-and-session-ui.md#scr-01-ready), giữ kho phiên trống và kết thúc trước khi gọi Core. SCN-AUTH-02.
+- **Điều khoản theo bản cài.** Tại bước Đăng nhập 3, nếu cờ đã ghi, tiếp tục bước 4 với [trạng thái đang xác thực](uc-01-google-sign-in-and-session-ui.md#scr-01-issuing). Nếu khách hủy hoặc **Từ chối** trong [màn điều khoản](uc-01-google-sign-in-and-session-ui.md#scr-01-consent), Mobile bỏ lượt, đưa về [SCR-01](uc-01-google-sign-in-and-session-ui.md#scr-01-ready) và kết thúc trước khi gọi Core hoặc ghi cờ. Cờ đã ghi tồn tại qua đăng xuất và đổi tài khoản. Bản cài mới hỏi lại. SCN-AUTH-03.
+- **Đọc chính sách.** Tại bước Đăng nhập 1 hoặc 3, khách mở liên kết từ [Đăng nhập](uc-01-google-sign-in-and-session-ui.md#scr-01-ready) hoặc [Điều khoản và quyền riêng tư](uc-01-google-sign-in-and-session-ui.md#scr-01-consent). Với URL HTTPS đã cấu hình, Mobile chuyển sang trình mở URL của hệ điều hành. Khi trở lại, khách tiếp tục tại màn nguồn. URL và nội dung thật chờ GAP-AUTH-001. SCN-AUTH-01/03/19.
+- **Chọn tài khoản khác.** Sau đăng xuất, khách bắt đầu lượt mới từ [SCR-01](uc-01-google-sign-in-and-session-ui.md#scr-01-ready) hoặc [SCR-01 có thông báo cục bộ](uc-01-google-sign-in-and-session-ui.md#scr-01-local-logout). Trong [lúc Core đang xác thực](uc-01-google-sign-in-and-session-ui.md#scr-01-issuing) của bước 4, thao tác **Chọn tài khoản khác** trước khi Mobile bắt đầu ghi kho bỏ lượt cũ, đưa về [SCR-01](uc-01-google-sign-in-and-session-ui.md#scr-01-ready) và cho mở [Google picker qua bước 1–2](uc-01-google-sign-in-and-session-ui.md#scr-01-selecting). Mỗi lượt mới sinh mã riêng. Kết quả lượt cũ bị bỏ. SCN-AUTH-03/10/17.
+- **Hủy xác nhận đăng xuất.** Ở bước Đăng xuất 1, **Huỷ** trên [SCR-04](uc-01-google-sign-in-and-session-ui.md#scr-04-confirm) đóng hộp thoại, trở về [SCR-02 · Hồ sơ](uc-02-profile-and-my-items-ui.md#scr-02-ready) và giữ phiên cùng tab hiện hành. Core chưa nhận lệnh thu hồi. SCN-AUTH-15.
+- **Gửi lại lệnh thu hồi.** Sau bước Đăng xuất 3, khi phản hồi bị mất và bản ghi đã thu hồi còn nhận diện được, gửi lại cùng mã cho `204` rỗng. Đây là ngữ nghĩa Core. Sau khi dọn xong, Mobile hiển thị [thông báo cục bộ](uc-01-google-sign-in-and-session-ui.md#scr-01-local-logout) khi chưa xác nhận và [SCR-01 sạch thông báo](uc-01-google-sign-in-and-session-ui.md#scr-01-ready) khi đã xác nhận trong cùng ngữ cảnh. SCN-AUTH-16.
+
+<a name="giao-dien-error"></a>
+
+## Luồng ngoại lệ
+
+- **Lỗi trước khi có token.** Trước bước Đăng nhập 4, Mobile hiện [ERR-A1 khi mất mạng](uc-01-google-sign-in-and-session-ui.md#scr-01-err-a1) hoặc [ERR-A2 khi Google tạm lỗi](uc-01-google-sign-in-and-session-ui.md#scr-01-err-a2). Kho phiên trống. **Thử lại** bắt đầu lại với [bước mở Google](uc-01-google-sign-in-and-session-ui.md#scr-01-selecting) và mã lượt mới sau khi chọn tài khoản. SCN-AUTH-06.
+- **Lỗi tạm trong lượt cấp phiên.** Tại bước Đăng nhập 4, mất kết nối hiện [ERR-A1](uc-01-google-sign-in-and-session-ui.md#scr-01-err-a1), còn timeout hoặc `503` khi mạng vẫn có hiện [ERR-A3](uc-01-google-sign-in-and-session-ui.md#scr-01-err-a3). Mobile chưa lưu phiên. **Thử lại** đi qua [trạng thái xác thực](uc-01-google-sign-in-and-session-ui.md#scr-01-issuing) với cùng mã lượt, token gốc và loại thiết bị nếu lượt còn hợp lệ. Nếu Core đã cấp phiên trước khi mất phản hồi, Core trả lại cùng phiên còn hiệu lực và Mobile tiếp tục bước 5. SCN-AUTH-07/09.
+- **Core từ chối đầu vào hoặc lượt cấp.** Tại bước Đăng nhập 4, đầu vào sai schema nhận `400 INVALID_REQUEST`, token bị từ chối hoặc hết hạn nhận `400 GOOGLE_TOKEN_REJECTED`, lượt xung đột nhận `409 LOGIN_ATTEMPT_CONFLICT`. Mobile giữ vùng cá nhân ẩn, dùng [thông báo tiếng Việt có Thử lại](uc-01-google-sign-in-and-session-ui.md#scr-01-err-a4) theo ánh xạ app hiện tại. Thử lại chuyển tới [đang mở Google](uc-01-google-sign-in-and-session-ui.md#scr-01-selecting) để chọn lại và sinh mã lượt mới. Phản hồi lượt đã bỏ hết hiệu lực với UI. SCN-AUTH-08/10.
+- **Liên kết chính sách lỗi.** Tại nhánh Đọc chính sách, URL thiếu hoặc chưa là HTTPS hiện [Liên kết chưa sẵn sàng](uc-01-google-sign-in-and-session-ui.md#scr-01-policy-unconfigured). Nếu OS báo không mở được đích, hiện [Không mở được liên kết](uc-01-google-sign-in-and-session-ui.md#scr-01-policy-error). **OK** đóng cảnh báo về [SCR-01](uc-01-google-sign-in-and-session-ui.md#scr-01-ready) hoặc [màn điều khoản](uc-01-google-sign-in-and-session-ui.md#scr-01-consent) tùy điểm xuất phát. Đây là hành vi hiện tại cần rà với URL thật. SCN-AUTH-01/03/19.
+- **Chưa xác minh được phiên đã lưu.** Tại bước Khôi phục 1–2, mất mạng đưa tới [lỗi khôi phục do mất mạng](uc-01-google-sign-in-and-session-ui.md#scr-01-restore-offline). Timeout hoặc `503` đưa tới [lỗi khôi phục do máy chủ](uc-01-google-sign-in-and-session-ui.md#scr-01-restore-error). Mobile giữ mã và ẩn vùng cá nhân. **Thử lại** trở về [đang xác minh](uc-01-google-sign-in-and-session-ui.md#scr-01-restoring) với mã đã lưu. SCN-AUTH-12.
+- **Phiên mất hiệu lực.** Tại bước Khôi phục 2 hoặc khi dùng operation cần phiên, `401 SESSION_INVALID` của phiên hiện hành kích hoạt [dọn phiên](uc-01-google-sign-in-and-session-ui.md#scr-01-clearing). Mobile đưa về [SCR-01 · Đăng nhập lại](uc-01-google-sign-in-and-session-ui.md#scr-01-session-expired) sạch dữ liệu với thông báo hết phiên trong 2 giây từ lúc phát hiện. Core kiểm thiếu/sai mã, hết hạn và thu hồi. SCN-AUTH-13/14 và SCN-PRF-12/15.
+- **Chưa xác nhận thu hồi.** Tại bước Đăng xuất 2–3, mất mạng, `503`, `401` hoặc mất phản hồi vẫn kết thúc ở [SCR-01 có thông báo đăng xuất khỏi thiết bị này](uc-01-google-sign-in-and-session-ui.md#scr-01-local-logout). Nếu lệnh chưa tới Core, phiên giữ hạn hiện hành. Nếu Core đã xử lý, phép đọc tiếp bị từ chối. `401` áp dụng khi mã thiếu, sai, không nhận diện hoặc hết hạn mà chưa thu hồi. Mobile giữ cách ly dữ liệu với tài khoản đăng nhập tiếp theo. SCN-AUTH-17/18.
+- **Lỗi kho cục bộ · Chờ duyệt hành vi nghiệm thu.** Tại bước Đăng nhập 5, app hiện bắt đầu dọn nếu lưu thất bại. Dọn thành công đưa về [SCR-01 có thông báo lỗi lưu](uc-01-google-sign-in-and-session-ui.md#scr-01-save-error) và cho mở Google lại. Tại bước Đăng xuất 2 hoặc nhánh Phiên mất hiệu lực, dọn thất bại đưa tới [lỗi dọn kho có Thử lại](uc-01-google-sign-in-and-session-ui.md#scr-01-storage-error) và giữ vùng cá nhân ẩn. **Thử lại** tiếp tục [dọn phiên](uc-01-google-sign-in-and-session-ui.md#scr-01-clearing) rồi hiển thị điểm kết thúc theo nhánh nguồn. Xác nhận kỳ vọng trước khi dùng làm tiêu chí cho SCN-AUTH-04/13/16/17.
+
+## Tham chiếu UI
+
+[Tài liệu UI UC-01 v2](uc-01-google-sign-in-and-session-ui.md) chứa ảnh và điểm cần duyệt theo từng trạng thái. Google SDK sở hữu trình chọn tại bước Đăng nhập 2. Hệ điều hành sở hữu trình mở URL chính sách. UI-01–04 và HW-01 được kiểm trên Android/iOS theo SCN-AUTH-19. UI-05 thuộc mức C.
+
+## Bàn giao Mobile và Core
+
+- **Mobile và OS.** Sở hữu trình chọn Google, cờ điều khoản theo bản cài, kho phiên bảo mật, điều hướng, lỗi và cách ly kết quả theo lượt hoặc phiên. Hủy trình chọn, chọn điều khoản, kiểm quyền OS và dọn cục bộ là hành vi ở thiết bị.
+- **Core và PostgreSQL.** Xác thực Google, định danh theo `sub`, giữ giao dịch đồng bộ hồ sơ và cấp tối đa một phiên dùng được cho một lượt. Kiểm hạn theo mốc sớm hơn giữa 30 ngày không hoạt động và 90 ngày từ cấp phiên. Xác minh hoặc đọc cá nhân thành công cập nhật hoạt động. Trả lại kết quả cấp cùng lượt giữ nguyên mốc hoạt động. Hết hạn và thu hồi có hiệu lực cả với yêu cầu đến muộn. [Ghi chú UC-01](../api/core/uc-01-notes.md#bất-biến-và-kiểm-thử-bảo-mật) và [hướng dẫn bảo trì](../../db/migrations/README.md#bảng-định-danh-và-phiên) là nguồn cho quy tắc lưu trữ.
+- **Giao diện API.** Đường dẫn dưới đây thuộc Core. Khi dùng gateway, lệnh gọi qua tiền tố `/api`. Phản hồi lỗi và ví dụ lấy từ OpenAPI 0.3.0.
 
 | Operation | Giao diện và quyền | Schema và kết quả |
 | --- | --- | --- |
-| `createGoogleSession` | `POST /auth/sessions`, khách | Body `CreateGoogleSessionRequest` gồm `idToken`, `deviceType` (`android` hoặc `ios`) và UUID `attemptId`. `200` dùng `GoogleSession` gồm `sessionToken`, `accountId`, `expiresAt` và header `Cache-Control: no-store`. `400 INVALID_REQUEST` hoặc `GOOGLE_TOKEN_REJECTED`, `409 LOGIN_ATTEMPT_CONFLICT`, `503 AUTH_UNAVAILABLE`. |
-| `validateCurrentSession` | `POST /auth/sessions/current/validate`, `CoreSession` | `200 CurrentSession` gồm `accountId`, `expiresAt` và `Cache-Control: no-store`. `401 SESSION_INVALID` kèm `WWW-Authenticate: Bearer`, `503 AUTH_UNAVAILABLE`. |
-| `revokeCurrentSession` | `DELETE /auth/sessions/current`, `CoreSession` | `204` rỗng khi thu hồi hoặc xác nhận lặp trong thời gian bản ghi vẫn nhận diện được. `401 SESSION_INVALID` kèm `WWW-Authenticate: Bearer`, `503 AUTH_UNAVAILABLE`. |
+| [`createGoogleSession`](../api/core/openapi.json#L82) | `POST /auth/sessions`, khách | Body `CreateGoogleSessionRequest` và `200 GoogleSession` có ví dụ tại operation. `200` có `Cache-Control: no-store`. Lỗi `400 INVALID_REQUEST` hoặc `GOOGLE_TOKEN_REJECTED`, `409 LOGIN_ATTEMPT_CONFLICT`, `503 AUTH_UNAVAILABLE`. |
+| [`validateCurrentSession`](../api/core/openapi.json#L196) | `POST /auth/sessions/current/validate`, `CoreSession` | `200 CurrentSession` có ví dụ và `Cache-Control: no-store`. `401 SESSION_INVALID` kèm `WWW-Authenticate: Bearer`, `503 AUTH_UNAVAILABLE`. |
+| [`revokeCurrentSession`](../api/core/openapi.json#L235) | `DELETE /auth/sessions/current`, `CoreSession` | `204` rỗng cho thu hồi thành công hoặc xác nhận lặp khi bản ghi còn nhận diện được. `401 SESSION_INVALID` kèm Bearer challenge, `503 AUTH_UNAVAILABLE`. |
 
 ## Kịch bản nghiệm thu
 
@@ -63,7 +133,8 @@ Phạm vi Essential của thực nghiệm UC-01/02. Dùng ID của file theo SHA
 ## Khác biệt giữa nguồn và tiêu chí còn mở
 
 - **SCN-AUTH-03/21 · Điều khoản.** Mockup SRS có màn xác nhận, luồng chữ SR-A3 chưa mô tả bước này. GAP-AUTH-001 và ghi chú API chốt theo bản cài cho Essential. Sản phẩm chốt URL thật, hành vi khi điều khoản đổi, nhu cầu bằng chứng theo tài khoản/phiên bản và cách tính thời gian chờ đồng ý vào PR-02. Hai phần thời gian có thể đo riêng trong lúc chờ quyết định.
-- **SCN-AUTH-07/09 · Kết quả cấp phiên bị mất.** FR-AUTH-07 yêu cầu “không tạo phiên” khi đăng nhập thất bại. GAP-AUTH-002 và `createGoogleSession` phân biệt lỗi trước commit và timeout khi Core đã tạo phiên. Kiểm theo nhánh đã duyệt. Core chọn và rà cơ chế trả lại cùng mã trong giới hạn lưu bản băm trước khi chốt lưu trữ và nghiệm thu SCN-AUTH-09/20. Khi cập nhật câu chữ chung, nguồn SRS sở hữu FR-AUTH-07.
-- **SCN-AUTH-09/14/16/18 · Mốc hoạt động và thu hồi lặp.** FR-AUTH-09 mô tả lần gọi thành công gần nhất, còn hợp đồng quy định trả lại kết quả cấp phiên không tính là hoạt động. EI-04 mô tả mã phiên đang hiệu lực, còn hợp đồng cho `204` lặp với bản ghi thu hồi còn nhận diện được. Dùng ngữ nghĩa hợp đồng cho thực nghiệm. Core chốt thời gian giữ bản ghi để nghiệm thu ranh giới lặp theo thời gian. Sản phẩm xác nhận 30/90 ngày và nhiều thiết bị theo TBD-02/05 trước phát hành. Rà lại bộ kiểm Core/DB nếu đổi quy tắc.
+- **SCN-AUTH-07/09 · Kết quả cấp phiên bị mất.** FR-AUTH-07 yêu cầu “không tạo phiên” khi đăng nhập thất bại. GAP-AUTH-002 và `createGoogleSession` phân biệt lỗi trước commit và timeout khi Core đã tạo phiên. Kiểm theo nhánh đã duyệt. Đối chiếu cơ chế trả lại cùng mã với bất biến lưu bản băm tại [ghi chú hợp đồng](../api/core/uc-01-notes.md#bất-biến-và-kiểm-thử-bảo-mật) khi nghiệm thu SCN-AUTH-09/20. Khi cập nhật câu chữ chung, nguồn SRS sở hữu FR-AUTH-07.
+- **SCN-AUTH-09/14/16/18 · Mốc hoạt động và thu hồi lặp.** FR-AUTH-09 mô tả lần gọi thành công gần nhất, còn hợp đồng quy định trả lại kết quả cấp phiên không tính là hoạt động. EI-04 mô tả mã phiên đang hiệu lực, còn hợp đồng cho `204` lặp với bản ghi thu hồi còn nhận diện được. Dùng ngữ nghĩa hợp đồng cho thực nghiệm. Với bản thực nghiệm, áp dụng [quy trình bảo trì phiên](../../db/migrations/README.md#bảng-định-danh-và-phiên) để kiểm ranh giới thu hồi lặp. Hợp đồng gắn `204` lặp với thời gian bản ghi còn nhận diện được. Sản phẩm xác nhận 30/90 ngày và nhiều thiết bị theo TBD-02/05 trước phát hành. Rà lại bộ kiểm Core/DB nếu đổi quy tắc.
 - **SCN-AUTH-04/19/20 · Dữ liệu thật và OS.** EI-01/05 mô tả trường Google và giới hạn tên. Ghi chú UC-02 đã chốt ảnh thay thế khi URL ảnh thiếu/lỗi, trong khi vẫn cần quy tắc đồng bộ với tên thiếu hoặc ngoài khoảng và email thiếu theo GAP-AUTH-005. Sản phẩm chốt cách xử lý. Kỹ thuật và QA kiểm dữ liệu Google theo môi trường, xác định OS tối thiểu (TBD-01) và chạy ma trận hai nền tảng. Có thể triển khai và kiểm trước với fixture tên/email hợp lệ.
 - **SCN-AUTH-21–23 · Điều kiện kết luận.** QA và kỹ thuật chốt cách tính MB/cache OS cho PR-08 và điều kiện cửa sổ tải sau pilot. Ngân sách latency riêng cho endpoint và hạn mức/rule phản hồi theo GAP-AUTH-006 còn mở. Rà lại workload, bằng chứng và mã mobile/Core khi các nguồn đó đổi.
+- **SCN-AUTH-01/03/04/13/15–17/19 · UI và kho cục bộ.** Sản phẩm xác nhận bố cục điều khoản dùng hai liên kết như app hay kèm khối tài khoản/nội dung như mockup, lối **Đăng xuất** bổ sung ở Trang chính và hành vi ghi/dọn kho thất bại. Các phương án đang minh họa và bước bị ảnh hưởng nằm ở [điểm cần duyệt của tài liệu UI](uc-01-google-sign-in-and-session-ui.md#điểm-cần-duyệt).

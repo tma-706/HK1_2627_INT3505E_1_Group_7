@@ -2,7 +2,7 @@
   "run_id": "uc-01-essential",
   "type": "product",
   "status": "blocked",
-  "verified_checkpoint": "Môi trường HTTPS local đã dựng và chạy, Core và mobile state chạy qua fixture, PostgreSQL fixture phục hồi được. Chờ nghiệm thu native, cấu hình OAuth thật và tích hợp.",
+  "verified_checkpoint": "Đã re-audit repair-004 và nghiệm thu thêm Android native bằng fixture trên APK debug định danh. Điều khoản, kho SecureStore, mở nguội, lỗi tạm, đăng xuất, cài lại và Back trong clearing có chứng cứ. Core UC-02 hai tài khoản qua kiểm thử ranh giới phiên. SR-05/06/07 vẫn thiếu chứng cứ.",
   "sources": {
     "uc": {
       "path": "docs/use-cases/uc-01-google-sign-in-and-session.md",
@@ -409,10 +409,39 @@
         "mobile npm test"
       ],
       "focused_reaudit": "GPT-6.1 Terra medium đối chiếu hash stage và types node/react. Kiểm trên revision kết hợp: typecheck và mobile 4/4 đạt."
+    },
+    {
+      "id": "repair-004",
+      "status": "verified",
+      "authorization": "2026-11-22 · yêu cầu tiếp tục audit và repair nếu cần trong phạm vi bundle đã duyệt.",
+      "affected_sr": [
+        "SR-07"
+      ],
+      "fault": "Audit nguồn độc lập trên HEAD 4b7e78b: BackHandler chỉ xử lý consent, trả false trong clearing. Bundle B.mobile yêu cầu chặn Quay lại khi xác nhận đăng xuất.",
+      "starting_revision": {
+        "git_head": "4b7e78b218227868e1e57fc85a0734773cf58d55",
+        "app_sha256": "4a8d12614c078ae712ad9330b51725a213c58976db7f074578278ca260505b05"
+      },
+      "changed_path": "apps/mobile/App.tsx",
+      "result_revision": {
+        "git_head": "4b7e78b218227868e1e57fc85a0734773cf58d55",
+        "modified_source_sha256": {
+          "apps/mobile/App.tsx": "1da0841e2660f323b4e7e0198ba677e978a0c1e91952f002028c709ab6f60d79"
+        },
+        "fixture_core_image_manifest_sha256": "c6539616ee06120b688b0914ce47efc94c1b52962e64cf5337a568249aa4dc9e"
+      },
+      "checks": [
+        "Mobile TypeScript đạt",
+        "AuthFlow 4/4 đạt",
+        "AuthFlow qua gateway HTTPS fixture đạt",
+        "Metro export Android đạt",
+        "Android :app:assembleDebug --offline đạt. APK debug và bundle Metro được kiểm build riêng, chưa chạy native trên bản sửa."
+      ],
+      "focused_reaudit": "GPT-6.1 Terra medium xác nhận handler đọc trạng thái hiện hành, giữ thao tác hủy điều khoản và tiêu thụ Back trong clearing. Đã sửa sai lệch ở mã nguồn. Còn thiếu trace Back trong lúc dọn phiên trên bản Android đã sửa."
     }
   ],
   "final_assessment": null,
-  "next_action": "Chạy native Android/iOS trên máy có toolchain và thiết bị với OAuth/gateway HTTPS/URL chính sách thật. Đo các kịch bản phụ thuộc UC-02 và pilot khi bản tích hợp sẵn sàng.",
+  "next_action": "Nghiệm thu iOS native trên máy có Xcode và simulator hoặc thiết bị. Kiểm 401 native và dữ liệu/cache UC-02 trên bản mobile đã tích hợp. Thực hiện trace Google OAuth thật khi phạm vi nghiệm thu cho phép.",
   "first_pass_checks": {
     "core_repo": "npm ci, npm run check, test:ai-mock 3/3 và core-ready 200/503 đạt",
     "core_identity": "PostgreSQL 16 áp migration DB rỗng thành công. tests/integration/core-identity.sh 1/3 đạt. Hai ca cấp phiên hợp lệ trả 503 thay vì 200.",
@@ -585,5 +614,124 @@
       "Chưa đủ điều kiện đo hiệu năng và chạy tích hợp UC-02."
     ],
     "local_addendum": "GPT-6.1 Terra medium đã đối chiếu 6 tệp infra/uc01-local, SHA-256 của bản ứng viên và chứng cứ mới. SR-08 đạt với fixture; tổng 5 đạt, 0 không đạt, 3 thiếu bằng chứng."
+  },
+  "resumed_assessment": {
+    "date": "2026-11-22",
+    "revision": {
+      "git_head": "4b7e78b218227868e1e57fc85a0734773cf58d55",
+      "modified_source_sha256": {
+        "apps/mobile/App.tsx": "1da0841e2660f323b4e7e0198ba677e978a0c1e91952f002028c709ab6f60d79"
+      },
+      "fixture_core_image_manifest_sha256": "c6539616ee06120b688b0914ce47efc94c1b52962e64cf5337a568249aa4dc9e"
+    },
+    "auditor": "GPT-6.1 Terra medium",
+    "scope": {
+      "bundle_version": 1,
+      "api_version": "0.3.0",
+      "scenarios": "Essential SCN-AUTH-01–20. SCN-AUTH-21–23 theo điều kiện trong Prompt A."
+    },
+    "checks": [
+      "Checksum bundle đã duyệt và bảy nguồn UC, API, ghi chú API, SRS, phân tích và catalog trùng hồ sơ.",
+      "Core TypeScript, build, AI mock 3/3 và readiness 200/503 đạt.",
+      "Core identity integration PostgreSQL 3/3 đạt trên DB fixture mới.",
+      "Mobile TypeScript và AuthFlow 4/4 đạt sau repair-004. Metro export Android đạt.",
+      "Dựng lại Core Docker Node 22. infra/uc01-local/run.sh up và check-mobile đạt trên PostgreSQL 16 và HTTPS fixture.",
+      "Android :app:assembleDebug --offline đạt. APK debug và bundle Metro được kiểm build riêng, chưa chạy native trên bản sửa."
+    ],
+    "android_oauth_observation": [
+      "Người dùng báo đã chạy Android và OAuth. Kiểm trực tiếp thấy emulator API 36 và app 0.1.0 build 1. Trình chọn Google mở được, Back đưa về SCR-01. Chưa định danh được revision của bản đã cài.",
+      "Gateway OAuth local trả readiness HTTP 200 qua TLS với CA đã xác minh. Core có audience Google; NODE_OPTIONS không cấu hình preload. DB Compose OAuth có hai phiên Android gắn bản ghi lượt đăng nhập. Chỉ thu thập số đếm; chưa gắn được từng phiên với lượt OAuth và build.",
+      "Ba tệp JS Google verifier, identity sessions và identity routes trong Core OAuth đang chạy có SHA-256 trùng Core fixture mới build. Entry point api.js khác."
+    ],
+    "results": [
+      {
+        "id": "SR-01",
+        "status": "met",
+        "coverage": "Fixture",
+        "evidence": "google.ts kiểm RS256, issuer, audience và exp trước khi cấp. Gateway fixture dùng JWKS tổng hợp. Core integration kiểm 400/503 và DB không ghi khi từ chối.",
+        "remaining": "Chưa có trace Google OAuth đầu cuối gắn bản hiện hành."
+      },
+      {
+        "id": "SR-02",
+        "status": "met",
+        "coverage": "Fixture",
+        "evidence": "Core integration kiểm cấp đồng thời, unique subject, một tài khoản với hai phiên và cập nhật email giữ accountId.",
+        "remaining": "Dữ liệu Google thật ngoài điều kiện EI-05 vẫn theo GAP-AUTH-005."
+      },
+      {
+        "id": "SR-03",
+        "status": "met",
+        "coverage": "Fixture",
+        "evidence": "Core integration và HTTPS fixture kiểm gửi song song cùng lượt, trả lại đúng mã, giữ mốc, từ chối xung đột và hết hạn. sessions.ts và api.ts dùng khóa có phiên bản ngoài DB.",
+        "remaining": "Vận hành giữ khóa cũ và mất phản hồi trong môi trường thử nghiệm cần bằng chứng riêng."
+      },
+      {
+        "id": "SR-04",
+        "status": "met",
+        "coverage": "Core fixture",
+        "evidence": "Core integration kiểm hai mốc 30/90 ngày. sessions.ts và my-area/routes.ts dùng cùng ranh giới Bearer. HTTPS fixture kiểm hồ sơ và ba tab, hồ sơ trả 401 sau thu hồi.",
+        "remaining": "Dữ liệu UI/cache và tình huống tích hợp UC-02 đầy đủ còn thiếu."
+      },
+      {
+        "id": "SR-05",
+        "status": "not_evaluable",
+        "coverage": "Một phần",
+        "evidence": "Gateway fixture kiểm HTTPS với CA và no-store. Migration và sessions.ts lưu hash. installation.ts dùng SecureStore. Gateway OAuth local phản hồi readiness qua TLS với CA.",
+        "remaining": "Cần trace đã lọc của lượt Google OAuth thật nếu phạm vi cho phép, SecureStore iOS và đối soát các lớp có thể ghi thông tin xác thực. Android fixture đã kiểm TLS/no-store và có/xóa mục SecureStore."
+      },
+      {
+        "id": "SR-06",
+        "status": "not_evaluable",
+        "coverage": "Một phần",
+        "evidence": "AuthFlow test và HTTPS fixture kiểm hủy điều khoản và đăng nhập mô phỏng. Quan sát app Android đã cài mở trình chọn Google và Back quay về SCR-01.",
+        "remaining": "Android fixture đã đi qua vòng đời điều khoản và cài lại. Phần xác thực Google SDK đầu cuối, đối chiếu build có cấu hình OAuth và iOS vẫn thiếu."
+      },
+      {
+        "id": "SR-07",
+        "status": "not_evaluable",
+        "coverage": "Một phần",
+        "evidence": "repair-004 qua re-audit nguồn. AuthFlow unit và HTTPS fixture kiểm khôi phục, lỗi tạm, hủy/xác nhận đăng xuất và bỏ phản hồi muộn.",
+        "remaining": "Android fixture đã nghiệm thu Back khi clearing bằng độ trễ có điều khiển và dọn phiên khi thu hồi 503. Còn thiếu iOS, 401 qua app native và đổi A/B với hồ sơ, danh sách và cache trên bản mobile tích hợp UC-02."
+      },
+      {
+        "id": "SR-08",
+        "status": "met",
+        "coverage": "Core và mobile flow fixture",
+        "evidence": "Core và HTTPS fixture kiểm thu hồi lặp 204 rỗng, 401 Bearer và thiết bị thứ hai tiếp tục hoạt động. Audit nhánh lỗi phụ thuộc và mobile fixture kiểm hủy/xác nhận SCR-04.",
+        "remaining": "Trace SCR-04 native trên hai nền tảng chưa quan sát trong lượt này."
+      }
+    ],
+    "counts": {
+      "met": 5,
+      "unmet": 0,
+      "not_evaluable": 3
+    },
+    "project_constraints": [
+      "Readiness, build Docker, cấu hình mạng Compose nội bộ và gateway HTTPS được kiểm trên fixture. Migration ban đầu chạy trên DB Core mới; overlay fixture đã áp migration UC-02.",
+      "Khóa luân phiên trong triển khai thật, nâng cấp/phục hồi từ bản schema sản phẩm trước, Google OAuth đầu cuối và pilot còn thiếu chứng cứ.",
+      "Máy audit chỉ có Xcode Command Line Tools. Cần iOS native và bản mobile tích hợp dữ liệu/cache UC-02."
+    ],
+    "android_build_artifacts": {
+      "debug_apk_sha256": "773b47d880b4a1f2c66ba034cde970e4ad61f1854154d6657fd489c1787837f9",
+      "metro_export_sha256": "7460557f090519e542586982935526d6697d6f2c5086a84820a00e3b4d040aeb"
+    },
+    "android_fixture_followup": {
+      "date": "2026-11-22",
+      "scope": "Người dùng chọn chỉ chạy fixture. Android Emulator API 36, Android user tạm cô lập. APK debug đã cài có SHA-256 trùng android_build_artifacts.debug_apk_sha256.",
+      "method": "App.tsx, AuthFlow, client API và cài đặt SecureStore giữ nguyên theo revision đã audit. Adapter thử nghiệm riêng cấp danh tính tổng hợp qua TLS và gửi ba operation đến Core fixture. Trace relay ghi tên operation, mã HTTP, no-store và cờ lỗi mô phỏng. Kiểm kho chỉ xét có hoặc không có mục core-session, không đọc giá trị.",
+      "fixture_adapter_sha256": {
+        "standard": "c9be0f8ba476d641a08a0c91ef633d501579c04adfbeafbc92b56bab04c7bc65",
+        "controlled_back": "03c4b3bf5d928cb8fde9401be4430c68ab083b6b8663d45684eee74823cd8823"
+      },
+      "checks": [
+        "SCN-AUTH-03/07 · Từ chối điều khoản không gọi cấp phiên. Lỗi cấp 503 giữ người dùng ngoài màn chính, lần thử mới vẫn hỏi điều khoản. Đồng ý cấp 200/no-store, vào màn chính. Sau đăng xuất, đăng nhập lại bỏ qua điều khoản. Cài lại app trong Android user cô lập hỏi lại điều khoản và không khôi phục phiên.",
+        "SCN-AUTH-11/12/20 · SecureStore có mục sau cấp phiên. Mở nguội xác minh 200/no-store và vào màn chính. Tiêm 503 trên xác minh làm ẩn màn chính, hiện Thử lại. Bỏ lỗi và thử lại xác minh thành công mà không chọn lại danh tính.",
+        "SCN-AUTH-15–17 · Hủy đăng xuất giữ màn chính và gửi 0 lệnh thu hồi. Xác nhận thu hồi trả 204, Back và mở nguội không mở lại màn chính hoặc xác minh phiên cũ. Khi tiêm 503 ở thu hồi, app báo đã đăng xuất trên thiết bị, mục SecureStore biến mất và mở nguội không gửi xác minh.",
+        "SCN-AUTH-16/17 · Adapter giữ clearing 12 giây trước khi gọi SecureStore thật. BackHandler native ghi nhận clearing và trả true, giao diện vẫn đang xử lý. Driver đã sửa chờ thấy lại nút đăng nhập rồi xác nhận mục SecureStore đã bị xóa. Lượt đầu dùng tiêu đề chung giữa hai màn nên kiểm kho quá sớm. Lượt chạy lại đạt. Độ trễ kiểm thử không dùng để kết luận chỉ tiêu thời gian đăng xuất.",
+        "SCN-AUTH-19 · aapt kiểm manifest APK debug. Không có quyền được yêu cầu trong các nhóm tên camera, vị trí, danh bạ, lưu trữ và media được lọc.",
+        "UC-02 Core fixture · Hai tài khoản tổng hợp đọc đúng hồ sơ và dữ liệu ở đủ ba tab. Sau thu hồi A, cả bốn đường đọc trả 401 cho A, còn B tiếp tục nhận 200."
+      ],
+      "independent_audit": "GPT-6.1 Terra medium xác nhận chứng cứ tăng độ phủ Android fixture của SR-05/06/07. SR-05/06/07 giữ not_evaluable. Bốn tệp sản phẩm được đối chiếu trùng byte. Không phát hiện lỗi nguồn mới có chứng cứ."
+    }
   }
 }

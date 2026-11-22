@@ -4,7 +4,9 @@ import {
   ScrollView, StatusBar, StyleSheet, Text, View, useWindowDimensions,
 } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { auth, isPreview, openPolicy, SignInButton, subscribeBack } from './src/auth-platform';
+import { auth, isPreview, myArea, openPolicy, SignInButton, subscribeBack } from './src/auth-platform';
+
+import { MyAreaScreens } from './src/my-area-screens';
 
 const blue = '#204dcc';
 const mark = (name: string) => performance.mark?.(name);
@@ -47,15 +49,19 @@ function Button({ label, onPress, primary = true }: { label: string; onPress: ()
 
 function Screen() {
   const state = useSyncExternalStore(auth.subscribe, auth.getState);
+  const personal = useSyncExternalStore(myArea.subscribe, myArea.getState);
   useEffect(() => {
     mark('auth.app-mounted');
     void auth.restore();
     return subscribeBack(() => {
-      if (auth.getState().screen === 'consent') {
+      const current = auth.getState();
+      const { screen } = current;
+      if (screen === 'consent') {
         auth.rejectTerms();
         return true;
       }
-      return false;
+      if (current.screen === 'home' && !current.confirming) return myArea.back();
+      return screen === 'clearing';
     });
   }, []);
   useEffect(() => {
@@ -68,13 +74,22 @@ function Screen() {
     return (
       <SafeAreaView style={styles.screen}>
         <StatusBar barStyle="dark-content" />
-        <View style={styles.topBar}>
-          <Text style={styles.topBarTitle}>Lost &amp; Found</Text>
-        </View>
-        <ScrollView contentContainerStyle={styles.pageContent}>
-          <Text accessibilityRole="header" style={styles.heading}>Trang chính</Text>
-          <Button label="Đăng xuất" onPress={() => auth.openLogout()} primary={false} />
-        </ScrollView>
+        {personal.screen === 'home' ? (
+          <>
+            <View style={styles.topBar}>
+              <Text style={styles.topBarTitle}>Lost &amp; Found</Text>
+            </View>
+            <ScrollView contentContainerStyle={styles.pageContent}>
+              <Text accessibilityRole="header" style={styles.heading}>Trang chính</Text>
+              <Button label="Đăng xuất" onPress={() => auth.openLogout()} primary={false} />
+            </ScrollView>
+            <View style={styles.actionBar}>
+              <Button label="Hồ sơ" onPress={() => { void myArea.openProfile(); }} primary={false} />
+            </View>
+          </>
+        ) : (
+          <MyAreaScreens flow={myArea} state={personal} logout={() => auth.openLogout()} />
+        )}
         <Modal visible={state.confirming} transparent animationType="fade" onRequestClose={() => auth.cancelLogout()}>
           <View style={styles.backdrop}>
             <View style={styles.dialog} accessibilityViewIsModal>

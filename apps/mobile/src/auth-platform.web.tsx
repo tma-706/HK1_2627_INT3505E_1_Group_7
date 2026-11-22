@@ -3,6 +3,9 @@ import { Pressable, StyleSheet, Text } from 'react-native';
 import { AuthFlow, type AuthDependencies } from './auth-flow';
 import { IdentityError, type GoogleSession } from './identity-api';
 
+import { MyAreaFlow } from './my-area-flow';
+import type { Item } from './my-area-api';
+
 const installation: AuthDependencies['installation'] = {
   async load() { return { accepted: false, token: null }; },
   async prepareSave() {},
@@ -36,9 +39,31 @@ export const auth = new AuthFlow({
   async selectGoogle() { return 'preview-account'; },
   attemptId: randomUUID,
   deviceType: 'android',
-  clearPersonalData() {},
+  clearPersonalData: () => myArea.clear(),
   mark() {},
 });
+
+export const myArea = new MyAreaFlow(auth, {
+  async profile() {
+    return { displayName: 'Nguyễn Minh Anh', email: 'minh.anh@example.test', avatarUrl: null };
+  },
+  async items(_token, tab, cursor) {
+    const offset = cursor === null ? 0 : Number(cursor);
+    const count = tab === 'lost' ? 21 : 2;
+    const postedAt = '2026-11-21T09:00:00Z';
+    const items = Array.from({ length: Math.min(20, count - offset) }, (_, index): Item => {
+      const item = offset + index;
+      const id = String(count - item);
+      if (tab === 'claims') return {
+        id, title: item === 0 ? 'Chìa khóa xe' : 'Ví màu nâu', sentAt: postedAt,
+        status: item === 0 ? 'Đang chờ phản hồi' : 'Đã xác nhận', role: item === 0 ? 'sent' : 'received',
+      };
+      const titles = tab === 'lost' ? ['Ví màu nâu', 'Túi vải màu xanh', 'Thẻ sinh viên'] : ['Chìa khóa xe', 'Bình giữ nhiệt'];
+      return { id, postedAt, title: titles[item % titles.length], status: tab === 'lost' ? 'Đang tìm' : 'Đang chờ nhận' };
+    });
+    return { tab, items, nextCursor: offset + items.length < count ? String(offset + items.length) : null };
+  },
+}, async () => true);
 
 export function subscribeBack() {}
 

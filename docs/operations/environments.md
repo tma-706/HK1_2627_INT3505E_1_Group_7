@@ -70,3 +70,19 @@ Từ `apps/mobile`, chạy `npm ci`, `npm run check` và `npm test`. Cấp `EXPO
 Trên các máy khác, cài Android Studio, chọn SDK Platform 37, mở Android Emulator có Google Play hoặc kết nối thiết bị Android, rồi chạy `npm run android` từ `apps/mobile`. Để chạy iOS trên macOS, cài Xcode và iOS Simulator, cấu hình `GOOGLE_IOS_URL_SCHEME` trước khi tạo bản build, rồi chạy `npm run ios` từ cùng thư mục. Xem [hướng dẫn cài công cụ của Expo](https://docs.expo.dev/get-started/set-up-your-environment/).
 
 Hai lệnh tạo development build có Google SDK và kho phiên native. Sau lần cài build đầu tiên, chạy `npm start` từ `apps/mobile` để mở Metro cho các lần sửa JavaScript hoặc TypeScript. Tạo lại development build khi đổi thư viện, mã hoặc cấu hình native. Kiểm SCR-01, điều khoản theo bản cài, SCR-04, mất mạng, khôi phục phiên và cài lại qua các kịch bản UC-01.
+
+
+## UC-02 · Hồ sơ và Mục của tôi
+
+Trên DB thử nghiệm đã có `001_identity.sql`, áp `002_my_area.sql` một lần. Lệnh HTTPS fixture tự áp theo thứ tự trên DB của project local.
+
+```sh
+bash infra/uc01-local/run.sh up
+bash tests/integration/core-identity.sh
+npm run check --prefix apps/mobile
+npm test --prefix apps/mobile
+```
+
+Bộ kiểm Core áp migration 002 lên PostgreSQL tạm đã có tài khoản và phiên UC-01, sau đó kiểm hai operation đọc bằng tài khoản tổng hợp. Xem [kế hoạch hiệu năng UC-02](../../tests/performance/uc-02/test-plan.md) để nạp dữ liệu và chạy smoke, pilot và phân trang sâu. Bộ fixture hoạt động qua gateway HTTPS cục bộ. Đăng nhập native với Google thật dùng cấu hình thử nghiệm UC-01 ở trên.
+
+Mở **Hồ sơ → Mục của tôi** để kiểm ba tab, cuộn cuối để tải thêm, kéo xuống để làm mới trên Android/iOS. Bản web dùng nút **Làm mới**. Chạm hàng Lost/Found để kiểm loại và mã bài ở đích thử nghiệm. Hàng Yêu cầu nhận đồ chỉ hiển thị dữ liệu. Đăng xuất từ Hồ sơ sử dụng xác nhận của UC-01.

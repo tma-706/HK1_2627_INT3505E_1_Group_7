@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="vi">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lost &amp; Found · UI Essential</title>
+<style>
+  :root {
+    color: #121b30;
+    background: #e8effa;
+    font: 16px/1.45 system-ui, -apple-system, sans-serif;
+    --blue: #204dcc;
+    --link: #173a8c;
+    --text: #414e65;
+    --pale: #edf3fe;
+    --line: #dce4f1;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  h1, h2, p { margin: 0; }
+  h1 { font-size: 25px; line-height: 1.2; letter-spacing: -.55px; }
+  h2 { font-size: 17px; line-height: 1.25; }
+  p { color: var(--text); }
+  button, a { font: inherit; }
+  button {
+    min-height: 48px; padding: 8px 14px; border: 1px solid var(--line);
+    border-radius: 11px; background: white; color: var(--blue); font-weight: 650;
+  }
+  button:disabled { background: #f3f5f9; color: #626d83; }
+  .primary { border-color: var(--blue); background: var(--blue); color: white; }
+  .phone {
+    width: 390px; height: 760px; margin: auto; overflow: hidden;
+    background: white; position: relative; display: flex; flex-direction: column;
+  }
+  .statusbar {
+    height: 30px; padding: 5px 23px 0; display: flex; justify-content: space-between;
+    font-size: 12px; font-weight: 700; flex: none;
+  }
+  .system-icons { display: flex; gap: 6px; align-items: center; }
+  .signal {
+    width: 13px; height: 9px; background: currentColor;
+    clip-path: polygon(0 62%, 24% 62%, 24% 43%, 50% 43%, 50% 20%, 75% 20%, 75% 0, 100% 0, 100% 100%, 0 100%);
+  }
+  .battery { width: 15px; height: 8px; border: 1px solid currentColor; border-radius: 2px; position: relative; }
+  .battery::before { content: ""; position: absolute; inset: 1px; border-radius: 1px; background: currentColor; }
+  .battery::after { content: ""; position: absolute; right: -3px; top: 2px; width: 1px; height: 2px; background: currentColor; }
+  .system-light { background: var(--blue); color: white; }
+  .system-footer {
+    flex: none; height: 18px; display: grid; place-items: center; background: #fff;
+  }
+  .system-footer::after { content: ""; width: 108px; height: 4px; border-radius: 8px; background: #121b30; }
+  .hero {
+    position: relative; flex: none; isolation: isolate; overflow: hidden;
+    min-height: 240px; margin-bottom: -16px; padding: 23px 32px 38px;
+    display: grid; justify-items: center; align-content: center; gap: 12px;
+    text-align: center; background: var(--blue); color: white;
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; z-index: -1; width: 242px; height: 242px;
+    border-radius: 50%; background: #fff1;
+  }
+  .hero::before { top: -114px; right: -67px; }
+  .hero::after { bottom: -160px; left: -94px; }
+  .hero h1 { font-size: 29px; }
+  .hero p { color: #eef3ff; max-width: 250px; font-size: 15px; }
+  .mark {
+    position: relative; width: 62px; height: 62px; border-radius: 20px;
+    background: white; color: var(--blue); display: grid; place-items: center;
+  }
+  .mark::before { content: ""; width: 19px; height: 19px; border: 2.5px solid; border-radius: 50%; transform: translate(-2px, -2px); }
+  .mark::after { content: ""; width: 12px; height: 2.5px; border-radius: 2px; background: currentColor; position: absolute; transform: translate(10px, 10px) rotate(45deg); }
+  .login {
+    background: white; border-radius: 20px 20px 0 0; position: relative;
+    padding: 22px 24px 10px; display: grid; gap: 10px; align-content: start; flex: 1;
+  }
+  .login p, .notice { font-size: 15px; }
+  .login button { width: 100%; }
+  .google { display: flex; justify-content: center; align-items: center; gap: 11px; color: #27344a; }
+  .google-letter {
+    font-size: 21px; font-weight: 800; line-height: 1; background: conic-gradient(#4285f4 0 31%, #34a853 31% 48%, #fbbc05 48% 65%, #ea4335 65% 88%, #4285f4 88%);
+    background-clip: text; color: transparent;
+  }
+  .policy-footer { margin-top: auto; padding: 8px 20px 0; text-align: center; font-size: 13px; }
+  .policy-footer nav { display: flex; justify-content: center; gap: 10px; }
+  a { color: var(--link); }
+  .policy-footer a { min-height: 48px; display: grid; align-items: center; }
+  .notice { background: var(--pale); color: var(--link); padding: 12px 14px; border-radius: 10px; }
+  .top {
+    flex: none; display: flex; align-items: center; gap: 13px; min-height: 58px;
+    border-bottom: 1px solid var(--line); padding: 0 20px;
+  }
+  .top h1 { font-size: 20px; }
+  .back { border: 0; padding-left: 0; padding-right: 5px; font-size: 15px; }
+  .body { padding: 22px; flex: 1; }
+  .spread { display: flex; flex-direction: column; gap: 14px; }
+  .policy-card { display: flex; align-items: center; min-height: 55px; border-bottom: 1px solid var(--line); font-weight: 650; }
+  .actions { border-top: 1px solid var(--line); padding: 16px 22px; display: grid; gap: 8px; }
+  .busy { min-height: 48px; display: flex; align-items: center; justify-content: center; gap: 9px; color: var(--text); font-size: 15px; }
+  .spinner { width: 18px; height: 18px; border: 2px solid #c8d7fb; border-top-color: var(--blue); border-right-color: var(--blue); border-radius: 50%; flex: none; }
+  .pull-indicator { width: 34px; height: 34px; margin: 1px auto 10px; display: grid; place-items: center; border-radius: 50%; background: white; box-shadow: 0 2px 6px #19314c25; }
+  .overlay {
+    position: absolute; inset: 0; background: #17233b99;
+    display: grid; place-items: center; padding: 24px;
+  }
+  .dialog { width: 100%; border-radius: 18px; padding: 21px; background: white; display: grid; gap: 13px; }
+  .dialog h2 { font-size: 20px; }
+  .dialog button { flex: 1; }
+  .dialog nav { display: flex; gap: 9px; }
+  .profile-area { padding: 12px 16px 0; flex: none; }
+  .profile {
+    display: flex; align-items: center; gap: 13px;
+    background: var(--pale); border-radius: 14px; padding: 11px 14px;
+  }
+  .avatar { width: 50px; height: 50px; flex: none; border-radius: 50%; display: grid; place-items: center; text-align: center; }
+  .avatar.sample { background: #cedeff; color: var(--link); font-size: 18px; font-weight: 750; }
+  .avatar.missing { background: #e0e9f8; color: var(--text); font-size: 10px; line-height: 1.2; padding: 4px; }
+  .profile h2 { font-size: 17px; }
+  .profile p { font-size: 13px; }
+  .items-heading { padding: 12px 16px 4px; flex: none; }
+  .personal-footer { flex: none; background: white; border-top: 1px solid var(--line); padding: 10px 16px 8px; }
+  .personal-footer .primary { width: 100%; background: #173a8c; border-color: #173a8c; }
+  .tabs {
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px;
+    padding: 0 12px; border-bottom: 1px solid var(--line); flex: none;
+  }
+  .tabs button { border: 0; border-radius: 0; color: var(--text); padding: 4px; font-size: 13px; border-bottom: 3px solid transparent; }
+  .tabs [aria-selected="true"] { border-color: var(--blue); color: var(--link); background: var(--pale); }
+  .list { flex: 1; min-height: 0; overflow-y: auto; padding: 8px 16px; background: #f5f7fb; }
+  .row {
+    display: flex; gap: 11px; align-items: center; border: 1px solid #e3e9f3;
+    padding: 8px 10px; background: white; border-radius: 12px; margin-bottom: 6px;
+  }
+  .row-copy { flex: 1; min-width: 0; }
+  .row h2 { font-size: 16px; }
+  .row p { font-size: 13px; margin-top: 2px; }
+  .row strong { display: inline-block; margin-top: 2px; border-radius: 6px; padding: 2px 6px; background: var(--pale); color: var(--link); font-size: 12px; }
+  .chevron { color: var(--link); font-size: 22px; }
+  .thumb {
+    background: #e5edf9; color: var(--text); display: grid; place-items: center;
+    border-radius: 9px; width: 49px; height: 49px; flex: none; position: relative; font-size: 12px;
+  }
+  .wallet { background: #e8ddd1; }
+  .wallet::before { content: ""; width: 29px; height: 19px; border-radius: 4px; background: #725039; border-top: 4px solid #8e684f; }
+  .wallet::after { content: ""; position: absolute; right: 8px; top: 23px; width: 10px; height: 5px; border-radius: 2px; background: #b59372; }
+  .keys { background: #deebf8; }
+  .keys::before { content: ""; width: 11px; height: 11px; border: 3px solid #52687d; border-radius: 50%; position: absolute; top: 14px; left: 12px; }
+  .keys::after { content: ""; width: 16px; height: 5px; border-right: 6px double #52687d; background: #52687d; border-radius: 3px; transform: translate(5px, 5px) rotate(40deg); }
+  .message { padding: 19px 8px; text-align: center; color: var(--text); font-size: 14px; }
+  .empty { margin: 80px auto 0; max-width: 280px; font-weight: 650; text-align: center; color: #263750; }
+  .error { display: flex; min-height: 60px; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+  .error button { flex: none; }
+  .menu { width: min(100% - 32px, 740px); margin: 32px auto; }
+  .menu ul { columns: 2; padding-left: 22px; }
+  .menu li { margin: 0 0 5px; break-inside: avoid; }
+  html.capture { background: white; }
+  html.capture .phone { margin: 0; }
+</style>
+<div id="preview"></div>
+<script>
+  // Static review frames. All names, entries and thumbnails are sample data.
+  const root = document.querySelector('#preview');
+  const statusbar = (light) => `<div class="statusbar ${light ? 'system-light' : ''}"><span>9:41</span><div class="system-icons"><i class="signal"></i><i class="battery"></i></div></div>`;
+  const phone = (content, light = false) => `<main class="phone">${statusbar(light)}${content}<div class="system-footer"></div></main>`;
+  const button = (label, primary = false) => `<button class="${primary ? 'primary' : ''}">${label}</button>`;
+  const screenHeader = (title, back = false) => `<header class="top">${back ? '<button class="back">‹ Quay lại</button>' : ''}<h1>${title}</h1></header>`;
+  const busy = (label = 'Đang tải') => `<div class="busy"><i class="spinner"></i>${label}</div>`;
+  const notice = (text) => `<p class="notice">${text}</p>`;
+  const policyLinks = '<a href="#">Điều khoản dịch vụ</a><a href="#">Chính sách quyền riêng tư</a>';
+  const offline = 'Không có kết nối mạng. Hãy kiểm tra mạng rồi thử lại.';
+  const unavailable = 'Máy chủ đang bận. Hãy thử lại sau.';
+  const storage = 'Không thể cập nhật dữ liệu đăng nhập trên thiết bị. Hãy thử lại.';
+  const loginStates = {
+    ready: { signIn: true },
+    selecting: { signIn: true, wait: 'Đang xử lý' },
+    issuing: { signIn: true, wait: 'Đang xử lý', change: true },
+    'err-a1': { signIn: true, notice: offline, retry: true },
+    'err-a2': { signIn: true, notice: 'Không kết nối được tới Google. Hãy thử lại sau ít phút.', retry: true },
+    'err-a3': { signIn: true, notice: unavailable, retry: true },
+    'err-a4': { signIn: true, notice: 'Không xác minh được tài khoản Google. Hãy thử lại hoặc chọn tài khoản khác.', retry: true },
+    restoring: { wait: 'Đang xác minh phiên' },
+    'restore-offline': { notice: offline, retry: true },
+    'restore-error': { notice: unavailable, retry: true },
+    'session-expired': { signIn: true, heading: 'Đăng nhập lại', notice: 'Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại' },
+    clearing: { wait: 'Đang xử lý' },
+    'local-logout': { signIn: true, notice: 'Đã đăng xuất khỏi ứng dụng trên thiết bị này' },
+    'storage-error': { notice: storage, retry: true },
+    'save-error': { signIn: true, notice: storage },
+  };
+  function login(state) {
+    const google = state.signIn ? `<p>Đăng nhập để đăng bài báo mất, báo nhặt đồ và theo dõi yêu cầu nhận đồ của bạn.</p><button class="google" ${state.wait ? 'disabled' : ''}><span class="google-letter">G</span>Đăng nhập bằng Google</button>` : '';
+    const policies = state.signIn ? `<footer class="policy-footer"><p>Khi đăng nhập, bạn đồng ý với</p><nav>${policyLinks}</nav></footer>` : '';
+    const hero = '<div class="hero"><div class="mark"></div><h1>Lost &amp; Found</h1><p>Kết nối người mất đồ với người nhặt được đồ.</p></div>';
+    return phone(`${hero}<section class="login">${state.notice ? notice(state.notice) : ''}<h1>${state.heading || 'Chào mừng bạn'}</h1>${google}${state.wait ? busy(state.wait) : ''}${state.retry ? button('Thử lại', true) : ''}${state.change ? button('Chọn tài khoản khác') : ''}</section>${policies}`, true);
+  }
+  function consent() {
+    return phone(`${screenHeader('Điều khoản và quyền riêng tư')}<section class="body spread">
+      <p>Đây là lần đăng nhập đầu tiên trên bản cài này. Vui lòng đọc và đồng ý để tiếp tục.</p>
+      <div><a class="policy-card" href="#">Điều khoản dịch vụ</a><a class="policy-card" href="#">Chính sách quyền riêng tư</a></div>
+      </section><nav class="actions">${button('Đồng ý và tiếp tục', true)}${button('Từ chối')}</nav>`);
+  }
+  function error(reason) {
+    const message = reason === 'offline' ? 'Mất kết nối mạng' : 'Máy chủ không phản hồi';
+    return `<div class="notice error"><span>${message}</span>${button('Thử lại')}</div>`;
+  }
+  function profile(state) {
+    const hasProfile = state === 'ready' || state === 'fallback' || state.startsWith('kept-');
+    const profileCard = hasProfile
+      ? `<article class="profile"><div class="avatar ${state === 'fallback' ? 'missing">Ảnh đại diện' : 'sample">MA'}</div><div><h2>Nguyễn Minh Anh</h2><p>minh.anh@example.com</p></div></article>`
+      : '';
+    const failed = state.startsWith('error-') || state.startsWith('kept-');
+    const feedback = state === 'loading' ? busy() : failed ? error(state.endsWith('offline') ? 'offline' : 'server') : '';
+    return `<section class="profile-area">${feedback}${profileCard}</section>`;
+  }
+  function dialog(title, copy, actions) {
+    return `<div class="overlay"><section class="dialog" role="dialog" aria-modal="true"><h2>${title}</h2>${copy ? `<p>${copy}</p>` : ''}<nav>${actions}</nav></section></div>`;
+  }
+  const lists = {
+    lost: {
+      label: 'Bài báo mất',
+      empty: 'Bạn chưa có bài báo mất nào',
+      entries: [
+        ['Ví da màu nâu', '19:20 · 17/11/2026', 'Đang tìm', 'wallet'],
+        ['Tai nghe không dây', '16:30 · 12/11/2026', 'Đã tìm thấy'],
+        ['Thẻ sinh viên', '08:45 · 08/11/2026', 'Đã đóng'],
+      ],
+      newEntry: ['Ba lô màu xanh', '08:20 · 21/11/2026', 'Đang tìm'],
+      id: 'lost-001',
+    },
+    found: {
+      label: 'Bài báo nhặt',
+      empty: 'Bạn chưa có bài báo nhặt nào',
+      entries: [
+        ['Chìa khóa xe máy', '15:10 · 17/11/2026', 'Đang giữ', 'keys'],
+        ['Áo khoác màu đen', '09:40 · 15/11/2026', 'Đang giữ'],
+        ['Bình nước thép', '14:15 · 11/11/2026', 'Đã đóng'],
+      ],
+      newEntry: ['Ô gấp màu xám', '10:10 · 20/11/2026', 'Đang giữ'],
+      id: 'found-002',
+    },
+    claims: {
+      label: 'Yêu cầu nhận đồ',
+      empty: 'Bạn chưa có yêu cầu nhận đồ nào',
+      entries: [
+        ['Ví da màu nâu', '18:42 · 18/11/2026', 'Chờ xử lý', 'Tôi gửi'],
+        ['Áo khoác màu đen', '10:14 · 16/11/2026', 'Đã chấp nhận', 'Gửi đến bài của tôi'],
+        ['Chìa khóa xe máy', '08:30 · 13/11/2026', 'Đã từ chối', 'Tôi gửi'],
+      ],
+      newEntry: ['Bình nước thép', '09:30 · 21/11/2026', 'Chờ xử lý', 'Gửi đến bài của tôi'],
+    },
+  };
+  const listStates = [
+    'loading', 'ready', 'empty', 'next', 'refresh', 'refresh-empty', 'refreshed', 'end',
+    'error-offline', 'error-server', 'kept-offline', 'kept-server',
+  ];
+  function row(tab, [title, date, status, thumbnailOrRole]) {
+    const claim = tab === 'claims';
+    const thumb = claim ? '' : `<span class="thumb ${thumbnailOrRole || ''}">${thumbnailOrRole ? '' : 'Ảnh'}</span>`;
+    const role = claim ? `<p>${thumbnailOrRole}</p>` : '';
+    const chevron = claim ? '' : '<span class="chevron">›</span>';
+    return `<article class="row">${thumb}<div class="row-copy"><h2>${title}</h2><p>${date}</p><strong>${status}</strong>${role}</div>${chevron}</article>`;
+  }
+  function list(tab, state) {
+    const selected = Object.keys(lists).map((key) => `<button role="tab" aria-selected="${tab === key}">${lists[key].label}</button>`).join('');
+    const hasRows = ['ready', 'next', 'refresh', 'refreshed', 'end', 'kept-offline', 'kept-server'].includes(state);
+    const hasError = state.startsWith('error-') || state.startsWith('kept-');
+    const pull = '<div class="pull-indicator" role="status" aria-label="Đang làm mới"><i class="spinner"></i></div>';
+    const refreshing = state === 'refresh' || state === 'refresh-empty';
+    const first = state === 'loading' ? busy() : refreshing ? pull : '';
+    const last = state === 'next' ? busy() : state === 'end' ? '<p class="message">Đã hiển thị tất cả</p>' : '';
+    const { entries, newEntry } = lists[tab];
+    const visibleEntries = state === 'refreshed' ? [newEntry, ...entries] : entries;
+    const rows = hasRows ? visibleEntries.map((entry) => row(tab, entry)).join('') : '';
+    const empty = state === 'empty' ? `<p class="empty">${lists[tab].empty}</p>` : '';
+    return `<h2 class="items-heading">Mục của tôi</h2><nav class="tabs" role="tablist">${selected}</nav>
+      <section class="list">${hasError ? error(state.endsWith('offline') ? 'offline' : 'server') : ''}${first}${rows}${empty}${last}</section>`;
+  }
+  function personal(profileState, tab, listState, modal = '') {
+    return phone(`${screenHeader('Hồ sơ', true)}${profile(profileState)}${list(tab, listState)}
+      <footer class="personal-footer">${button('Đăng xuất', true)}</footer>${modal}`);
+  }
+  function detail(tab) {
+    const entry = lists[tab].entries[tab === 'found' ? 1 : 0];
+    return phone(`${screenHeader(lists[tab].label, true)}<section class="body spread"><h2>${entry[0]}</h2><p>Mã bài ${lists[tab].id}</p></section>`);
+  }
+
+  const previews = {};
+  for (const [state, data] of Object.entries(loginStates)) previews[`scr-01-${state}`] = () => login(data);
+  Object.assign(previews, {
+    'scr-01-consent': consent,
+    'scr-01-policy-unconfigured': () => login(loginStates.ready).replace('</main>', dialog('Liên kết chưa sẵn sàng', '', button('OK', true)) + '</main>'),
+    'scr-01-policy-error': () => consent().replace('</main>', dialog('Không mở được liên kết', '', button('OK', true)) + '</main>'),
+    'app-home': () => phone(`${screenHeader('Lost &amp; Found')}<section class="body"><h1>Trang chính</h1></section><nav class="actions">${button('Hồ sơ')}</nav>`),
+    'scr-04-confirm': () => personal('ready', 'lost', 'ready', dialog('Đăng xuất khỏi thiết bị này?', 'Các thiết bị khác của bạn vẫn giữ phiên đăng nhập.', button('Huỷ') + button('Đăng xuất', true))),
+    'lost-detail-preview': () => detail('lost'),
+    'found-detail-preview': () => detail('found'),
+  });
+  for (const state of ['loading', 'ready', 'fallback', 'error-offline', 'error-server', 'kept-offline', 'kept-server']) {
+    previews[`scr-02-${state}`] = () => personal(state, 'lost', state === 'loading' ? 'loading' : 'ready');
+  }
+  for (const tab of Object.keys(lists)) {
+    for (const state of listStates) previews[`scr-03-${tab}-${state}`] = () => personal('ready', tab, state);
+  }
+
+  const state = new URLSearchParams(location.search).get('state');
+  if (Object.hasOwn(previews, state)) {
+    document.documentElement.classList.add('capture');
+    root.innerHTML = previews[state]();
+  } else {
+    root.innerHTML = `<main class="menu"><h1>Lost &amp; Found · UI Essential</h1><p>Hình minh họa tĩnh bằng dữ liệu mẫu.</p><ul>${Object.keys(previews).map((key) => `<li><a href="?state=${key}">${key}</a></li>`).join('')}</ul></main>`;
+  }
+</script>
+</html>

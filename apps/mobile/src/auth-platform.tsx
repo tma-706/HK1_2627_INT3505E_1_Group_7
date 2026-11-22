@@ -5,6 +5,8 @@ import { GoogleOneTapSignIn, GoogleSignInButton } from 'react-native-nitro-googl
 import { AuthFlow } from './auth-flow';
 import { identityApi } from './identity-api';
 import { installation } from './installation';
+import { myAreaApi } from './my-area-api';
+import { MyAreaFlow } from './my-area-flow';
 
 const webClientId = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID;
 const iosClientId = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
@@ -14,14 +16,16 @@ const policies = {
 };
 const deviceType = Platform.OS === 'ios' ? 'ios' : 'android';
 
+async function online() {
+  const network = await getNetworkStateAsync();
+  return network.isConnected !== false && network.isInternetReachable !== false;
+}
+
 export const isPreview = false;
 export const auth = new AuthFlow({
   installation,
   api: identityApi(process.env.EXPO_PUBLIC_CORE_URL),
-  online: async () => {
-    const network = await getNetworkStateAsync();
-    return network.isConnected !== false && network.isInternetReachable !== false;
-  },
+  online,
   async selectGoogle() {
     if (!webClientId || (deviceType === 'ios' && !iosClientId)) throw new Error('Google clients not configured');
     GoogleOneTapSignIn.configure({ webClientId, iosClientId, autoSelectOnSignIn: false });
@@ -33,11 +37,11 @@ export const auth = new AuthFlow({
   },
   attemptId: randomUUID,
   deviceType,
-  clearPersonalData: () => {
-    // UC-01 keeps no profile or item cache. UC-02 can register its cleanup here.
-  },
+  clearPersonalData: () => myArea.clear(),
   mark: (name) => performance.mark?.(name),
 });
+
+export const myArea = new MyAreaFlow(auth, myAreaApi(process.env.EXPO_PUBLIC_CORE_URL), online);
 
 export function subscribeBack(handler: () => boolean) {
   const subscription = BackHandler.addEventListener('hardwareBackPress', handler);

@@ -1,7 +1,7 @@
 # Kiểm thử hiệu năng UC-01
 
-- [UC-01](../../../docs/use-cases/uc-01-google-sign-in-and-session.md), `sha256:a4b514304161e475148910ba465023a63e1f99b3361395e92bf77330ff500b0f`.
-- [OpenAPI Core 0.3.0](../../../docs/api/core/openapi.json), `sha256:2bc3ced154893f3e813abb7909737af1be9c5f326212a3d5528307c61648656e`.
+- [UC-01](../../../docs/use-cases/uc-01-google-sign-in-and-session.md), `sha256:e680abe1cd3abeab2c7bb59361af19de929bf7c628f4142d234e6630cede8519`.
+- [OpenAPI Core 0.3.0](../../../docs/api/core/openapi.json), `sha256:837aac16902c2383a0d849eb2e2404048682f7fe8519a50dd65bbc35ce21ee25`.
 - [SRS, mục 3.3](../../../docs/requirements/lost-and-found-srs.pdf), `sha256:2f67606fba01394440f4ece54716541ce4188ce8a4564748fffdf048d8a5196b`.
 
 | Profile | Kịch bản và tải |
