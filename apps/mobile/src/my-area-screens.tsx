@@ -143,9 +143,10 @@ function Row({ item, open }: { item: Item; open: (post: Post) => void }) {
   );
 }
 
-export function MyAreaScreens({ flow, state, logout }: {
+export function MyAreaScreens({ flow, state, back, logout }: {
   flow: MyAreaFlow;
   state: ReturnType<MyAreaFlow['getState']>;
+  back: () => void;
   logout: () => void;
 }) {
   const { profile, list, detail } = state;
@@ -153,48 +154,45 @@ export function MyAreaScreens({ flow, state, logout }: {
     if (state.screen === 'profile' && profile) performance.mark?.('my-area.profile-rendered');
   }, [state.screen, profile]);
   useEffect(() => {
-    if (state.screen === 'items' && list && !list.load && !list.error) {
+    if (state.screen === 'profile' && list && !list.load && !list.error) {
       performance.mark?.('my-area.page-rendered');
     }
   }, [state.screen, list]);
 
   if (state.screen === 'home') return null;
-  const heading = state.screen === 'profile' ? 'Hồ sơ' : detail ? labels[detail.tab] : 'Mục của tôi';
   return (
     <>
       <View style={styles.header}>
-        <Action label="Quay lại" onPress={flow.back} />
-        <Text accessibilityRole="header" style={styles.heading}>{heading}</Text>
+        <Action label="Quay lại" onPress={back} />
+        <Text accessibilityRole="header" style={styles.heading}>{detail ? labels[detail.tab] : 'Hồ sơ'}</Text>
       </View>
-      {state.screen === 'profile' ? (
-        <ScrollView contentContainerStyle={styles.content}>
-          {state.profileLoading ? <Loading /> : null}
-          {state.profileError ? <ErrorNotice reason={state.profileError} retry={() => void flow.openProfile()} /> : null}
-          {profile ? (
-            <View style={styles.profile}>
-              <PrivateImage key={profile.avatarUrl} url={profile.avatarUrl} avatar />
-              <Text style={styles.name}>{profile.displayName}</Text>
-              <Text style={styles.text}>{profile.email}</Text>
-            </View>
-          ) : null}
-          <View style={styles.profileActions}>
-            <Action label="Mục của tôi" onPress={() => flow.openItems()} />
-            <Action label="Đăng xuất" onPress={logout} />
-          </View>
-        </ScrollView>
-      ) : state.screen === 'detail' && detail ? (
+      {detail ? (
         <ScrollView contentContainerStyle={styles.content}>
           <Text accessibilityRole="header" style={styles.name}>{detail.post.title}</Text>
           <Text style={styles.text}>Mã bài {detail.post.id}</Text>
         </ScrollView>
       ) : list ? (
         <>
+          <View style={styles.summary}>
+            {profile ? (
+              <View style={styles.profile}>
+                <PrivateImage key={profile.avatarUrl} url={profile.avatarUrl} avatar />
+                <View style={styles.rowText}>
+                  <Text style={styles.name}>{profile.displayName}</Text>
+                  <Text style={styles.text}>{profile.email}</Text>
+                </View>
+              </View>
+            ) : null}
+            {state.profileLoading ? <Loading /> : null}
+            {state.profileError ? <ErrorNotice reason={state.profileError} retry={() => flow.retryProfile()} /> : null}
+            <Text accessibilityRole="header" style={styles.heading}>Mục của tôi</Text>
+          </View>
           <View style={styles.tabs} accessibilityRole="tablist">
             {tabs.map((tab) => (
               <Pressable
                 key={tab}
                 accessibilityRole="tab"
-                aria-selected={list.tab === tab}
+                accessibilityState={{ selected: list.tab === tab }}
                 onPress={() => flow.selectTab(tab)}
                 style={[styles.tab, list.tab === tab && styles.selectedTab]}
               >
@@ -205,6 +203,7 @@ export function MyAreaScreens({ flow, state, logout }: {
           {Platform.OS === 'web' ? <Action label="Làm mới" onPress={() => flow.refresh()} /> : null}
           <FlatList
             key={list.tab}
+            style={styles.scroll}
             data={list.items}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => <Row item={item} open={(post) => flow.openPost(post)} />}
@@ -220,6 +219,11 @@ export function MyAreaScreens({ flow, state, logout }: {
                 ? <Text accessibilityLiveRegion="polite" style={styles.listMessage}>Đã hiển thị tất cả</Text>
                 : undefined}
           />
+          <View style={styles.footer}>
+            <Pressable accessibilityRole="button" onPress={logout} style={styles.logout}>
+              <Text style={styles.logoutText}>Đăng xuất</Text>
+            </Pressable>
+          </View>
         </>
       ) : null}
     </>
@@ -233,8 +237,12 @@ const styles = StyleSheet.create({
   actionText: { fontSize: 15, fontWeight: '700', color: blue },
   text: { fontSize: 15, color: '#414e65' },
   content: { padding: 22, gap: 16 },
-  profile: { alignItems: 'center', gap: 8, backgroundColor: '#edf3fe', padding: 22, borderRadius: 16 },
-  profileActions: { gap: 4 },
+  summary: { paddingHorizontal: 16, paddingTop: 12, gap: 12 },
+  profile: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#edf3fe', padding: 14, borderRadius: 16 },
+  scroll: { flex: 1, backgroundColor: '#f1f4f8' },
+  footer: { paddingHorizontal: 16, paddingVertical: 10, borderTopWidth: 1, borderColor: '#e4e9f3' },
+  logout: { minHeight: 48, alignItems: 'center', justifyContent: 'center', borderRadius: 12, backgroundColor: '#14532d' },
+  logoutText: { color: '#fff', fontSize: 16, fontWeight: '700' },
   name: { fontSize: 23, color: '#121b30', fontWeight: '700' },
   placeholder: { overflow: 'hidden', width: 58, height: 58, borderRadius: 10, backgroundColor: '#e7eefb', alignItems: 'center', justifyContent: 'center' },
   avatar: { width: 82, height: 82, borderRadius: 41 },
@@ -245,7 +253,7 @@ const styles = StyleSheet.create({
   tabText: { color: '#414e65', textAlign: 'center', fontSize: 14, fontWeight: '600' },
   selectedText: { color: '#173a8c' },
   list: { paddingHorizontal: 16, paddingBottom: 12 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 72, paddingVertical: 12, borderBottomWidth: 1, borderColor: '#e4e9f3' },
+  row: { backgroundColor: '#fff', borderRadius: 12, marginTop: 8, paddingHorizontal: 12, flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: 72, paddingVertical: 12, borderBottomWidth: 1, borderColor: '#e4e9f3' },
   rowText: { flex: 1, gap: 3 },
   rowTitle: { fontSize: 16, color: '#121b30', fontWeight: '700' },
   status: { fontSize: 14, color: '#173a8c', fontWeight: '600' },

@@ -30,20 +30,10 @@ Ba ID trên là kế hoạch thực thi ở local. Smoke và pilot đồng thờ
 | Soak | [session-state-retention.txt](../scenarios/uc-01/soak/session-state-retention.txt) | Giữ 200 VU trong 2 giờ, theo dõi tài nguyên phiên |
 | Breakpoint | [session-capacity-steps.txt](../scenarios/uc-01/breakpoint/session-capacity-steps.txt) | Tăng từng bậc 50 VU đến trần thiết kế 350 VU |
 
-[workloads.yml](workloads.yml) cấu hình các profile local đang chạy. [scenarios.yml](scenarios.yml) giữ các thiết kế staging để chọn khi có đích và fixture đại diện. Mức 200 VU lấy từ mục tiêu thử nghiệm PR-01. Nhịp tăng, đỉnh và thời gian giữ cần được hiệu chỉnh theo nhu cầu thật, trần staging và bằng chứng từ pilot.
+[workloads.yml](workloads.yml) ghi thông số các profile local của bản thực nghiệm. [scenarios.yml](scenarios.yml) giữ các thiết kế staging để chọn khi có đích và fixture đại diện. Mức 200 VU lấy từ mục tiêu thử nghiệm PR-01. Nhịp tăng, đỉnh và thời gian giữ cần được hiệu chỉnh theo nhu cầu thật, trần staging và bằng chứng từ pilot.
 
 Fixture cấp JWT ký bằng khóa thử nghiệm cùng bộ xác minh Core để mô phỏng đầu vào Google, một danh tính độc lập mỗi user, hiệu lực 5 phút. Không gọi Google thật. Cấp phiên dùng `POST /api/auth/sessions`, mở lại dùng `POST /api/auth/sessions/current/validate`, đăng xuất dùng `DELETE /api/auth/sessions/current`. Smoke kiểm `200`, `204` và `401 SESSION_INVALID` ở đúng bước và kiểm tài khoản, trạng thái phiên, `Cache-Control: no-store`. Tỷ lệ lỗi tính trên số yêu cầu, kết quả `401` mong đợi ở bước xác minh sau thu hồi được ghi nhóm riêng. Pilot đặt timeout kết nối/đọc 5 giây để giới hạn bài thăm dò. Điều kiện thời gian của mobile được đo ở app.
 
 Với giả định 2,5 lần mở lại và 3 giây nghỉ bình quân mỗi lần chờ, một vòng dự kiến 4,5 request trong khoảng 10,5 giây, tương đương 1,29 RPS cho ba user khi latency nhỏ. Đây là nhịp thăm dò để mỗi user chạy đủ ba operation, nguồn traffic thật chưa có. Báo tải thử, tải thực, số mẫu, lỗi và p95 theo nhóm. Kiểm trạng thái máy phát, CPU, RAM, pool và truy vấn DB nếu cần xác minh điểm nghẽn hoặc chốt ngưỡng.
 
-Xem [lệnh chạy hồi quy toàn repo](../README.md) và [căn cứ chỉ tiêu](slo-rationale.md). Chạy riêng UC-01 từ gốc repo sau khi dựng gateway fixture.
-
-```bash
-sessions=$(node tests/performance/uc-01/fixture.mjs)
-build=$(git rev-parse HEAD)
-python tests/performance/uc-01/run.py smoke --sessions "$sessions" --build "$build" --environment compose-local
-python tests/performance/uc-01/run.py local-pilot --sessions "$sessions" --build "$build" --environment compose-local
-burst_sessions=$(node tests/performance/uc-01/fixture.mjs 12)
-python tests/performance/uc-01/run.py smoke --sessions "$burst_sessions" --build "$build" --environment compose-local
-python tests/performance/uc-01/run.py local-session-reconnect --sessions "$burst_sessions" --build "$build" --environment compose-local
-```
+Fixture và runner theo UC cần được nối lại với bản triển khai mới trước khi chạy. Xem [phạm vi hồi quy](../README.md) và [căn cứ chỉ tiêu](slo-rationale.md).

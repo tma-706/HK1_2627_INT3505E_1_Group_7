@@ -61,8 +61,11 @@ test('uses the consent screen per installation, keeps cancellations local and pe
   assert.equal(flow.getState().screen, 'home');
   assert.equal(f.stored.accepted, true);
   assert.equal(f.stored.token, session.sessionToken);
+  flow.openProfile();
   flow.openLogout();
   flow.cancelLogout();
+  const afterCancel = flow.getState();
+  assert.equal(afterCancel.screen === 'home' && afterCancel.page === 'profile', true);
   assert.equal(f.revocations(), 0);
   flow.openLogout();
   flow.confirmLogout();
@@ -88,6 +91,7 @@ test('same attempt retries on a dependency failure and a late response cannot sa
   f.deps.api.create = originalCreate;
   await flow.retryAttempt();
   assert.deepEqual(f.attempts[0], f.attempts[1]);
+  flow.openProfile();
   flow.openLogout();
   flow.confirmLogout();
   await turn();
@@ -130,6 +134,7 @@ test('local logout finishes before unavailable Core and ignores a pending person
   const flow = new AuthFlow(f.deps);
   await flow.restore();
   const pending = flow.withCurrentToken(() => read.promise);
+  flow.openProfile();
   flow.openLogout();
   flow.confirmLogout();
   await turn();
@@ -140,4 +145,29 @@ test('local logout finishes before unavailable Core and ignores a pending person
   revoke.resolve();
   await turn();
   assert.deepEqual(flow.getState(), { screen: 'signedOut' });
+});
+
+test('keeps private UI hidden when saving and cleanup fail, then allows a cleanup retry', async () => {
+  const f = fixture();
+  f.deps.installation.save = async () => {
+    f.stored.token = session.sessionToken;
+    throw new Error('fixture store write failed');
+  };
+  const clear = f.deps.installation.clear;
+  f.deps.installation.clear = async () => { throw new Error('fixture store delete failed'); };
+  const flow = new AuthFlow(f.deps);
+  await flow.restore();
+  await flow.select();
+  await flow.acceptTerms();
+  const blocked = flow.getState();
+  assert.equal(blocked.screen === 'blocked' && blocked.retry === 'clear', true);
+  assert.equal(f.stored.accepted, false);
+  await flow.select();
+  assert.equal(flow.getState().screen, 'blocked');
+
+  f.deps.installation.clear = clear;
+  await flow.retryClear();
+  const result = flow.getState();
+  assert.equal(result.screen === 'signedOut' && result.notice?.startsWith('Không thể lưu phiên'), true);
+  assert.equal(f.stored.token, null);
 });

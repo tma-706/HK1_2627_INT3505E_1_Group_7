@@ -1,4 +1,4 @@
-import { createRemoteJWKSet, errors, jwtVerify } from 'jose';
+import { createRemoteJWKSet, errors, jwtVerify, type JWTVerifyGetKey } from 'jose';
 
 export class GoogleTokenRejected extends Error {}
 
@@ -17,9 +17,9 @@ const googleKeys = createRemoteJWKSet(
   { timeoutDuration: 5000 },
 );
 
-export function verifyGoogleToken(audience: string): VerifyGoogleToken {
+export function verifyGoogleToken(audience: string, keys: JWTVerifyGetKey = googleKeys): VerifyGoogleToken {
   return async (idToken) => {
-    const { payload } = await jwtVerify(idToken, googleKeys, {
+    const { payload } = await jwtVerify(idToken, keys, {
       algorithms: ['RS256'],
       issuer: ['https://accounts.google.com', 'accounts.google.com'],
       audience,
@@ -38,7 +38,8 @@ export function verifyGoogleToken(audience: string): VerifyGoogleToken {
       }
       throw error;
     });
-    if (typeof payload.sub !== 'string' || !payload.sub || typeof payload.exp !== 'number') {
+    if (typeof payload.sub !== 'string' || !payload.sub || typeof payload.exp !== 'number' ||
+        !Number.isFinite(new Date(payload.exp * 1000).getTime())) {
       throw new GoogleTokenRejected();
     }
 

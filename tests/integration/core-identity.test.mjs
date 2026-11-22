@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
-import { readFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { after, test } from 'node:test';
 import { Pool } from 'pg';
@@ -130,7 +129,6 @@ test('reads only the current profile and items, with account-bound stable cursor
   const a = await (await login(newAttempt('fixture-area-a'))).json();
   const b = await (await login(newAttempt('fixture-area-b'))).json();
   const c = await (await login(newAttempt('fixture-area-c'))).json();
-  await db.query(await readFile(new URL('../../db/migrations/002_my_area.sql', import.meta.url), 'utf8'));
   const area = (path, session = a) => fetch(new URL(path, base), {
     headers: session ? { authorization: 'Bearer ' + session.sessionToken } : {},
   });
@@ -180,11 +178,13 @@ test('reads only the current profile and items, with account-bound stable cursor
   assert.deepEqual(first.items.map(({ id }) => id), posts.slice(0, 20));
   assert.equal(typeof first.nextCursor, 'string');
   const cursorQuery = '&cursor=' + encodeURIComponent(first.nextCursor);
+  const activityBeforeBadRead = await dates(a.sessionToken);
   await expectCode(await area(path + cursorQuery, b), 400, 'INVALID_CURSOR');
   await expectCode(await area('/me/items?tab=found' + cursorQuery), 400, 'INVALID_CURSOR');
   await expectCode(await area(path + '&cursor=unavailable'), 400, 'INVALID_CURSOR');
   await expectCode(await area('/me/items'), 400, 'INVALID_REQUEST');
   await expectCode(await area('/me/items?tab=other'), 400, 'INVALID_REQUEST');
+  assert.deepEqual(await dates(a.sessionToken), activityBeforeBadRead);
 
   await db.query('DELETE FROM my_area_fixture_posts WHERE id = ANY($1::uuid[])', [posts.slice(19, 21)]);
   const newer = randomUUID();
@@ -234,4 +234,42 @@ test('reads only the current profile and items, with account-bound stable cursor
   await expectCode(await area('/me/profile'), 401, 'SESSION_INVALID');
   assert.deepEqual(await dates(a.sessionToken), revokedAt);
   assert.equal((await read(path, b)).items.length, 1);
+});
+
+test('walks 1,000 allowed items per tab without duplicates at timestamp ties', async () => {
+  const a = await (await login(newAttempt('fixture-area-deep-a'))).json();
+  const b = await (await login(newAttempt('fixture-area-deep-b'))).json();
+  const ids = () => Array.from({ length: 1000 }, () => randomUUID()).sort().reverse();
+  const stamp = '2026-11-22T01:00:00.123456Z';
+  const expected = { lost: ids(), found: ids(), claims: ids() };
+
+  for (const tab of ['lost', 'found']) {
+    await db.query(`
+      INSERT INTO my_area_fixture_posts (id, tab, author_id, title, created_at, status)
+      SELECT id, $2, $3, 'Vật mẫu', $4, 'Đang tìm' FROM unnest($1::uuid[]) AS id
+    `, [expected[tab], tab, a.accountId, stamp]);
+  }
+  await db.query(`
+    INSERT INTO my_area_fixture_claims (id, sender_id, post_owner_id, title, sent_at, status)
+    SELECT id, $2, $3, 'Vật mẫu', $4, 'Đang chờ' FROM unnest($1::uuid[]) AS id
+  `, [expected.claims, b.accountId, a.accountId, stamp]);
+
+  for (const tab of ['lost', 'found', 'claims']) {
+    let cursor = null;
+    const collected = [];
+    for (let pageNumber = 0; pageNumber < 50; pageNumber++) {
+      const url = new URL('/me/items', base);
+      url.searchParams.set('tab', tab);
+      if (cursor) url.searchParams.set('cursor', cursor);
+      const response = await fetch(url, { headers: { authorization: 'Bearer ' + a.sessionToken } });
+      assert.equal(response.status, 200);
+      const page = await response.json();
+      assert.equal(page.tab, tab);
+      assert.equal(page.items.length, 20);
+      collected.push(...page.items.map(({ id }) => id));
+      cursor = page.nextCursor;
+      assert.equal(Boolean(cursor), pageNumber < 49);
+    }
+    assert.deepEqual(collected, expected[tab]);
+  }
 });

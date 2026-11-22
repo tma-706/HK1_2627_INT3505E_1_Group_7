@@ -10,6 +10,14 @@ import { MyAreaScreens } from './src/my-area-screens';
 
 const blue = '#204dcc';
 const mark = (name: string) => performance.mark?.(name);
+const busyLabels: Partial<Record<string, string>> = {
+  starting: 'Đang mở ứng dụng',
+  restoring: 'Đang xác minh phiên đã lưu',
+  selecting: 'Đang mở trình chọn Google',
+  issuing: 'Đang xác thực với máy chủ',
+  saving: 'Đang lưu phiên đăng nhập',
+  clearing: 'Đang dọn phiên đăng nhập',
+};
 
 function Brand() {
   return (
@@ -50,6 +58,13 @@ function Button({ label, onPress, primary = true }: { label: string; onPress: ()
 function Screen() {
   const state = useSyncExternalStore(auth.subscribe, auth.getState);
   const personal = useSyncExternalStore(myArea.subscribe, myArea.getState);
+
+  function leaveProfile() {
+    if (myArea.backFromDetail()) return true;
+    if (!auth.goHome()) return false;
+    myArea.clear();
+    return true;
+  }
   useEffect(() => {
     mark('auth.app-mounted');
     void auth.restore();
@@ -60,8 +75,8 @@ function Screen() {
         auth.rejectTerms();
         return true;
       }
-      if (current.screen === 'home' && !current.confirming) return myArea.back();
-      return screen === 'clearing';
+      if (screen === 'home') return leaveProfile();
+      return screen === 'clearing' || screen === 'saving' || (screen === 'blocked' && current.retry === 'clear');
     });
   }, []);
   useEffect(() => {
@@ -74,26 +89,29 @@ function Screen() {
     return (
       <SafeAreaView style={styles.screen}>
         <StatusBar barStyle="dark-content" />
-        {personal.screen === 'home' ? (
+        {state.page === 'main' ? (
           <>
             <View style={styles.topBar}>
-              <Text style={styles.topBarTitle}>Lost &amp; Found</Text>
+              <Text accessibilityRole="header" style={styles.topBarTitle}>Lost &amp; Found</Text>
             </View>
             <ScrollView contentContainerStyle={styles.pageContent}>
               <Text accessibilityRole="header" style={styles.heading}>Trang chính</Text>
-              <Button label="Đăng xuất" onPress={() => auth.openLogout()} primary={false} />
             </ScrollView>
             <View style={styles.actionBar}>
-              <Button label="Hồ sơ" onPress={() => { void myArea.openProfile(); }} primary={false} />
+              <Button label="Hồ sơ" onPress={() => {
+                auth.openProfile();
+                void myArea.openProfile();
+              }} primary={false} />
             </View>
           </>
         ) : (
-          <MyAreaScreens flow={myArea} state={personal} logout={() => auth.openLogout()} />
+          <MyAreaScreens flow={myArea} state={personal} back={leaveProfile} logout={() => auth.openLogout()} />
         )}
         <Modal visible={state.confirming} transparent animationType="fade" onRequestClose={() => auth.cancelLogout()}>
           <View style={styles.backdrop}>
             <View style={styles.dialog} accessibilityViewIsModal>
-              <Text accessibilityRole="header" style={styles.heading}>Bạn muốn đăng xuất?</Text>
+              <Text accessibilityRole="header" style={styles.heading}>Đăng xuất khỏi thiết bị này?</Text>
+              <Text style={styles.body}>Các thiết bị khác của bạn vẫn giữ nguyên phiên đăng nhập.</Text>
               <Button label="Đăng xuất" onPress={() => auth.confirmLogout()} />
               <Button label="Huỷ" onPress={() => auth.cancelLogout()} primary={false} />
             </View>
@@ -122,7 +140,7 @@ function Screen() {
     );
   }
 
-  const canSignIn = state.screen === 'signedOut' || state.screen === 'selecting' || state.screen === 'issuing';
+  const canSignIn = ['signedOut', 'selecting', 'issuing', 'saving'].includes(state.screen);
   const sessionExpired = state.screen === 'signedOut' && state.notice?.startsWith('Phiên đăng nhập');
   return (
     <SafeAreaView edges={['left', 'right', 'bottom']} style={styles.screen}>
@@ -148,7 +166,7 @@ function Screen() {
           {state.screen === 'signedOut' && state.notice ? (
             state.retryAttempt
               ? <Button label="Thử lại" onPress={() => { void auth.retryAttempt(); }} />
-              : (/kết nối/u.test(state.notice) || state.notice.startsWith('Không xác minh')
+              : (/kết nối/u.test(state.notice) || state.notice.startsWith('Không xác minh') || state.notice.startsWith('Không thể lưu phiên')
                 ? <Button label="Thử lại" onPress={() => { void auth.select(); }} />
                 : null)
           ) : null}
@@ -160,10 +178,10 @@ function Screen() {
               }} />
             </>
           ) : null}
-          {['starting', 'restoring', 'issuing', 'selecting', 'clearing'].includes(state.screen) ? (
+          {['starting', 'restoring', 'issuing', 'selecting', 'saving', 'clearing'].includes(state.screen) ? (
             <View style={styles.loading} accessibilityLiveRegion="polite">
               <ActivityIndicator color={blue} />
-              <Text style={styles.body}>{state.screen === 'restoring' ? 'Đang xác minh phiên' : 'Đang xử lý'}</Text>
+              <Text style={styles.body}>{busyLabels[state.screen]}</Text>
             </View>
           ) : null}
           {state.screen === 'issuing' ? (

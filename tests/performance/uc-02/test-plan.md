@@ -36,7 +36,7 @@ Pilot dùng giả định 30% chỉ mở hồ sơ, 50% mở Hồ sơ → Mục c
 | Soak | [items-cursor-growth.txt](../scenarios/uc-02/soak/items-cursor-growth.txt) | Giữ 200 VU trong 90 phút, theo dõi độ trễ và cursor |
 | Breakpoint | [items-capacity-steps.txt](../scenarios/uc-02/breakpoint/items-capacity-steps.txt) | Tăng từng bậc 40 VU đến trần thiết kế 360 VU |
 
-[workloads.yml](workloads.yml) cấu hình các profile local đang chạy. [scenarios.yml](scenarios.yml) giữ các thiết kế staging để chọn khi có đích và fixture đại diện. Mức 200 VU lấy từ PR-01. Nhịp tăng, đỉnh và thời gian giữ cần được hiệu chỉnh theo nhu cầu thật, trần staging và bằng chứng từ pilot.
+[workloads.yml](workloads.yml) ghi thông số các profile local của bản thực nghiệm. [scenarios.yml](scenarios.yml) giữ các thiết kế staging để chọn khi có đích và fixture đại diện. Mức 200 VU lấy từ PR-01. Nhịp tăng, đỉnh và thời gian giữ cần được hiệu chỉnh theo nhu cầu thật, trần staging và bằng chứng từ pilot.
 
 ## Điều kiện đo và SLO
 
@@ -44,24 +44,4 @@ Pilot dùng giả định 30% chỉ mở hồ sơ, 50% mở Hồ sơ → Mục c
 - [SLO](slo.yml) giữ riêng các ngưỡng chưa chốt cho p95 và tỷ lệ lỗi của Core. Mốc 2.000 ms áp dụng cho thời điểm mobile hiển thị đầy đủ, với ít nhất 95% lượt đủ điều kiện theo từng hành trình. Khi đo mobile, tính cả lỗi, timeout và lượt chưa hoàn tất vào mẫu số. Báo cache nguội/ấm, tỷ lệ có ảnh, ảnh lỗi/thay thế và mốc Core nhận yêu cầu, client nhận phản hồi, thiết bị render. QA và sản phẩm chốt cách tính ảnh thay thế và dung lượng cache OS.
 - Trước bài đo chính thức, xác nhận bản build và fixture, tỷ trọng hành trình, tải thực đạt, cửa sổ ổn định sau ramp, cỡ mẫu cho từng nhóm và tình trạng máy phát tải. Đồng bộ CPU, RAM, tín hiệu DB/pool và trace với mốc bất thường. Đặt trần và điều kiện dừng theo staging trước khi tăng tải. Giữ cùng cấu hình, dữ liệu và cửa sổ khi so trước/sau. Chỉ dùng ngưỡng đã chốt và lần đo đủ bằng chứng cho gate.
 
-## Chạy trên gateway fixture của repo
-
-Từ gốc repo, dùng Git Bash, Node.js, Python, Docker Compose và OpenSSL. Các lệnh tạo phiên và dữ liệu tổng hợp trong Compose project `lf-uc01-local`.
-
-```bash
-npm ci
-bash infra/uc01-local/run.sh up
-python -m pip install -r tests/performance/uc-02/requirements.txt
-export NODE_EXTRA_CA_CERTS="$PWD/dist/uc01-local/tls/ca.crt"
-sessions=$(node tests/performance/uc-02/fixture.mjs)
-build=$(git rev-parse HEAD) # Dùng định danh nội dung/bản build riêng nếu có thay đổi chưa commit.
-python tests/performance/uc-02/run.py smoke --sessions "$sessions" --build "$build" --environment compose-local
-python tests/performance/uc-02/run.py local-pilot --sessions "$sessions" --build "$build" --environment compose-local
-deep_sessions=$(node tests/performance/uc-02/fixture.mjs 1000)
-python tests/performance/uc-02/run.py smoke --sessions "$deep_sessions" --build "$build" --environment compose-local
-python tests/performance/uc-02/run.py local-deep-pagination --sessions "$deep_sessions" --build "$build" --environment compose-local
-```
-
-Với cổng khác 8443, đặt `UC01_HTTPS_PORT` cho gateway và fixture, rồi truyền `--host https://127.0.0.1:<cổng>` khi chạy. `run.json`, log, HTML và CSV nằm trong `dist/performance/uc-02/<run-id>/<profile>/`. Fixture phiên có token và nằm trong `dist/`, ngoài Git. Với CI, chọn profile hồi quy sau khi chốt ngân sách CI, kiểm fixture và đánh giá ngưỡng API trên bản build tạm trước khi nối deploy staging.
-
-Nếu CA local được tạo bằng script cũ và Python báo thiếu `key usage`, dừng fixture gateway, chuyển `dist/uc01-local/tls` sang một thư mục sao lưu và chạy lại `up` để tạo chuỗi chứng chỉ mới. Việc này giữ cơ sở dữ liệu fixture.
+Fixture và runner theo UC cần được nối lại với bản triển khai mới trước khi chạy. Xem [phạm vi hồi quy](../README.md) và [căn cứ chỉ tiêu](slo-rationale.md).

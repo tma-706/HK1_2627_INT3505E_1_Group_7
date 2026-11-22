@@ -26,7 +26,7 @@ def main(suite):
     parser.add_argument("profile", choices=profiles)
     parser.add_argument("--host", default="https://127.0.0.1:8443")
     parser.add_argument("--sessions", required=True, type=Path)
-    parser.add_argument("--ca", type=Path, default=root / "dist/uc01-local/tls/ca.crt")
+    parser.add_argument("--ca", type=Path, required=True)
     parser.add_argument("--build", required=True, help="Identifier of the Core build actually under test")
     parser.add_argument("--environment", required=True, help="Gateway and database configuration under test")
     args = parser.parse_args()

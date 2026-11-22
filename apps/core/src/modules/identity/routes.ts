@@ -78,8 +78,8 @@ export async function handleIdentity(
       if (await sessions.revoke(bearer)) res.writeHead(204).end();
       else sendInvalidSession(res);
     } else {
-      const current = await sessions.withCurrentSession(bearer, async () => undefined);
-      if (current) send(res, 200, current.session);
+      const current = await sessions.validate(bearer);
+      if (current) send(res, 200, current);
       else sendInvalidSession(res);
     }
   } catch (error) {

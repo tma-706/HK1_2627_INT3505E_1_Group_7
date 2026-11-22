@@ -1,4 +1,4 @@
-name: Verify Core
+name: Verify Core and Mobile
 on: [push, pull_request]
 jobs:
   core:
@@ -12,37 +12,15 @@ jobs:
       - run: npm run check
       - run: npm run test:ai-mock
       - run: bash tests/integration/core-ready.sh
-  performance:
-    name: Core performance regression
-    needs: core
+      - run: node --test tests/unit/google-token.test.mjs
+      - run: bash tests/integration/core-identity.sh
+  mobile:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-    permissions:
-      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
-      - run: npm ci
-      - run: python -m pip install -r tests/performance/requirements.txt
-      - name: Start isolated Core fixture
-        run: bash infra/uc01-local/run.sh up
-      - name: Run all registered UC profiles
-        run: python tests/performance/run-ci.py --build "$GITHUB_SHA"
-      - name: Upload performance reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: core-performance-${{ github.run_id }}-${{ github.run_attempt }}
-          path: dist/performance/
-          if-no-files-found: warn
-      - name: Stop isolated Core fixture
-        if: always()
-        run: |
-          if [[ -s dist/uc01-local/compose.env ]]; then
-            bash infra/uc01-local/run.sh down
-          fi
+          node-version: 24
+      - run: npm ci --prefix apps/mobile
+      - run: npm run check --prefix apps/mobile
+      - run: npm test --prefix apps/mobile

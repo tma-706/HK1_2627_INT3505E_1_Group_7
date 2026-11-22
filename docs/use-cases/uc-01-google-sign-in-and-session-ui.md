@@ -1,12 +1,12 @@
 # UI UC-01 · Đăng nhập Google và quản lý phiên
 
-**UI v2 · Chờ duyệt** · 2026-11-22 · [UC spec](uc-01-google-sign-in-and-session.md)
+**UI v2 · Đã duyệt cho Essential** · 2026-11-22 · [UC spec](uc-01-google-sign-in-and-session.md)
 
 Ảnh PNG minh họa được dựng bằng HTML/CSS và xuất cục bộ ở khung 390 × 760 bằng Chromium. Dữ liệu và thông tin hệ thống là mẫu. [Bản dựng cục bộ](ui/essential-preview.html) có từng trạng thái để đối chiếu. Bộ này phục vụ duyệt thiết kế và luồng. Nghiệm thu hiển thị native và hành vi trên thiết bị thuộc các SCN của UC.
 
 - [Mockup và bảng SCR ở SRS trang 2](../requirements/lost-and-found-srs.pdf#page=2) làm căn cứ cho vùng thương hiệu, trạng thái chờ, điều khoản và đăng nhập lại. [SRS trang 3](../requirements/lost-and-found-srs.pdf#page=3) làm căn cứ cho hộp thoại đăng xuất. Câu chữ ERR-A1–A4 theo [SRS trang 10](../requirements/lost-and-found-srs.pdf#page=10).
 - Thứ tự điều khoản sau Google và trước Core, cờ theo bản cài, xử lý khôi phục và thu hồi theo [GAP-AUTH-001–004](../requirements/analysis/uc-01-02.md#uc-01--đăng-nhập-và-quản-lý-phiên) và [bundle UC-01 đã duyệt](../operations/runs/uc-01-essential.json#L129). Phiên bản nguồn được ghim tại [UC spec](uc-01-google-sign-in-and-session.md#nguồn).
-- Bố cục và thông báo được đối chiếu với [App.tsx](../../apps/mobile/App.tsx), [auth-flow.ts](../../apps/mobile/src/auth-flow.ts) và [auth-platform.tsx](../../apps/mobile/src/auth-platform.tsx). Hình điều khoản dùng hai liên kết như app hiện tại, còn mockup SRS có thêm khối tài khoản Google và phần nội dung hai chính sách. Nội dung, URL và cách trình bày chính sách thật nằm trong [điểm cần duyệt](#điểm-cần-duyệt).
+- Bố cục và thông báo được đối chiếu với [App.tsx](https://github.com/tma-706/HK1_2627_INT3505E_1_Group_7/blob/f6f5ff50049918b558ac023c2216d097483cdc7c/apps/mobile/App.tsx), [auth-flow.ts](https://github.com/tma-706/HK1_2627_INT3505E_1_Group_7/blob/f6f5ff50049918b558ac023c2216d097483cdc7c/apps/mobile/src/auth-flow.ts) và [auth-platform.tsx](https://github.com/tma-706/HK1_2627_INT3505E_1_Group_7/blob/f6f5ff50049918b558ac023c2216d097483cdc7c/apps/mobile/src/auth-platform.tsx). Hình điều khoản dùng hai liên kết như bản thực nghiệm trước, còn mockup SRS có thêm khối tài khoản Google và phần nội dung hai chính sách. Nội dung, URL và cách trình bày chính sách thật nằm trong [điểm cần duyệt](#điểm-cần-duyệt).
 
 Xem nhanh [Đăng nhập](#scr-01-ready), [Điều khoản](#scr-01-consent), [lỗi đăng nhập](#scr-01-err-a1), [khôi phục phiên](#scr-01-restoring), [Đăng nhập lại](#scr-01-session-expired), [Xác nhận đăng xuất](#scr-04-confirm) và [điểm cần duyệt](#điểm-cần-duyệt).
 
@@ -50,7 +50,7 @@ Nút Google tạm khóa và có chỉ báo chờ. **Chọn tài khoản khác** 
 
 ![Trang chính · Chưa gán SCR · Vào ứng dụng](ui/uc-01/app-home.png)
 
-**Hồ sơ** mở SCR-02. Bố cục minh họa lối vào Essential. App hiện tại có thêm nút **Đăng xuất** ở Trang chính. Phương án trình duyệt dùng lối đăng xuất qua Hồ sơ, theo điểm kích hoạt SCR-04 của SCN-AUTH-15. Đối chiếu [luồng chính](uc-01-google-sign-in-and-session.md#giao-dien-main) và SCN-AUTH-04/11 và SCN-PRF-03/16.
+**Hồ sơ** mở SCR-02. Bố cục minh họa lối vào Essential. Bản thực nghiệm trước có thêm nút **Đăng xuất** ở Trang chính. Bản Essential v2 mở Hồ sơ tối thiểu từ Trang chính để vào SCR-04. Phạm vi đã duyệt ghi tại [gói triển khai v2](../operations/runs/uc-01-essential-v2.json). Đối chiếu [luồng chính](uc-01-google-sign-in-and-session.md#giao-dien-main) và SCN-AUTH-04/11 và SCN-PRF-03/16.
 
 
 ## Lỗi đăng nhập và liên kết
@@ -85,7 +85,7 @@ Nút Google tạm khóa và có chỉ báo chờ. **Chọn tài khoản khác** 
 
 ![SCR-01 · ERR-A4 · Cần chọn lại tài khoản](ui/uc-01/scr-01-err-a4.png)
 
-**Thử lại** trở lại trình chọn và tạo lượt mới nếu người dùng chọn tài khoản. App hiện dùng cùng thông báo cho token bị từ chối và các lỗi cấp cần chọn lại. Đối chiếu [luồng ngoại lệ](uc-01-google-sign-in-and-session.md#giao-dien-error) và SCN-AUTH-08/10.
+**Thử lại** trở lại trình chọn và tạo lượt mới nếu người dùng chọn tài khoản. Bản thực nghiệm trước dùng cùng thông báo cho token bị từ chối và các lỗi cấp cần chọn lại. Đối chiếu [luồng ngoại lệ](uc-01-google-sign-in-and-session.md#giao-dien-error) và SCN-AUTH-08/10.
 
 <a name="scr-01-policy-unconfigured"></a>
 
@@ -168,7 +168,7 @@ Thông báo xác nhận việc đăng xuất trên thiết bị này. Nếu nh�
 
 ![SCR-01 · Kho phiên chưa dọn được](ui/uc-01/scr-01-storage-error.png)
 
-Phương án theo app hiện tại. Vùng cá nhân ẩn và **Thử lại** tiếp tục dọn kho phiên. Sau khi dọn được, kết quả phụ thuộc luồng đã kích hoạt. Đối chiếu [luồng ngoại lệ](uc-01-google-sign-in-and-session.md#giao-dien-error) và SCN-AUTH-04/13/16/17.
+Phương án theo bản thực nghiệm trước. Vùng cá nhân ẩn và **Thử lại** tiếp tục dọn kho phiên. Sau khi dọn được, kết quả phụ thuộc luồng đã kích hoạt. Đối chiếu [luồng ngoại lệ](uc-01-google-sign-in-and-session.md#giao-dien-error) và SCN-AUTH-04/13/16/17.
 
 <a name="scr-01-save-error"></a>
 
@@ -176,11 +176,11 @@ Phương án theo app hiện tại. Vùng cá nhân ẩn và **Thử lại** ti�
 
 ![SCR-01 · Lưu phiên thất bại, đã dọn cục bộ](ui/uc-01/scr-01-save-error.png)
 
-Phương án theo app hiện tại. Khi dọn được sau lỗi lưu, khách về Đăng nhập với thông báo và có thể mở Google lại. Đối chiếu [luồng ngoại lệ](uc-01-google-sign-in-and-session.md#giao-dien-error) và SCN-AUTH-04.
+Phương án theo bản thực nghiệm trước. Khi dọn được sau lỗi lưu, khách về Đăng nhập với thông báo và có thể mở Google lại. Đối chiếu [luồng ngoại lệ](uc-01-google-sign-in-and-session.md#giao-dien-error) và SCN-AUTH-04.
 
 
 ## Điểm cần duyệt
 
 - **Điều khoản.** Sản phẩm chốt URL HTTPS thật, hành vi khi nội dung đổi, nhu cầu lưu bằng chứng và có cần đưa khối tài khoản hoặc nội dung chính sách vào màn xác nhận như mockup. Ảnh hiện theo bố cục hai liên kết của app. Ảnh hưởng bước Đăng nhập 1/3, nhánh mở liên kết và SCN-AUTH-01/03/19/21. PR-02 còn chờ cách tính thời gian đọc và đồng ý.
-- **Lối đăng xuất và lỗi kho phiên.** Xác nhận bố cục Essential chỉ dẫn đăng xuất qua Hồ sơ, hoặc giữ thêm lối đang có trên Trang chính. Xác nhận dùng cách xử lý lỗi ghi/dọn kho ở app hiện tại làm yêu cầu nghiệm thu. Ảnh hưởng bước Đăng nhập 5, bước Đăng xuất 1–3 và SCN-AUTH-04/13/15–17.
+- **Lối đăng xuất và lỗi kho phiên.** Bản Essential v2 dùng lối Hồ sơ, ẩn vùng riêng tư khi lưu hoặc dọn phiên lỗi và cho thử dọn lại. Áp dụng bước Đăng nhập 5, bước Đăng xuất 1–3 và SCN-AUTH-04/13/15–17.
 - Các quyết định về dữ liệu Google thật, thiết bị, thời hạn phiên sản phẩm, hạn mức và điều kiện đo nằm ở [phần còn mở của UC spec](uc-01-google-sign-in-and-session.md#khác-biệt-giữa-nguồn-và-tiêu-chí-còn-mở).

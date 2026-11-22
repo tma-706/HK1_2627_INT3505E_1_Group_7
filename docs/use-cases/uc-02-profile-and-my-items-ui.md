@@ -6,8 +6,8 @@ Phạm vi duyệt gồm bộ hình Essential với Hồ sơ và ba tab Mục c�
 
 Ảnh PNG minh họa được dựng bằng HTML/CSS và xuất cục bộ ở khung 390 × 760 bằng Chromium. Tên, email, mục, trạng thái và hình minh họa đều là dữ liệu mẫu. [Bản dựng cục bộ](ui/essential-preview.html) có từng trạng thái để đối chiếu. Bộ này phục vụ duyệt thiết kế và luồng. Nghiệm thu hiển thị native và hành vi trên thiết bị thuộc các SCN của UC.
 
-- [SRS trang 2](../requirements/lost-and-found-srs.pdf#page=2) cấp mã SCR. [Mockup trang 3](../requirements/lost-and-found-srs.pdf#page=3) cung cấp mẫu thẻ hồ sơ, tab, hàng, rỗng, lỗi và hộp thoại. [Quyết định bố cục ngày 2026-11-22](../requirements/analysis/uc-01-02.md#uc-02-profile-layout) áp dụng bố cục chung của mockup với thông tin Hồ sơ (SCR-02) và phần Mục của tôi (SCR-03) trên cùng màn. Đăng xuất màu xanh đậm nằm ở đáy màn ngoài vùng cuộn của danh sách. App hiện tại dùng lối vào hai bước theo bundle v1. Ngày tham gia, số đếm, mở lại dữ liệu ngoại tuyến và nút đăng bài của mockup thuộc phạm vi hoãn hoặc UC khác.
-- [Ghi chú hợp đồng UC-02](../api/core/uc-02-notes.md#nghiệp-vụ-và-bàn-giao-uc-spec) và [OpenAPI](../api/core/openapi.json#L311) quyết định dữ liệu và trạng thái Essential. Thiết kế đối chiếu [my-area-screens.tsx](../../apps/mobile/src/my-area-screens.tsx) và [my-area-flow.ts](../../apps/mobile/src/my-area-flow.ts). Phiên bản nguồn được ghim tại [UC spec](uc-02-profile-and-my-items.md#nguồn).
+- [SRS trang 2](../requirements/lost-and-found-srs.pdf#page=2) cấp mã SCR. [Mockup trang 3](../requirements/lost-and-found-srs.pdf#page=3) cung cấp mẫu thẻ hồ sơ, tab, hàng, rỗng, lỗi và hộp thoại. [Quyết định bố cục ngày 2026-11-22](../requirements/analysis/uc-01-02.md#uc-02-profile-layout) áp dụng bố cục chung của mockup với thông tin Hồ sơ (SCR-02) và phần Mục của tôi (SCR-03) trên cùng màn. Đăng xuất màu xanh đậm nằm ở đáy màn ngoài vùng cuộn của danh sách. Bản thực nghiệm theo bundle v1 dùng lối vào hai bước. Ngày tham gia, số đếm, mở lại dữ liệu ngoại tuyến và nút đăng bài của mockup thuộc phạm vi hoãn hoặc UC khác.
+- [Ghi chú hợp đồng UC-02](../api/core/uc-02-notes.md#nghiệp-vụ-và-bàn-giao-uc-spec) và [OpenAPI](../api/core/openapi.json#L311) quyết định dữ liệu và trạng thái Essential. Thiết kế đối chiếu [my-area-screens.tsx](https://github.com/tma-706/HK1_2627_INT3505E_1_Group_7/blob/f6f5ff50049918b558ac023c2216d097483cdc7c/apps/mobile/src/my-area-screens.tsx) và [my-area-flow.ts](https://github.com/tma-706/HK1_2627_INT3505E_1_Group_7/blob/f6f5ff50049918b558ac023c2216d097483cdc7c/apps/mobile/src/my-area-flow.ts). Phiên bản nguồn được ghim tại [UC spec](uc-02-profile-and-my-items.md#nguồn).
 - Mỗi ảnh danh sách minh họa một vùng nhìn, có thể chỉ hiện một phần của trang. Mốc 20 mục, cursor và phép thử 0/20/21 vẫn theo SCN-PRF-07/08. Chỉ báo làm mới minh họa hành vi kéo trên app native.
 
 Xem nhanh [Hồ sơ](#scr-02-ready), [Bài báo mất](#scr-03-lost-ready), [Bài báo nhặt](#scr-03-found-ready), [Yêu cầu nhận đồ](#scr-03-claims-ready) và [các quyết định còn mở](#các-quyết-định-còn-mở).
@@ -20,7 +20,7 @@ Xem nhanh [Hồ sơ](#scr-02-ready), [Bài báo mất](#scr-03-lost-ready), [Bà
 
 ![Trang chính · Chưa gán SCR · Vào ứng dụng](ui/uc-01/app-home.png)
 
-**Hồ sơ** mở SCR-02. Bố cục minh họa lối vào Essential. App hiện tại có thêm nút **Đăng xuất** ở Trang chính. Phương án trình duyệt dùng lối đăng xuất qua Hồ sơ, theo điểm kích hoạt SCR-04 của SCN-AUTH-15. Đối chiếu [luồng chính](uc-02-profile-and-my-items.md#giao-dien-main), [luồng thay thế](uc-02-profile-and-my-items.md#giao-dien-alt) và SCN-AUTH-04/11 và SCN-PRF-03/16.
+**Hồ sơ** mở SCR-02. Bố cục minh họa lối vào Essential. Bản thực nghiệm trước có thêm nút **Đăng xuất** ở Trang chính. Phương án trình duyệt dùng lối đăng xuất qua Hồ sơ, theo điểm kích hoạt SCR-04 của SCN-AUTH-15. Đối chiếu [luồng chính](uc-02-profile-and-my-items.md#giao-dien-main), [luồng thay thế](uc-02-profile-and-my-items.md#giao-dien-alt) và SCN-AUTH-04/11 và SCN-PRF-03/16.
 
 <a name="scr-02-loading"></a>
 
@@ -68,7 +68,7 @@ Khi avatar thiếu, đang tải hoặc tải lỗi, ảnh thay thế giữ nguy�
 
 ![SCR-02 · Hồ sơ giữ dữ liệu khi mất mạng](ui/uc-02/scr-02-kept-offline.png)
 
-Nếu một lượt đọc lỗi khi dữ liệu của phiên hiện hành đã hiển thị, giữ thẻ hồ sơ và thêm **Thử lại**. Mô phỏng quy tắc FR-PRF-13. Luồng mở hồ sơ thông thường trong app hiện bắt đầu bằng tải mới. Đối chiếu [luồng ngoại lệ](uc-02-profile-and-my-items.md#giao-dien-error) và SCN-PRF-11.
+Nếu một lượt đọc lỗi khi dữ liệu của phiên hiện hành đã hiển thị, giữ thẻ hồ sơ và thêm **Thử lại**. Mô phỏng quy tắc FR-PRF-13. Luồng mở hồ sơ thông thường trong bản thực nghiệm trước bắt đầu bằng tải mới. Đối chiếu [luồng ngoại lệ](uc-02-profile-and-my-items.md#giao-dien-error) và SCN-PRF-11.
 
 <a name="scr-02-kept-server"></a>
 
@@ -110,7 +110,7 @@ Thông báo rỗng theo tab. Giữ ba tab và lối Quay lại. Đối chiếu [
 
 ![SCR-03 · Bài báo mất · Đang tải trang sau](ui/uc-02/scr-03-lost-next.png)
 
-Danh sách hiện tại vẫn hiển thị, chỉ báo tải ở cuối vùng cuộn. App hiện dùng cùng chỉ báo khi đang tự đọc lại trang đầu sau INVALID_CURSOR. Đối chiếu [luồng thay thế](uc-02-profile-and-my-items.md#giao-dien-alt), [luồng ngoại lệ](uc-02-profile-and-my-items.md#giao-dien-error) và SCN-PRF-07–11/17/18.
+Danh sách hiện tại vẫn hiển thị, chỉ báo tải ở cuối vùng cuộn. Bản thực nghiệm trước dùng cùng chỉ báo khi đang tự đọc lại trang đầu sau INVALID_CURSOR. Đối chiếu [luồng thay thế](uc-02-profile-and-my-items.md#giao-dien-alt), [luồng ngoại lệ](uc-02-profile-and-my-items.md#giao-dien-error) và SCN-PRF-07–11/17/18.
 
 <a name="scr-03-lost-refresh"></a>
 
@@ -208,7 +208,7 @@ Thông báo rỗng theo tab. Giữ ba tab và lối Quay lại. Đối chiếu [
 
 ![SCR-03 · Bài báo nhặt · Đang tải trang sau](ui/uc-02/scr-03-found-next.png)
 
-Danh sách hiện tại vẫn hiển thị, chỉ báo tải ở cuối vùng cuộn. App hiện dùng cùng chỉ báo khi đang tự đọc lại trang đầu sau INVALID_CURSOR. Đối chiếu [luồng thay thế](uc-02-profile-and-my-items.md#giao-dien-alt), [luồng ngoại lệ](uc-02-profile-and-my-items.md#giao-dien-error) và SCN-PRF-07–11/17/18.
+Danh sách hiện tại vẫn hiển thị, chỉ báo tải ở cuối vùng cuộn. Bản thực nghiệm trước dùng cùng chỉ báo khi đang tự đọc lại trang đầu sau INVALID_CURSOR. Đối chiếu [luồng thay thế](uc-02-profile-and-my-items.md#giao-dien-alt), [luồng ngoại lệ](uc-02-profile-and-my-items.md#giao-dien-error) và SCN-PRF-07–11/17/18.
 
 <a name="scr-03-found-refresh"></a>
 
@@ -306,7 +306,7 @@ Thông báo rỗng theo tab. Giữ ba tab và lối Quay lại. Đối chiếu [
 
 ![SCR-03 · Yêu cầu nhận đồ · Đang tải trang sau](ui/uc-02/scr-03-claims-next.png)
 
-Danh sách hiện tại vẫn hiển thị, chỉ báo tải ở cuối vùng cuộn. App hiện dùng cùng chỉ báo khi đang tự đọc lại trang đầu sau INVALID_CURSOR. Đối chiếu [luồng thay thế](uc-02-profile-and-my-items.md#giao-dien-alt), [luồng ngoại lệ](uc-02-profile-and-my-items.md#giao-dien-error) và SCN-PRF-07–11/17/18.
+Danh sách hiện tại vẫn hiển thị, chỉ báo tải ở cuối vùng cuộn. Bản thực nghiệm trước dùng cùng chỉ báo khi đang tự đọc lại trang đầu sau INVALID_CURSOR. Đối chiếu [luồng thay thế](uc-02-profile-and-my-items.md#giao-dien-alt), [luồng ngoại lệ](uc-02-profile-and-my-items.md#giao-dien-error) và SCN-PRF-07–11/17/18.
 
 <a name="scr-03-claims-refresh"></a>
 

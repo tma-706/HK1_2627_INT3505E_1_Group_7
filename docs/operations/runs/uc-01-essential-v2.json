@@ -1,0 +1,741 @@
+{
+  "run_id": "uc-01-essential-v2",
+  "type": "product",
+  "status": "blocked",
+  "verified_checkpoint": "Mã UC-01 v2 và kiểm thử cô lập đã triển khai. Audit cùng revision ghi nhận 3 đạt, 0 không đạt và 5 thiếu bằng chứng. Không có repair được mở.",
+  "sources": {
+    "uc": {
+      "path": "docs/use-cases/uc-01-google-sign-in-and-session.md",
+      "version": "v2 · Chờ duyệt",
+      "sha256": "436dcb8e1d0eb5ce364becee8a4a1caf221005293ce648d13f4b1f22130baa4e"
+    },
+    "ui": {
+      "path": "docs/use-cases/uc-01-google-sign-in-and-session-ui.md",
+      "version": "v2 · Chờ duyệt",
+      "sha256": "f564691ef5f74c443c06deb8eb5fd3d89c9cd27abcdd328303db14b8125b5396"
+    },
+    "api": {
+      "path": "docs/api/core/openapi.json",
+      "version": "0.3.0",
+      "sha256": "837aac16902c2383a0d849eb2e2404048682f7fe8519a50dd65bbc35ce21ee25"
+    },
+    "api_notes": {
+      "path": "docs/api/core/uc-01-notes.md",
+      "version": "Execution Prompt UC-01 v1 · OpenAPI 0.2.0",
+      "sha256": "0d45c10534e2e68c51f374727527b806680f1b4c8f3685fbdcd30a2b9269c821"
+    },
+    "api_compatibility": {
+      "path": "docs/api/core/uc-02-notes.md",
+      "use": "Ba operation UC-01 giữ nguyên trong 0.3.0.",
+      "sha256": "3aee221963f1dc4b0e7632c051631b5d080c974e2817a06d6dfd2a6a3c339676"
+    },
+    "srs": {
+      "path": "docs/requirements/lost-and-found-srs.pdf",
+      "sections": [
+        "3.1",
+        "3.2.1",
+        "3.3"
+      ],
+      "pages": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        14
+      ],
+      "sha256": "2f67606fba01394440f4ece54716541ce4188ce8a4564748fffdf048d8a5196b"
+    },
+    "analysis": {
+      "path": "docs/requirements/analysis/uc-01-02.md",
+      "sha256": "704b7618f9bfb88cc3ce741e41c3322ba3b6d72d29f04ec9d1b284199b34173f"
+    },
+    "catalog": {
+      "path": "docs/requirements/quality/security-owasp-2025.json",
+      "version": "2026-09-26",
+      "sha256": "773ff2b424ad7d80366de337d2045a43908713f4369f6ce6217c8daee60f330e"
+    },
+    "constraints": [
+      {
+        "path": "AGENTS.md",
+        "sha256": "1b55aef92c0da234a6d2b9b94edefb7e48424a2377ea41a1a603a8a9e1f02432"
+      },
+      {
+        "path": "docs/architecture/overview.md",
+        "sha256": "2a9584dbc0830979ddf8763ea959d7423b24e28c817c40b530942ab6732af823"
+      },
+      {
+        "path": "db/migrations/README.md",
+        "sha256": "d57cbeb298864cc62cc27f5c3adfeb6cc65b9d4db962afd80b18fb9e976ac5ec"
+      },
+      {
+        "path": "docs/operations/environments.md",
+        "sha256": "134edb3125d8897539a377108a8b4a2e6bfd7c062bae0950cd436842378a2f8f"
+      },
+      {
+        "path": "docs/skill-workflow.md",
+        "sha256": "5bcd4798b44c2063c00fc94cf588bc20889b1fcccc6f53b1593621577114c250"
+      },
+      {
+        "path": "compose.yaml",
+        "sha256": "1fa9e5c18fb9e5d32f746800574e4f86f943ab9208bedad644bd13212162d55c"
+      },
+      {
+        "path": "apps/core/src/api.ts",
+        "sha256": "0587c896448967d7e0ef8ba621b32ba6f9b907e49e2b5efaf6f7472e0be73dd6"
+      },
+      {
+        "path": "apps/core/Dockerfile",
+        "sha256": "959c5ff14feef4f6d8a346087eb0e504515ae5a5840346a918a833ed31244f95"
+      },
+      {
+        "path": "apps/mobile/App.tsx",
+        "sha256": "954c2ddf69f2d43875fc648360b147f5ca62b791d5d14a9684ebef58d72f9b8b"
+      },
+      {
+        "path": "apps/mobile/app.config.ts",
+        "sha256": "98ea4214fd08dc92ed7339875c5ffddd27b2210d9ca257fe0b89d7f5b3a40680"
+      },
+      {
+        "path": "infra/nginx/default.conf",
+        "sha256": "1bc446112ad59d9df74c50689e90246beeda014d769850dd7936fe9fa12b0261"
+      },
+      {
+        "path": "package-lock.json",
+        "sha256": "d03cf2ff5976191d91d8337724a7898daea912e1c0eda7df708b2faef34043c0"
+      },
+      {
+        "path": "apps/mobile/package-lock.json",
+        "sha256": "6c47ae28f58383fb302290c888e591c856ffbbf340f71039c3c74c90b1135fd4"
+      }
+    ],
+    "historical_decisions": {
+      "path": "docs/operations/runs/uc-01-essential.json",
+      "approved_bundle_sha256": "68de5aea578a643a1e4b7af680735dfa51c6a5723d802de8d78b1ad73715085b",
+      "use": "Tham chiếu thiết kế v1 và bối cảnh, bằng chứng cũ thuộc revision trước.",
+      "sha256": "b56fc19b04a06643e4becfe80740fa373caab00d0f0361bac6af81a489067f58"
+    },
+    "platform_references": [
+      "https://developers.google.com/identity/sign-in/android/backend-auth",
+      "https://docs.expo.dev/guides/google-authentication/",
+      "https://docs.expo.dev/versions/latest/sdk/securestore/"
+    ]
+  },
+  "implementation_destination": [
+    "apps/core",
+    "apps/mobile",
+    "db/migrations",
+    "infra/nginx và compose.yaml",
+    "tests và tài liệu vận hành liên quan UC-01"
+  ],
+  "models": {
+    "drafting": {
+      "model": "GPT-6.1 Terra",
+      "reasoning_effort": "medium"
+    }
+  },
+  "baseline": {
+    "branch": "experiment/tool-evaluation",
+    "git_head": "f6f5ff50049918b558ac023c2216d097483cdc7c",
+    "worktree_note": "Workspace chứa lượt gỡ mã cũ UC-01/02 chưa commit và bản sửa script Android của người dùng; run mới dựa trên workspace hiện tại."
+  },
+  "source_hash_encoding": "SHA-256 theo byte gốc với PDF; văn bản UTF-8 có xuống dòng LF (đổi CRLF thành LF).",
+  "bundle_sha256_encoding": "SHA-256 của JSON UTF-8 chứa sources, implementation_destination và bundle, khóa được sắp xếp đệ quy và dùng dấu phân tách không có khoảng trắng.",
+  "bundle_sha256": "3d8ecdb62e0a681861837ae702af182892a0a04b86b984e7c945ce08c88018e7",
+  "bundle": {
+    "version": "v2",
+    "A_scope": {
+      "outcome": "Triển khai lại UC-01 Essential cho Android/iOS và Core trên nền sau khi gỡ hai bản triển khai cũ. Bản xem trước web chỉ dùng dữ liệu tổng hợp trong chế độ kiểm thử nếu cần.",
+      "checks": {
+        "selected": "SCN-AUTH-01–20 trong phạm vi độc lập UC-01 theo các điều kiện dưới đây.",
+        "partial": "SCN-AUTH-13/14 kiểm Core qua validate/revoke; SCN-AUTH-15 xác nhận giữ phiên và màn Hồ sơ tối thiểu; SCN-AUTH-17 kiểm dữ liệu và phản hồi chờ với adapter giả lập cùng ranh giới phiên. Các phần dùng getMyProfile/listMyItems, tab và cache UC-02 chờ bản tích hợp.",
+        "measurement": "SCN-AUTH-21 ghi mốc trên bản đủ điều kiện. Kiểm FR-AUTH-10 tối đa 2 giây từ lúc phát hiện phiên mất hiệu lực tới SCR-01 sạch dữ liệu, PR-06 tối đa 1 giây từ xác nhận khi dọn thành công và PR-07 tối đa 15 giây mỗi lời gọi do app quản lý. PR-02/03 hướng tới ≥ 95% lượt trong 3 giây, với cửa sổ ổn định ≥ 200 phiên hoạt động và thiết bị/mạng đại diện. Với PR-02 ghi riêng lượt có điều khoản và thời gian chờ thao tác. SCN-AUTH-22 cần UC-02. SCN-AUTH-23 thuộc khảo sát có phạm vi riêng."
+      },
+      "decisions_for_approval": [
+        "Duyệt UC spec và UI v2 trong phạm vi Essential của gói này. Trang chính mở Hồ sơ tối thiểu để vào SCR-04. Hồ sơ chỉ có điểm vào Đăng xuất. Khi hủy SCR-04, giữ màn và phiên. Nghiệp vụ đọc Hồ sơ và Mục của tôi thuộc UC-02.",
+        "Duyệt bố cục điều khoản v2 có hai liên kết. Dùng cấu hình HTTPS theo môi trường, màn cảnh báo v2 khi thiếu hoặc mở URL thất bại và URL tổng hợp trong bản kiểm thử. URL và nội dung chính sách thật, thay đổi phiên bản điều khoản và lưu bằng chứng dài hạn vẫn chờ sản phẩm.",
+        "Duyệt hành vi kho phiên v2. Ghi thất bại giữ màn riêng tư ẩn, dọn dữ liệu rồi báo lỗi lưu. Nếu dọn thất bại thì chặn quay lại và hiện Thử lại. Sau lần dọn thành công, dùng đích và thông báo của luồng nguồn. Ghi cờ điều khoản sau khi cấp và lưu phiên thành công.",
+        "Dùng 30 ngày không hoạt động và 90 ngày tối đa, cho phép nhiều thiết bị riêng biệt trong thực nghiệm. Dữ liệu nghiệm thu dùng hồ sơ fixture phù hợp EI-05. Tên/email ngoài đặc tả, OS tối thiểu, cấu hình OAuth và URL chính sách thật cần chốt trước nghiệm thu sản phẩm. Hạn mức GAP-AUTH-006 và kết quả PR-08 chung với UC-02 để lượt sau."
+      ]
+    },
+    "B_design": {
+      "operations": [
+        "createGoogleSession · POST /auth/sessions, khách. Nhận idToken, deviceType android/ios và attemptId UUID theo schema, trong đó thuộc tính bổ sung được chấp nhận theo OpenAPI. Xác minh ID token trước khi ghi và cấp/trả lại phiên. Trả 200 chứa sessionToken, accountId, expiresAt và no-store; 400 INVALID_REQUEST hoặc GOOGLE_TOKEN_REJECTED; 409 LOGIN_ATTEMPT_CONFLICT; 503 AUTH_UNAVAILABLE. Phân biệt không xác minh được vì lỗi phụ thuộc với token bị từ chối.",
+        "validateCurrentSession · POST /auth/sessions/current/validate, Bearer CoreSession. Core suy ra accountId từ phiên. Trả 200 chứa accountId, expiresAt và no-store sau khi cập nhật hoạt động; 401 SESSION_INVALID kèm WWW-Authenticate: Bearer; 503 AUTH_UNAVAILABLE.",
+        "revokeCurrentSession · DELETE /auth/sessions/current, Bearer CoreSession. Thu hồi phiên khớp mã. Trả 204 rỗng cho lần đầu và lần lặp với bản ghi thu hồi còn nhận diện. Thiếu/sai/không nhận diện mã hoặc phiên hết hạn chưa thu hồi trả 401 SESSION_INVALID kèm Bearer challenge. Lỗi tạm trả 503 AUTH_UNAVAILABLE."
+      ],
+      "postgresql": [
+        "accounts có UUID PK, google_sub duy nhất, email, display_name 1–100 ký tự, avatar_url có thể rỗng và mốc tạo/cập nhật. Định danh theo sub đã xác minh và cập nhật hồ sơ trong giao dịch cấp phiên mới.",
+        "sessions có UUID PK, account_id FK, token_hash SHA-256 duy nhất, device_type, created_at, last_activity_at, revoked_at tùy chọn. Hạn là mốc đến trước giữa hoạt động cuối + 30 ngày và cấp + 90 ngày. Kiểm hạn tại thời điểm thực thi sau khi lấy khóa phù hợp; cập nhật hoạt động hoặc thu hồi trong cùng giao dịch và giữ mốc hoạt động không lùi.",
+        "login_attempts có attempt_id UUID PK, session_id FK duy nhất, dấu vân tay token gốc SHA-256, original_token_expires_at, replay_key_version và created_at. Tuần tự hóa cấp lại theo attemptId, tái kiểm hạn sau khi chờ, và commit tài khoản, phiên, lượt cùng nhau. Cùng đầu vào, token gốc còn hạn và phiên còn hiệu lực thì trả lại chính mã phiên và giữ mốc phiên/hồ sơ. Token gốc hết hạn trả 400. Đầu vào hợp lệ khác hoặc phiên của lượt mất hiệu lực trả 409.",
+        "Tạo lại mã phiên bằng HMAC-SHA-256 với khóa bí mật có phiên bản ngoài DB và dữ liệu mã hóa không nhập nhằng gồm nhãn mục đích, UUID lượt, dấu vân tay ID token, thiết bị, sub đã xác minh. DB giữ bản băm mã phiên. Giữ khóa cũ ít nhất đến lúc hết hạn token gốc cuối cùng cần khóa đó. Cấu hình khóa giống nhau trong cùng môi trường.",
+        "Dùng db/migrations/001_identity.sql cho DB rỗng và giữ schema 001 tương thích với DB đã áp bản cũ. Kiểm phiên bản và toàn bộ ràng buộc mong đợi trước khi xác nhận DB cũ đã có baseline. Nếu schema khác hoặc thiếu, báo chênh lệch và trình phương án nâng cấp trước khi sửa DB. Bảo trì trên fixture cô lập theo thứ tự FK. Dọn lượt đã qua hạn token trước, giữ phiên thu hồi ít nhất 90 ngày, dọn phiên hết hạn theo điều kiện và giữ phiên còn lượt tham chiếu."
+      ],
+      "mobile": [
+        "SCR-01 mở Google picker native. Hủy trả về màn sạch lỗi. Hiện điều khoản sau chọn Google và trước khi gọi Core trong lần cài chưa hoàn tất. Dấu bản cài nằm ngoài backup, xử lý SecureStore còn sót trước khi đọc phiên nếu thiếu dấu. Cờ điều khoản tồn tại qua đăng xuất/đổi tài khoản trong cùng bản cài. Chỉ giữ Google ID token trong bộ nhớ của lượt.",
+        "Dùng ERR-A1–A4 tiếng Việt từ UC. Sau mất mạng/timeout/503, cho thử lại cùng lượt, token và loại thiết bị khi hợp lệ. Khi chọn lại, cấp UUID mới. Giữ màn riêng tư ẩn trong lúc khôi phục, giữ phiên cục bộ khi lỗi tạm, dọn khi 401 và bỏ phản hồi muộn của lượt/phiên cũ. Lưu mã vào SecureStore trước khi mở Trang chính.",
+        "Đăng xuất qua SCR-04. Sau xác nhận, khóa điều hướng và dọn kho/dữ liệu cục bộ song song với yêu cầu revoke. Về SCR-01 ngay khi dọn xong. Báo chỉ đăng xuất khỏi thiết bị này nếu chưa xác nhận thu hồi. Lỗi kho phiên giữ chế độ ẩn và cho thử dọn lại; các mốc thời gian được ghi cùng điều kiện kho hoạt động hoặc lỗi."
+      ]
+    },
+    "C_security_scope": [
+      {
+        "sec": "SEC-AUTH-001",
+        "catalog": [
+          "SEC-A06-01",
+          "SEC-A06-05"
+        ],
+        "rationale": "EI-01–03, FR-AUTH-02–05/07 và GAP-AUTH-001/002 yêu cầu Google giữ xác thực mật khẩu, Core chỉ tin ID token đã xác minh, đồng bộ đúng tài khoản và cấp tối đa một phiên dùng được mỗi lượt.",
+        "prompt_e": [
+          "SR-01",
+          "SR-02",
+          "SR-03",
+          "SR-04",
+          "SR-06"
+        ]
+      },
+      {
+        "sec": "SEC-AUTH-002",
+        "catalog": [
+          "SEC-A01-01",
+          "SEC-A06-01",
+          "SEC-A06-03",
+          "SEC-A07-01"
+        ],
+        "rationale": "EI-03/04, FR-AUTH-08–16, kiến trúc và GAP-AUTH-003/004 yêu cầu giới hạn quyền theo phiên, kiểm hết hạn và thu hồi phía Core, cách ly trạng thái giữa hai tài khoản và bảo vệ bí mật khi truyền, lưu và ghi log.",
+        "prompt_e": [
+          "SR-02",
+          "SR-04",
+          "SR-05",
+          "SR-06",
+          "SR-07",
+          "SR-08"
+        ]
+      }
+    ],
+    "D_generation": {
+      "entry_points": [
+        "apps/core/src/api.ts và module identity · Node.js/TypeScript, PostgreSQL.",
+        "apps/mobile/App.tsx, app.config.ts và module auth · Expo development build, Google SDK native và Expo SecureStore.",
+        "Gateway Nginx, cấu hình Compose, migration, hướng dẫn môi trường và bộ kiểm cần cho UC-01."
+      ],
+      "constraints": [
+        "Giữ GET /health/ready, Worker, Matching và AI mock. UC-02 tiếp tục chờ triển khai. Dùng đường dẫn Core ghi trong hợp đồng và tiền tố /api tại gateway. Giữ bản sửa cục bộ scripts/mobile-android.ps1.",
+        "HTTPS cho thông tin xác thực thật, ID token trong body, phiên trong Authorization, no-store trên cấp và xác minh. Khóa, OAuth config thật và dữ liệu thật nằm ngoài Git. Fixture Google chỉ tồn tại trong entry point/build kiểm thử cô lập. Dùng tài khoản và dữ liệu tổng hợp trong các bộ kiểm.",
+        "UI v2 dùng tiếng Việt, nhãn và trạng thái theo đặc tả, nút Google theo hướng dẫn, vùng chạm tối thiểu 48 dp Android hoặc 44 pt iOS, tương phản chữ thường ≥ 4,5:1 và giữ phạm vi quyền HW-01. Giới hạn mỗi lời gọi mạng do app quản lý ở 15 giây, ghi phần quan sát được của SDK.",
+        "CI và local chạy kiểm Core, 3 test AI mock và readiness hiện có. Bổ sung kiểm có mục tiêu cho luồng Core/DB và mobile, rồi smoke bằng entry point chuẩn trên revision được audit."
+      ]
+    },
+    "E_audit": [
+      {
+        "id": "SR-01",
+        "sec": [
+          "SEC-AUTH-001"
+        ],
+        "layer": "createGoogleSession và Google verifier",
+        "scn": [
+          "04",
+          "05",
+          "08",
+          "09",
+          "10"
+        ],
+        "expected": "Chỉ dùng danh tính từ token xác minh được chữ ký, issuer, audience và hạn. Token bị từ chối giữ nguyên tài khoản/phiên/hồ sơ.",
+        "evidence": [
+          "Mã verifier và đường gọi trước giao dịch",
+          "Kết quả fixture hợp đồng và đối soát DB"
+        ]
+      },
+      {
+        "id": "SR-02",
+        "sec": [
+          "SEC-AUTH-001",
+          "SEC-AUTH-002"
+        ],
+        "layer": "Core và transaction PostgreSQL",
+        "scn": [
+          "04",
+          "05",
+          "09"
+        ],
+        "expected": "Duy nhất tài khoản theo sub, đồng bộ hồ sơ với lượt mới. Hai lượt riêng hợp lệ tạo hai phiên độc lập. Cùng lượt trả phiên cũ với trạng thái không đổi.",
+        "evidence": [
+          "Ràng buộc DB và giao dịch",
+          "Kết quả hai lượt cùng subject và đối soát DB"
+        ]
+      },
+      {
+        "id": "SR-03",
+        "sec": [
+          "SEC-AUTH-001"
+        ],
+        "layer": "Ứng dụng, Google SDK, điều khoản theo bản cài",
+        "scn": [
+          "01",
+          "02",
+          "03",
+          "06",
+          "19"
+        ],
+        "expected": "Người dùng chọn tài khoản trong Google picker. Hủy hoặc từ chối có 0 yêu cầu Core. Cờ chỉ ghi sau thành công, giữ qua đăng xuất và đặt lại trên bản cài mới.",
+        "evidence": [
+          "Trace dựa trên fixture, kiểm mã và cấu hình quyền",
+          "Bằng chứng Android/iOS về picker, cài lại và trạng thái UI"
+        ]
+      },
+      {
+        "id": "SR-04",
+        "sec": [
+          "SEC-AUTH-001",
+          "SEC-AUTH-002"
+        ],
+        "layer": "createGoogleSession và login_attempts",
+        "scn": [
+          "07",
+          "09",
+          "10",
+          "20"
+        ],
+        "expected": "Ràng buộc với sub/token/thiết bị, tối đa một phiên dùng được mỗi lượt, đúng kết quả khi gửi lại cùng lượt, hết hạn hoặc xung đột. DB chứa bản băm và khóa nằm ngoài DB.",
+        "evidence": [
+          "Audit transaction, phạm vi khóa và migration",
+          "Fixture lặp hợp đồng đồng thời và kết quả DB"
+        ]
+      },
+      {
+        "id": "SR-05",
+        "sec": [
+          "SEC-AUTH-002"
+        ],
+        "layer": "validateCurrentSession và revokeCurrentSession",
+        "scn": [
+          "11",
+          "12",
+          "13",
+          "14",
+          "15",
+          "16",
+          "18",
+          "20"
+        ],
+        "expected": "Bearer xác định đúng phiên. Mốc 30/90 tính đúng và thu hồi chỉ ảnh hưởng một thiết bị. Đúng ngữ nghĩa 204 lặp, 401 và Bearer challenge. Yêu cầu muộn không hồi sinh phiên.",
+        "evidence": [
+          "Kiểm đồng hồ điều khiển, hai thiết bị và trạng thái DB",
+          "HTTP qua Core/gateway"
+        ]
+      },
+      {
+        "id": "SR-06",
+        "sec": [
+          "SEC-AUTH-001",
+          "SEC-AUTH-002"
+        ],
+        "layer": "Gateway, API, Mobile và OS",
+        "scn": [
+          "04",
+          "19",
+          "20"
+        ],
+        "expected": "Token đúng vị trí, HTTPS khi thật, no-store và kho bảo mật OS. Log, lỗi, URL và fixture release tránh lộ bí mật.",
+        "evidence": [
+          "Đối chiếu mã/config, header/trace fixture đã che thông tin",
+          "Chứng cứ secure storage trên native và TLS trước nghiệm thu môi trường dùng thông tin xác thực thật"
+        ]
+      },
+      {
+        "id": "SR-07",
+        "sec": [
+          "SEC-AUTH-002"
+        ],
+        "layer": "Mobile, điều hướng và vòng đời phiên",
+        "scn": [
+          "11",
+          "12",
+          "13",
+          "15",
+          "16",
+          "17"
+        ],
+        "expected": "Ẩn dữ liệu trong khôi phục hoặc khi kho lỗi, phân biệt lỗi tạm và 401, dọn đầy đủ, chặn Quay lại và bỏ kết quả cũ khi đổi lượt hoặc A sang B. Hồ sơ tối thiểu giữ nguyên khi hủy xác nhận. Khi kho hoạt động, 401 đưa về SCR-01 trong 2 giây, xác nhận đăng xuất đưa về SCR-01 trong 1 giây độc lập với phản hồi Core.",
+        "evidence": [
+          "Kiểm UI/state và kho qua fixture",
+          "Bằng chứng native, từng điều kiện thời gian có ghi mốc"
+        ]
+      },
+      {
+        "id": "SR-08",
+        "sec": [
+          "SEC-AUTH-002"
+        ],
+        "layer": "PostgreSQL, migration và bảo trì",
+        "scn": [
+          "09",
+          "16",
+          "18",
+          "20"
+        ],
+        "expected": "Schema nhận DB rỗng và baseline 001 tương thích. Bảo trì giữ phiên còn liên kết, thời gian nhận diện bản ghi thu hồi và khóa đúng vòng đời.",
+        "evidence": [
+          "Kiểm hai baseline trên DB tổng hợp",
+          "Audit hướng dẫn giữ bản ghi và vòng đời khóa"
+        ]
+      }
+    ],
+    "F_repair_and_acceptance": {
+      "first_pass": "Ghi revision ban đầu, chạy check/build và smoke khả dụng. Giao Terra 6.1 medium audit toàn SR và ràng buộc. Lưu first_pass_security cùng số lượng met, unmet và not_evaluable trước lần sửa đầu.",
+      "repairs": "Ghi repair ID, bằng chứng, SR, phạm vi và revision trước mỗi lần sửa. Một sửa tối thiểu cho mỗi lỗi có bằng chứng, kiểm lại và giao re-audit tập trung. Giới hạn mặc định 10 lần đã bắt đầu, tạm dừng từng lỗi sau ba lần liên tiếp chưa khắc phục.",
+      "final": "Runtime trên cùng revision gồm API qua fixture cô lập và DB thật dùng dữ liệu tổng hợp, migration, readiness, smoke Gateway và luồng Android/iOS Essential theo phạm vi. Chạy các phép kiểm hiện có và kiểm mobile bản mới. Giao audit cuối cho toàn SR. Ghi kết quả met/unmet/not_evaluable và lý do theo nguồn. Thiếu chứng cứ bắt buộc thì giữ trạng thái blocked. Nghiệm thu Google OAuth, chính sách thật và kết quả hiệu năng chỉ ghi khi có môi trường tương ứng."
+    }
+  },
+  "approval": {
+    "response": "approve",
+    "date": "2026-11-22",
+    "bundle_sha256": "3d8ecdb62e0a681861837ae702af182892a0a04b86b984e7c945ce08c88018e7"
+  },
+  "initial_source_revision": {
+    "sha256": "23c92d08e5096381c0b3d63831e740351ef46ae7e4e7b8d8fc5f81a61f2acb1c",
+    "algorithm": "SHA-256 của JSON UTF-8 các cặp đường dẫn/hash LF đã sắp theo đường dẫn.",
+    "files": {
+      ".github/workflows/check.yml": "42b3bf930ebf6ee4b01df94eca12e998a8cac55875290ec5ad9cb2a1cccfdaa9",
+      "apps/core/package.json": "14636925632a47e0e862e07694c4254ec14dfe3b23a4bc863700bc9f5c499d6e",
+      "apps/core/src/api.ts": "e59b2990ab42f1aeed6707294a219f93e9d5b64738aaf3a1d5711b4f9263852f",
+      "apps/core/src/db.ts": "bac0b20349a20f60b1a715bf3af5d247b3f5a663899cbd915541cc1ea19317d5",
+      "apps/core/src/modules/identity/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/core/src/modules/identity/google.ts": "ee2fa86931924f2c34f6415e374872b03e3ac74494f944512a03f605c28e8bc6",
+      "apps/core/src/modules/identity/routes.ts": "36ac620def8c0c240279a3ab6ef43b9e2dbb13553c9ebcd1686b97d7e553ab46",
+      "apps/core/src/modules/identity/sessions.ts": "f5c150276602b2484f3e4745b0b4011ae23775dfcce7b9ecfddeb3fd66dbbba0",
+      "apps/core/tsconfig.json": "a48d14223056982e2f9a5aced70ec0b0d07d5b9b795c4a3a915541d255b029f5",
+      "apps/mobile/App.tsx": "45e7248b33979efd91215f611fa4c7108fefcc3a3c7dd4b4a29a9cbd0cf5c90e",
+      "apps/mobile/app.config.ts": "8fec19e5bd8ecc33fda27d4d1bfaee57e54285f4810baf16449c372571bb3fde",
+      "apps/mobile/index.ts": "3cc816440c81db1b45a7d796c25ee6b45e19cfa2d64f1f934e42b1384c82d90b",
+      "apps/mobile/modules/install-state/android/build.gradle": "c5fe63d4281d92b36040e81804d144b79170932afac740c6db45765356e7a125",
+      "apps/mobile/modules/install-state/android/src/main/java/expo/modules/installstate/InstallStateModule.kt": "f476bffe57e37443b68032767431b237ce6836269aee620f6e8d9b265e74ed30",
+      "apps/mobile/modules/install-state/expo-module.config.json": "c314a396c25ae394c1e6f4d4eff507d262646e7ec694270bc3c93a0f4c3a0998",
+      "apps/mobile/modules/install-state/ios/InstallState.podspec": "658496be78bdaacbe3cb03ebb709fe1a44ae549250c39ea7e80049d555f650c8",
+      "apps/mobile/modules/install-state/ios/InstallStateModule.swift": "3c0ba9441d2a6aed324b09db0b51fc7dc6ed6a08468a5a092d5a3dab49c408d6",
+      "apps/mobile/package-lock.json": "096607cb629ff9d6d5b68f7381802e240aec809078bd9db88230c8125ba165bc",
+      "apps/mobile/package.json": "664f7ac8cbf3bab49eea4388061ab0b9b6483de4033faeb4ea8e9eaa5476b6e6",
+      "apps/mobile/src/auth-flow.ts": "cc9ddcccbec466e600c7e3b6931db2245e0889f4352fc6ccda2f2162436344e7",
+      "apps/mobile/src/auth-platform.tsx": "5ee0c363999636715a817f5b653aff009a311f047a2d9a60b49bb7ca2146a05f",
+      "apps/mobile/src/auth-platform.web.tsx": "58b1e549403216ef316cd682a92c85ae8e66e0b1a5d7153a804e5db3dc6df3cb",
+      "apps/mobile/src/identity-api.ts": "35d7bc2608111a3eac7f24dde1cdabf768f526029bf9e78bdf90258a580d7838",
+      "apps/mobile/src/installation.ts": "9b8c876a8f6662e7d697908915fd5b44de34b82dc52ab33813f4d699a3794051",
+      "apps/mobile/tests/auth-flow.test.ts": "7770f186da5a2ef2c51d9b1ff3fd304e5fdc3368033d73e6caca70410ad1565c",
+      "apps/mobile/tsconfig.json": "ebbb676f2dffbd4bb20fcb3ad6b775c525d4a8398f7280c17e6e58601a3ab0fb",
+      "compose.yaml": "f4416985f0d931e5607c3dae0bfda5330abe64b436621392f0d8a8eaaf602fe4",
+      "db/migrations/001_identity.sql": "fd3af3e312b722326d640e112788d489bfbffad540facad86be03a7250b91cad",
+      "db/migrations/README.md": "b2c9b796a09885f71e48c899c0cb42bba25f6177d045ea81e284424a4964ce8e",
+      "infra/nginx/default.conf": "95c11e897bb7a6f204d436bb9592bf368af8ce28a3ccbcd650e10e93a94bf952",
+      "package-lock.json": "00b778f5c3ab8b795001daddfbdb28d9fdc9f2306d94246ab05953adaa8fac50",
+      "package.json": "d38219447996c3a07d58b9ea672f8e1e541327fbc90b6964ac19888efbb61c6c",
+      "tests/integration/core-identity.sh": "d0b7c112c78c636ea8ba596ce2d424347dc61e76e17bac1034f13e423b967d85",
+      "tests/integration/core-identity.test.mjs": "4aa0de3f87df8952a19397efe5fa950e9e2a2dafeb693997db9a3fa841e1d291",
+      "tests/unit/google-token.test.mjs": "2b3034e100d4ad9b9bc2f7908aeff8bcef4a7e2bea4204bd7b99bfe205ad8336"
+    }
+  },
+  "first_pass_security": {
+    "source_sha256": "23c92d08e5096381c0b3d63831e740351ef46ae7e4e7b8d8fc5f81a61f2acb1c",
+    "auditor": {
+      "model": "GPT-6.1 Terra",
+      "reasoning_effort": "medium"
+    },
+    "results": [
+      {
+        "id": "SR-01",
+        "status": "met",
+        "evidence": [
+          "apps/core/src/modules/identity/google.ts:20",
+          "apps/core/src/modules/identity/sessions.ts:88",
+          "tests/unit/google-token.test.mjs",
+          "tests/integration/core-identity.test.mjs"
+        ],
+        "reason": "JWT tổng hợp ký cục bộ đạt các phép kiểm chữ ký, issuer, audience và hạn. Token bị từ chối tại lớp verifier trước giao dịch và bộ kiểm HTTP đối soát không có tài khoản hoặc phiên được ghi."
+      },
+      {
+        "id": "SR-02",
+        "status": "met",
+        "evidence": [
+          "db/migrations/001_identity.sql:3",
+          "apps/core/src/modules/identity/sessions.ts:117",
+          "tests/integration/core-identity.test.mjs"
+        ],
+        "reason": "Schema và PGlite xác nhận mỗi sub có một tài khoản, cấp hai phiên độc lập, đồng bộ hồ sơ ở lượt mới và giữ mốc ở lượt gửi lại. Adapter tuần tự hóa giao dịch. Tranh chấp PostgreSQL nhiều kết nối thuộc SR-04."
+      },
+      {
+        "id": "SR-03",
+        "status": "not_evaluable",
+        "evidence": [
+          "apps/mobile/src/auth-flow.ts:92",
+          "apps/mobile/src/installation.ts:12",
+          "apps/mobile/modules/install-state",
+          "apps/mobile/tests/auth-flow.test.ts"
+        ],
+        "reason": "Mock kiểm hủy, điều khoản, cờ và không gọi Core khi từ chối. Chưa có trace Google picker, quyền và cài lại trên Android/iOS."
+      },
+      {
+        "id": "SR-04",
+        "status": "not_evaluable",
+        "evidence": [
+          "apps/core/src/modules/identity/sessions.ts:80",
+          "db/migrations/001_identity.sql:13",
+          "tests/integration/core-identity.test.mjs"
+        ],
+        "reason": "PGlite kiểm ràng buộc, cấp lại cùng lượt, xung đột và bảo vệ bản băm. Adapter chỉ có một connection, chưa chứng minh hành vi khóa trên nhiều connection PostgreSQL."
+      },
+      {
+        "id": "SR-05",
+        "status": "not_evaluable",
+        "evidence": [
+          "apps/core/src/modules/identity/sessions.ts:141",
+          "apps/core/src/modules/identity/routes.ts:46",
+          "tests/integration/core-identity.test.mjs"
+        ],
+        "reason": "Core HTTP với PGlite đạt kiểm xác minh, trần hết hạn, 401/Bearer và thu hồi lặp trên một thiết bị. Chờ gateway và tranh chấp validate/revoke trên nhiều connection."
+      },
+      {
+        "id": "SR-06",
+        "status": "not_evaluable",
+        "evidence": [
+          "apps/mobile/src/identity-api.ts:25",
+          "apps/mobile/src/installation.ts:9",
+          "infra/nginx/default.conf:10",
+          "tests/integration/core-identity.test.mjs"
+        ],
+        "reason": "Mã và fixture xác nhận vị trí token, no-store và ràng buộc cấu hình HTTPS. Chưa có trace TLS dùng môi trường thật, SecureStore native và bản release."
+      },
+      {
+        "id": "SR-07",
+        "status": "not_evaluable",
+        "evidence": [
+          "apps/mobile/src/auth-flow.ts",
+          "apps/mobile/App.tsx",
+          "apps/mobile/tests/auth-flow.test.ts"
+        ],
+        "reason": "Mock đạt lỗi tạm, 401, dọn sau lỗi ghi, bỏ phản hồi đến muộn và đăng xuất độc lập với revoke. Chưa có đo native, nút Back hệ điều hành và xác nhận mốc 1/2 giây."
+      },
+      {
+        "id": "SR-08",
+        "status": "not_evaluable",
+        "evidence": [
+          "db/migrations/001_identity.sql",
+          "db/migrations/README.md",
+          "apps/core/src/modules/identity/sessions.ts"
+        ],
+        "reason": "Smoke vòng đời trên DB rỗng và baseline cũ đạt. Tại thời điểm assessment đầu chưa có catalog parity và bài chạy chuyển phiên bản khóa."
+      }
+    ],
+    "counts": {
+      "met": 2,
+      "unmet": 0,
+      "not_evaluable": 6
+    },
+    "project_constraints": {
+      "supported": [
+        "Giữ Core readiness, UC-02 ngoài phạm vi, ba operation UC-01 theo OpenAPI, fixture tách khỏi cấu hình sản phẩm.",
+        "Mã cho thiết bị và gateway có kiểm tra lưu, truyền và hạn chờ theo thiết kế."
+      ],
+      "gaps": [
+        "Build toàn bộ, kiểm hai OS, OAuth/TLS thực, PostgreSQL nhiều connection và gateway chuẩn chưa đủ bằng chứng."
+      ]
+    }
+  },
+  "repairs": [],
+  "final_assessment": null,
+  "next_action": "Cài dependency theo lockfile và chạy CI/Compose với PostgreSQL 16, gateway và nhiều connection; chạy Android/iOS native với OAuth/TLS của môi trường thử nghiệm để xác minh picker, cài lại, SecureStore, đăng xuất/401, nút Back và mốc thời gian. Cập nhật đánh giá đạt khi có bằng chứng trên đúng revision.",
+  "first_pass_checks": [
+    {
+      "name": "Biên dịch cú pháp TS/TSX bằng TypeScript đã lưu cache",
+      "result": "passed",
+      "details": "Biên dịch transpileModule cho Core, luồng/adapter native và web, entry Expo và test. Kiểm kiểu strict riêng auth-flow.ts, identity-api.ts và auth-flow.test.ts với Node typings."
+    },
+    {
+      "name": "Các test fixture theo revision",
+      "result": "passed",
+      "details": "13/13: 5 luồng mobile, 3 HTTP Core với PGlite 0.5.10/PostgreSQL 18.6 và adapter một connection, 2 JWT verifier dùng khóa tổng hợp và 3 AI mock."
+    },
+    {
+      "name": "HTTP trên Core entry point",
+      "result": "passed",
+      "details": "Core readiness 200/503 với adapter PostgreSQL nhúng, xác minh thiếu Bearer trả 401, cấu hình cấp phiên thiếu trả 503, hai route UC-02 trả 404."
+    },
+    {
+      "name": "Schema và vòng đời trên PostgreSQL nhúng",
+      "result": "passed",
+      "details": "Áp 001 trên DB rỗng; tạo baseline từ Git 001+002 trên DB khác. Trong cả hai, cấp, gửi lại, xác minh, thu hồi lặp, đối soát hash và 401 sau thu hồi đạt. Dùng dữ liệu tổng hợp."
+    },
+    {
+      "name": "Dependency lockfiles",
+      "result": "passed",
+      "details": "npm ci --dry-run cho Core và Mobile nhận package manifests. Kiểm tra này chỉ xác nhận metadata và lockfile."
+    },
+    {
+      "name": "Build đầy đủ và Docker",
+      "result": "unavailable",
+      "details": "npm ci thiếu tarball tại cache và kết nối registry bị chặn. Docker CLI/daemon và integration PostgreSQL 16/Compose/Nginx chưa khả dụng. Git Bash báo Win32 error 5 khi mở signal pipe."
+    },
+    {
+      "name": "Android/iOS, Google OAuth và thiết bị",
+      "result": "unavailable",
+      "details": "ADB không có thiết bị kết nối. Expo chưa đủ dependency. iOS cần máy có Xcode. Chưa dùng cấu hình OAuth/TLS thật hoặc chạy phép đo native."
+    }
+  ],
+  "assessment_on_candidate": {
+    "source_sha256": "23c92d08e5096381c0b3d63831e740351ef46ae7e4e7b8d8fc5f81a61f2acb1c",
+    "auditor": {
+      "model": "GPT-6.1 Terra",
+      "reasoning_effort": "medium"
+    },
+    "results": [
+      {
+        "id": "SR-01",
+        "status": "met",
+        "evidence": [
+          "apps/core/src/modules/identity/google.ts:20",
+          "apps/core/src/modules/identity/sessions.ts:88",
+          "tests/unit/google-token.test.mjs",
+          "tests/integration/core-identity.test.mjs"
+        ],
+        "reason": "JWT tổng hợp ký cục bộ đạt các phép kiểm chữ ký, issuer, audience và hạn. Token bị từ chối tại lớp verifier trước giao dịch và bộ kiểm HTTP đối soát không có tài khoản hoặc phiên được ghi."
+      },
+      {
+        "id": "SR-02",
+        "status": "met",
+        "evidence": [
+          "db/migrations/001_identity.sql:3",
+          "apps/core/src/modules/identity/sessions.ts:117",
+          "tests/integration/core-identity.test.mjs"
+        ],
+        "reason": "Schema và PGlite xác nhận mỗi sub có một tài khoản, cấp hai phiên độc lập, đồng bộ hồ sơ ở lượt mới và giữ mốc ở lượt gửi lại. Adapter tuần tự hóa giao dịch. Tranh chấp PostgreSQL nhiều kết nối thuộc SR-04."
+      },
+      {
+        "id": "SR-03",
+        "status": "not_evaluable",
+        "evidence": [
+          "apps/mobile/src/auth-flow.ts:92",
+          "apps/mobile/src/installation.ts:12",
+          "apps/mobile/modules/install-state",
+          "apps/mobile/tests/auth-flow.test.ts"
+        ],
+        "reason": "Mock kiểm hủy, điều khoản, cờ và không gọi Core khi từ chối. Chưa có trace Google picker, quyền và cài lại trên Android/iOS."
+      },
+      {
+        "id": "SR-04",
+        "status": "not_evaluable",
+        "evidence": [
+          "apps/core/src/modules/identity/sessions.ts:80",
+          "db/migrations/001_identity.sql:13",
+          "tests/integration/core-identity.test.mjs"
+        ],
+        "reason": "PGlite kiểm ràng buộc, cấp lại cùng lượt, xung đột và bảo vệ bản băm. Adapter chỉ có một connection, chưa chứng minh hành vi khóa trên nhiều connection PostgreSQL."
+      },
+      {
+        "id": "SR-05",
+        "status": "not_evaluable",
+        "evidence": [
+          "apps/core/src/modules/identity/sessions.ts:141",
+          "apps/core/src/modules/identity/routes.ts:46",
+          "tests/integration/core-identity.test.mjs"
+        ],
+        "reason": "Core HTTP với PGlite đạt kiểm xác minh, trần hết hạn, 401/Bearer và thu hồi lặp trên một thiết bị. Chờ gateway và tranh chấp validate/revoke trên nhiều connection."
+      },
+      {
+        "id": "SR-06",
+        "status": "not_evaluable",
+        "evidence": [
+          "apps/mobile/src/identity-api.ts:25",
+          "apps/mobile/src/installation.ts:9",
+          "infra/nginx/default.conf:10",
+          "tests/integration/core-identity.test.mjs"
+        ],
+        "reason": "Mã và fixture xác nhận vị trí token, no-store và ràng buộc cấu hình HTTPS. Chưa có trace TLS dùng môi trường thật, SecureStore native và bản release."
+      },
+      {
+        "id": "SR-07",
+        "status": "not_evaluable",
+        "evidence": [
+          "apps/mobile/src/auth-flow.ts",
+          "apps/mobile/App.tsx",
+          "apps/mobile/tests/auth-flow.test.ts"
+        ],
+        "reason": "Mock đạt lỗi tạm, 401, dọn sau lỗi ghi, bỏ phản hồi đến muộn và đăng xuất độc lập với revoke. Chưa có đo native, nút Back hệ điều hành và xác nhận mốc 1/2 giây."
+      },
+      {
+        "id": "SR-08",
+        "status": "met",
+        "evidence": [
+          "db/migrations/001_identity.sql",
+          "db/migrations/README.md",
+          "apps/core/src/modules/identity/sessions.ts"
+        ],
+        "reason": "Hai baseline PGlite có catalog các bảng identity trùng khớp và đều đạt smoke cấp, gửi lại, xác minh và thu hồi. Bài đổi khóa giữ được phiên và hướng dẫn bảo trì xác định điều kiện giữ và dọn theo FK. Chưa chạy bảo trì trên PostgreSQL server."
+      }
+    ],
+    "counts": {
+      "met": 3,
+      "unmet": 0,
+      "not_evaluable": 5
+    },
+    "project_constraints": {
+      "supported": [
+        "Giữ Core readiness, UC-02 ngoài phạm vi, ba operation UC-01 theo OpenAPI, fixture tách khỏi cấu hình sản phẩm.",
+        "Mã cho thiết bị và gateway có kiểm tra lưu, truyền và hạn chờ theo thiết kế."
+      ],
+      "gaps": [
+        "Build toàn bộ, kiểm hai OS, OAuth/TLS thực, PostgreSQL nhiều connection và gateway chuẩn chưa đủ bằng chứng."
+      ]
+    }
+  },
+  "verification_on_candidate": {
+    "source_sha256": "23c92d08e5096381c0b3d63831e740351ef46ae7e4e7b8d8fc5f81a61f2acb1c",
+    "checks": [
+      {
+        "name": "Biên dịch cú pháp TS/TSX bằng TypeScript đã lưu cache",
+        "result": "passed",
+        "details": "Biên dịch transpileModule cho Core, luồng/adapter native và web, entry Expo và test. Kiểm kiểu strict riêng auth-flow.ts, identity-api.ts và auth-flow.test.ts với Node typings."
+      },
+      {
+        "name": "Các test fixture theo revision",
+        "result": "passed",
+        "details": "13/13: 5 luồng mobile, 3 HTTP Core với PGlite 0.5.10/PostgreSQL 18.6 và adapter một connection, 2 JWT verifier dùng khóa tổng hợp và 3 AI mock."
+      },
+      {
+        "name": "HTTP trên Core entry point",
+        "result": "passed",
+        "details": "Core readiness 200/503 với adapter PostgreSQL nhúng, xác minh thiếu Bearer trả 401, cấu hình cấp phiên thiếu trả 503, hai route UC-02 trả 404."
+      },
+      {
+        "name": "Schema và vòng đời trên PostgreSQL nhúng",
+        "result": "passed",
+        "details": "Áp 001 trên DB rỗng; tạo baseline từ Git 001+002 trên DB khác. Trong cả hai, cấp, gửi lại, xác minh, thu hồi lặp, đối soát hash và 401 sau thu hồi đạt. Dùng dữ liệu tổng hợp."
+      },
+      {
+        "name": "Dependency lockfiles",
+        "result": "passed",
+        "details": "npm ci --dry-run cho Core và Mobile nhận package manifests. Kiểm tra này chỉ xác nhận metadata và lockfile."
+      },
+      {
+        "name": "Build đầy đủ và Docker",
+        "result": "unavailable",
+        "details": "npm ci thiếu tarball tại cache và kết nối registry bị chặn. Docker CLI/daemon và integration PostgreSQL 16/Compose/Nginx chưa khả dụng. Git Bash báo Win32 error 5 khi mở signal pipe."
+      },
+      {
+        "name": "Android/iOS, Google OAuth và thiết bị",
+        "result": "unavailable",
+        "details": "ADB không có thiết bị kết nối. Expo chưa đủ dependency. iOS cần máy có Xcode. Chưa dùng cấu hình OAuth/TLS thật hoặc chạy phép đo native."
+      },
+      {
+        "name": "Kiểm catalog của baseline 001 và 001+002",
+        "result": "passed",
+        "details": "Trên hai PostgreSQL nhúng độc lập, ba bảng identity có định nghĩa giống nhau cho 20 cột, 30 ràng buộc và 6 index. SQL migration 001 hiện tại giống bản baseline theo byte LF."
+      },
+      {
+        "name": "Xoay khóa cấp lại",
+        "result": "passed",
+        "details": "Phiên đang dùng khóa v1 được cấp lại đúng trong lượt còn hạn khi khóa active chuyển sang v2 và giữ v1. Ràng buộc v1 trên lượt được giữ. Thu hồi lặp thành công."
+      }
+    ]
+  }
+}

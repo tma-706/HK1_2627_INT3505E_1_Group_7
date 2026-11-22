@@ -1,0 +1,783 @@
+{
+  "run_id": "uc-02-essential-v2",
+  "type": "product",
+  "status": "blocked",
+  "verified_checkpoint": "Đã triển khai và kiểm fixture UC-02 v2. Trên cùng revision, audit ứng viên có 4 met, 0 unmet, 4 not_evaluable. Chưa có defect được xác nhận để repair.",
+  "source_hash_encoding": "SHA-256 theo byte gốc đối với PDF/PNG. Văn bản UTF-8 được chuẩn hóa CRLF thành LF.",
+  "bundle_sha256_encoding": "SHA-256 của JSON UTF-8 gồm sources, implementation_destination và bundle, khóa sắp xếp đệ quy, dấu phân tách không có khoảng trắng.",
+  "sources": {
+    "uc": {
+      "path": "docs/use-cases/uc-02-profile-and-my-items.md",
+      "version": "v2 · Đã duyệt 2026-11-22",
+      "sha256": "ddcdfc9ae11d57c4b82578a96d5b96cbb704d96607c16031c2e0720239348dcf"
+    },
+    "ui": {
+      "path": "docs/use-cases/uc-02-profile-and-my-items-ui.md",
+      "version": "v2 · Đã duyệt 2026-11-22",
+      "use": "Yêu cầu vị trí cố định dùng theo UI v2. Văn bản ghi xanh đậm, các PNG tham chiếu thể hiện xanh dương đậm.",
+      "sha256": "137113aa883f92b42cf0b10e43acf047214fb6c98df53c6ba96bdae5c9b994f2"
+    },
+    "ui_references": [
+      {
+        "path": "docs/use-cases/ui/uc-02/scr-02-ready.png",
+        "sha256": "8d5ab89b65507044a79bf9818fadf5ea5af3b7a92b6ad774c2268607fdb3a24b"
+      },
+      {
+        "path": "docs/use-cases/ui/uc-02/scr-03-claims-ready.png",
+        "sha256": "3fbd6ae1960e1c6ee0ed604ac25bfff912c4dd0c198f8f1f2442adebe7695802"
+      },
+      {
+        "path": "docs/use-cases/ui/uc-02/found-detail-preview.png",
+        "sha256": "4a8618710233e07bfcbae02734f3ddc0687c808a74dd5cf474267223f428c420"
+      }
+    ],
+    "api": {
+      "path": "docs/api/core/openapi.json",
+      "version": "0.3.0",
+      "operations": [
+        "getMyProfile",
+        "listMyItems"
+      ],
+      "sha256": "837aac16902c2383a0d849eb2e2404048682f7fe8519a50dd65bbc35ce21ee25"
+    },
+    "api_notes": {
+      "path": "docs/api/core/uc-02-notes.md",
+      "version": "Execution Prompt v1 · quy tắc contract",
+      "use": "Ghi chú cũ mô tả đường vào hai lần chạm. Bố cục theo UC/UI v2 và quyết định trong analysis.",
+      "sha256": "3aee221963f1dc4b0e7632c051631b5d080c974e2817a06d6dfd2a6a3c339676"
+    },
+    "srs": {
+      "path": "docs/requirements/lost-and-found-srs.pdf",
+      "sections": [
+        "3.1",
+        "3.2.2",
+        "3.3",
+        "3.6"
+      ],
+      "pages": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "sha256": "2f67606fba01394440f4ece54716541ce4188ce8a4564748fffdf048d8a5196b"
+    },
+    "analysis": {
+      "path": "docs/requirements/analysis/uc-01-02.md",
+      "anchor": "uc-02-profile-layout",
+      "sha256": "704b7618f9bfb88cc3ce741e41c3322ba3b6d72d29f04ec9d1b284199b34173f"
+    },
+    "catalog": {
+      "path": "docs/requirements/quality/security-owasp-2025.json",
+      "version": "2026-09-26",
+      "sha256": "773ff2b424ad7d80366de337d2045a43908713f4369f6ce6217c8daee60f330e"
+    },
+    "prior_uc02": {
+      "path": "docs/operations/runs/uc-02-essential.json",
+      "approved_bundle_sha256": "f7f366d06c78811c64262b7dcf88f421af3553c53085dde3a6eddf70779676f7",
+      "use": "Tham chiếu quyết định thiết kế cursor, schema và dữ liệu fixture. Kết quả của revision cũ dùng làm lịch sử.",
+      "sha256": "cdcec7f5743786cac6bab14b394367e4b75ff6d1ae85b7da5d78be2725e03ccc"
+    },
+    "baseline_uc01": {
+      "path": "docs/operations/runs/uc-01-essential-v2.json",
+      "source_sha256": "23c92d08e5096381c0b3d63831e740351ef46ae7e4e7b8d8fc5f81a61f2acb1c",
+      "use": "Mã đã triển khai, 13 kiểm fixture đạt, audit 3/8 có bằng chứng. Còn thiếu native, TLS thật và PostgreSQL nhiều kết nối.",
+      "sha256": "becfc71221ad92f30c6881bfa8f42a34b5ad8905af1ae5cd9fba321f2c61e001"
+    },
+    "prior_schema": {
+      "path": "db/migrations/002_my_area.sql",
+      "git_commit": "f6f5ff50049918b558ac023c2216d097483cdc7c",
+      "use": "Schema 002 của bản thực nghiệm trong lịch sử Git. Tệp hiện đã được gỡ ở workspace.",
+      "sha256": "f82e2e575c80d99e60cf95ddbed718fbcf4395b054cbb683e6a955fd943e6439"
+    },
+    "constraints": [
+      {
+        "path": "AGENTS.md",
+        "sha256": "1b55aef92c0da234a6d2b9b94edefb7e48424a2377ea41a1a603a8a9e1f02432"
+      },
+      {
+        "path": "docs/architecture/overview.md",
+        "sha256": "2a9584dbc0830979ddf8763ea959d7423b24e28c817c40b530942ab6732af823"
+      },
+      {
+        "path": "docs/skill-workflow.md",
+        "sha256": "5bcd4798b44c2063c00fc94cf588bc20889b1fcccc6f53b1593621577114c250"
+      },
+      {
+        "path": "docs/operations/environments.md",
+        "sha256": "2192dad5aa0ff8efbab85f09dceeaf70ef81b63ce5f26d5185c9d99bec68a791"
+      },
+      {
+        "path": "db/migrations/README.md",
+        "sha256": "b2c9b796a09885f71e48c899c0cb42bba25f6177d045ea81e284424a4964ce8e"
+      },
+      {
+        "path": "db/migrations/001_identity.sql",
+        "sha256": "fd3af3e312b722326d640e112788d489bfbffad540facad86be03a7250b91cad"
+      },
+      {
+        "path": "docs/use-cases/uc-01-google-sign-in-and-session.md",
+        "sha256": "62a1821ec071fc531cf7b012e6044288d3c3b7715abb3dd979d278010fd84bc6"
+      },
+      {
+        "path": "apps/core/src/api.ts",
+        "sha256": "e59b2990ab42f1aeed6707294a219f93e9d5b64738aaf3a1d5711b4f9263852f"
+      },
+      {
+        "path": "apps/core/src/modules/identity/sessions.ts",
+        "sha256": "f5c150276602b2484f3e4745b0b4011ae23775dfcce7b9ecfddeb3fd66dbbba0"
+      },
+      {
+        "path": "apps/core/src/modules/identity/routes.ts",
+        "sha256": "36ac620def8c0c240279a3ab6ef43b9e2dbb13553c9ebcd1686b97d7e553ab46"
+      },
+      {
+        "path": "apps/mobile/App.tsx",
+        "sha256": "45e7248b33979efd91215f611fa4c7108fefcc3a3c7dd4b4a29a9cbd0cf5c90e"
+      },
+      {
+        "path": "apps/mobile/src/auth-flow.ts",
+        "sha256": "cc9ddcccbec466e600c7e3b6931db2245e0889f4352fc6ccda2f2162436344e7"
+      },
+      {
+        "path": "apps/mobile/src/identity-api.ts",
+        "sha256": "35d7bc2608111a3eac7f24dde1cdabf768f526029bf9e78bdf90258a580d7838"
+      },
+      {
+        "path": "infra/nginx/default.conf",
+        "sha256": "95c11e897bb7a6f204d436bb9592bf368af8ce28a3ccbcd650e10e93a94bf952"
+      },
+      {
+        "path": "compose.yaml",
+        "sha256": "f4416985f0d931e5607c3dae0bfda5330abe64b436621392f0d8a8eaaf602fe4"
+      },
+      {
+        "path": ".github/workflows/check.yml",
+        "sha256": "42b3bf930ebf6ee4b01df94eca12e998a8cac55875290ec5ad9cb2a1cccfdaa9"
+      }
+    ]
+  },
+  "implementation_destination": [
+    "apps/core",
+    "apps/mobile",
+    "db/migrations",
+    "infra/nginx",
+    "tests và tài liệu vận hành liên quan UC-02"
+  ],
+  "models": {
+    "drafting": {
+      "model": "GPT-6.1 Terra",
+      "reasoning_effort": "medium"
+    }
+  },
+  "baseline": {
+    "branch": "experiment/tool-evaluation",
+    "git_head": "f6f5ff50049918b558ac023c2216d097483cdc7c",
+    "worktree_note": "Baseline gồm UC-01 v2 và phần gỡ UC-02 cũ chưa commit. Giữ bản sửa cục bộ scripts/mobile-android.ps1."
+  },
+  "bundle_sha256": "04a885d77a0b5c4f2d94537dd306485711d314dcbd7a094ec0cc6464bbe6055f",
+  "bundle": {
+    "version": "v2",
+    "A_scope": {
+      "outcome": "Triển khai Essential UC-02 sau UC-01 v2. Hồ sơ đọc tên, email và avatar của tài khoản trong phiên. Mục của tôi hiển thị dữ liệu tổng hợp của ba tab trên cùng màn.",
+      "scenarios": "SCN-PRF-01–16 và 18 trong phạm vi fixture và đích chi tiết thử nghiệm. SCN-PRF-17/19 áp dụng cho ghi mốc, kiểm thời hạn yêu cầu và nghiệm thu hiệu năng khi đủ thiết bị, tải, dữ liệu và phương pháp đo. Đối chiếu các SCN-AUTH liên quan tới đọc, hết phiên và đăng xuất.",
+      "scope_decisions": [
+        "Mở Hồ sơ bằng một lần chạm từ Trang chính, hiển thị ngay Mục của tôi. Mặc định Bài báo mất. Nút Đăng xuất cố định ở đáy ngoài vùng cuộn, theo UC/UI v2 và quyết định analysis ngày 2026-11-22. Gói đề xuất dùng xanh lá đậm cho nút này. Các PNG tham chiếu dùng xanh dương đậm. Hộp thoại SCR-04 dùng từ UC-01.",
+        "Đọc với fixture A, B và tài khoản thứ ba. Quy tắc dữ liệu thật, quyền và vòng đời media, lịch sử claim khi bài bị gỡ, trường hợp hai vai trò trên một yêu cầu, tập trạng thái thật và đích chi tiết thật do các UC sở hữu chốt trước tích hợp. Điều hướng Lost/Found trong lượt này kiểm bằng đích thử nghiệm.",
+        "Ngày tham gia, số đếm, xem lại cache qua lần mở app và UI-05 thuộc mục hoãn của UC v2. Nghiệp vụ sửa/xóa/đóng bài và chi tiết yêu cầu nhận đồ thuộc phạm vi khác.",
+        "Dùng thông báo thử lại hiện có cho lỗi tab ngoài luồng UI thông thường. Giữ thông báo tiếng Việt và trạng thái riêng của mỗi vùng. Thông báo riêng cho sai tab là quyết định sản phẩm còn mở."
+      ]
+    },
+    "B_design": {
+      "operations": [
+        {
+          "id": "getMyProfile",
+          "method": "GET",
+          "path": "/me/profile",
+          "authorization": "Bearer CoreSession. Chủ thể từ phiên.",
+          "success": "200 MyProfile, gồm displayName 1–100 ký tự, email, avatarUrl là URI hoặc null, Cache-Control: no-store.",
+          "other": "401 SESSION_INVALID với WWW-Authenticate: Bearer. 503 READ_UNAVAILABLE."
+        },
+        {
+          "id": "listMyItems",
+          "method": "GET",
+          "path": "/me/items",
+          "authorization": "Bearer CoreSession. Ràng buộc quyền tại mỗi lần đọc.",
+          "input": "tab bắt buộc lost/found/claims; cursor tùy chọn của cùng tài khoản và tab.",
+          "success": "200 trang đúng schema theo tab, tối đa 20 mục và nextCursor null khi hết, Cache-Control: no-store.",
+          "other": "Với phiên hợp lệ, 400 INVALID_REQUEST cho tab thiếu/sai và 400 INVALID_CURSOR cho cursor không dùng được. 401 SESSION_INVALID với WWW-Authenticate: Bearer và 503 READ_UNAVAILABLE."
+        }
+      ],
+      "core": [
+        "Dùng đường phiên chung của UC-01 để xác minh Bearer, lấy accountId, kiểm hạn 30/90 ngày và ghi hoạt động trong transaction đọc. Giữ kiểm thu hồi/hạn sau khi lấy khóa. Nếu tab/cursor bị từ chối hoặc đọc lỗi thì rollback ghi hoạt động và phần sinh cursor. Đối chiếu truy vấn đọc cũng như tranh chấp với thu hồi. Bảo toàn ngữ nghĩa API validate/revoke của UC-01.",
+        "Lost và Found lọc theo tác giả. Claims lọc người gửi hoặc chủ bài, mỗi yêu cầu xuất hiện một lần với sent hoặc received. Chiếu đúng trường của schema; các hàng claim chỉ có ID, tiêu đề, sentAt, trạng thái và vai trò. Found chỉ chiếu URL thumbnail đã xử lý từ nguồn fixture hoặc bỏ trường URL.",
+        "Phân trang keyset theo created_at hoặc sent_at giảm dần rồi UUID giảm dần. Giữ chính xác mốc timestamptz trong DB khi kiểm và tạo cursor. Dùng mốc độc lập với sự tồn tại của hàng tại mốc. Tải thêm tối đa 20 hàng, trả cursor mới khi còn dữ liệu. Làm mới bỏ cursor để nhận dữ liệu đầu trang mới.",
+        "Cursor dùng 32 byte ngẫu nhiên, trả mã opaque và giữ bản băm trong PostgreSQL. Gắn accountId, tab, mốc thời gian/UUID và hạn 24 giờ. Kiểm hạn bằng giờ DB. Cùng một lỗi INVALID_CURSOR cho các trường hợp hết hạn, sai định dạng, không nhận diện hoặc ngoài phạm vi. Core vẫn áp quyền trên dữ liệu hiện hành ở từng trang.",
+        "GET đọc dữ liệu nghiệp vụ. Hệ thống có thể ghi mốc hoạt động phiên và cursor kỹ thuật trong transaction đã cho phép."
+      ],
+      "schema": [
+        "Giữ 001_identity.sql làm baseline, dùng accounts cho hồ sơ đã đồng bộ khi đăng nhập. Đề xuất đưa lại nguyên văn DDL 002_my_area.sql đã phê duyệt ở gói v1 từ lịch sử Git cho ba bảng my_area_fixture_posts, my_area_fixture_claims và my_area_cursors. Giữ FK, điều kiện tab, ràng buộc hai vai trò khác nhau trong fixture và các index của baseline. Phần dữ liệu của ba bảng thuộc thử nghiệm.",
+        "Kiểm cài sạch 001+002, nâng từ 001 đã có dữ liệu tổng hợp và đối chiếu catalog cột, kiểu, FK, CHECK và index của DB từng áp 002. Với schema 002 trùng, giữ baseline đã áp và dữ liệu. Với DB lệch hoặc lịch sử áp migration chưa xác định, báo sai khác trước khi đề xuất migration bổ sung. Mọi kiểm tra ghi dữ liệu dùng PostgreSQL fixture cô lập."
+      ],
+      "mobile": [
+        "Thay Hồ sơ tối thiểu của UC-01 bằng SCR-02/SCR-03 cùng màn. Bắt đầu đọc hồ sơ và trang đầu Lost ngay khi mở, quản lý tải/lỗi từng vùng độc lập. Yêu cầu đúng tab, hỗ trợ cuộn tải tiếp, kéo làm mới từ đầu, rỗng theo tab và kết thúc khi cursor null. Với trang cuối rỗng sau khi đã có mục, giữ các mục và hiện thông báo kết thúc.",
+        "Đánh dấu trạng thái dạng chữ. Hiện fallback khi ảnh thiếu/lỗi, kể cả Found chưa có ảnh đã xử lý. Lost/Found mở đích thử nghiệm bằng đúng loại và ID. Claim chỉ hiển thị nội dung và nhãn vai trò, không kích hoạt điều hướng hoặc API khi chạm. Quay lại từ đích thử nghiệm giữ ngữ cảnh hồ sơ của phiên hiện hành.",
+        "Lỗi mạng, timeout hoặc 503 giữ dữ liệu đã tải của phiên hiện hành và hiện nút Thử lại ở đúng vùng. INVALID_CURSOR tự đọc trang đầu cùng tab, chỉ thay dữ liệu khi lượt mới thành công. Cách ly ngữ cảnh phiên, tab và lượt tải cho dữ liệu, ảnh, cursor và lỗi đến muộn.",
+        "Khi nhận 401 SESSION_INVALID của phiên hiện hành, giao AuthFlow của UC-01 dọn và chuyển SCR-01. Việc đổi tab không làm 401 đã nhận của phiên hiện hành mất hiệu lực. Phản hồi của phiên trước bị loại. Khi hủy SCR-04 giữ màn, tab và phiên. Xác nhận đăng xuất hủy công việc đọc và dọn dữ liệu/cursor/ảnh riêng tư của phiên.",
+        "Dùng dữ liệu hồ sơ, danh sách và ảnh trong phạm vi phiên. Ưu tiên tải ảnh có thể hủy và không lưu bền; kiểm cache hệ điều hành trên native trước khi kết luận. Giới hạn thời gian từng yêu cầu do app quản lý 15 giây, gồm ảnh. Bearer Core chỉ đi tới API Core và không chuyển vào yêu cầu ảnh."
+      ]
+    },
+    "C_security_scope": [
+      {
+        "sec": "SEC-PRF-001",
+        "catalog": [
+          "SEC-A01-01",
+          "SEC-A01-02",
+          "SEC-A06-03"
+        ],
+        "rationale": "EI-05/06, FR-PRF-01/06–09/14/15, FR-AUTH-15 và GAP-PRF-001–004 yêu cầu dữ liệu cá nhân tối thiểu, giới hạn theo phiên và quyền trên từng trang, bảo vệ phạm vi cursor và hình Found cùng bộ nhớ đệm.",
+        "prompt_e": [
+          "SR-01",
+          "SR-02",
+          "SR-03",
+          "SR-04",
+          "SR-07"
+        ]
+      },
+      {
+        "sec": "SEC-AUTH-002",
+        "catalog": [
+          "SEC-A06-01",
+          "SEC-A07-01"
+        ],
+        "rationale": "FR-AUTH-08–16 và GAP-AUTH-003/004 yêu cầu Bearer giữ đúng kênh, kiểm 30/90 ngày và thu hồi tại Core, dọn dữ liệu riêng tư khi phiên kết thúc.",
+        "prompt_e": [
+          "SR-04",
+          "SR-05",
+          "SR-06"
+        ]
+      }
+    ],
+    "D_generation": {
+      "entry_points": [
+        "Đăng ký các route UC-02 tại apps/core/src/api.ts và module my-area. Sử dụng guard/transaction từ identity.",
+        "Mở qua Hồ sơ tại apps/mobile/App.tsx và AuthFlow. Nối adapter đọc và dọn dữ liệu cá nhân vào vòng đời hiện có.",
+        "Gắn đúng /api tại Nginx. Đưa lại migration 002 có baseline tương thích và fixture/test riêng cho UC-02."
+      ],
+      "constraints": [
+        "Giữ GET /health/ready, ba operation UC-01, Worker, Matching và AI mock. Giữ bản sửa người dùng trong scripts/mobile-android.ps1. Mọi thay đổi cần thiết tới helper phiên UC-01 phải có kiểm tra hồi quy cùng revision.",
+        "Core Node/TypeScript và PostgreSQL. Mobile Expo Android/iOS. Dùng fixture tổng hợp và DB cô lập, giữ secrets và dữ liệu thật ngoài Git. Web preview dùng mô phỏng cô lập khi cần.",
+        "Gateway HTTPS cho thông tin xác thực thật. Giữ thông tin xác thực ngoài URL/log/lỗi. Với cursor trong query, loại query nguyên văn khỏi access log và rà error log của route. Dùng cấu hình và nguồn media đúng môi trường.",
+        "UI tiếng Việt có dấu, vùng chạm Android ≥48 × 48 dp hoặc iOS ≥44 × 44 pt và tương phản chữ thường ≥4,5:1. Giữ HW-01, đường quay lại và trạng thái độc lập của hai vùng.",
+        "Chạy check/build, test AI mock, readiness, test Google/phiên hiện có, kiểm Core/DB đúng schema và kiểm mobile với fixture v2. Smoke qua entry point và gateway, ghi build/native/OS, kiểm nhiều connection PostgreSQL và giữ kết luận rõ theo môi trường."
+      ]
+    },
+    "E_audit": [
+      {
+        "id": "SR-01",
+        "sec": [
+          "SEC-PRF-001"
+        ],
+        "scn": [
+          "SCN-PRF-01",
+          "SCN-PRF-04",
+          "SCN-PRF-06",
+          "SCN-PRF-12"
+        ],
+        "layer": "Guard phiên và truy vấn Core/DB",
+        "expect": "Chủ thể chỉ từ phiên. Hồ sơ và mọi trang lọc đúng phạm vi, giữ mỗi claim fixture một lần.",
+        "evidence": [
+          "Mã route và SQL",
+          "Đối chiếu hợp đồng và tập ID fixture A/B/tài khoản thứ ba"
+        ]
+      },
+      {
+        "id": "SR-02",
+        "sec": [
+          "SEC-PRF-001"
+        ],
+        "scn": [
+          "SCN-PRF-07",
+          "SCN-PRF-08",
+          "SCN-PRF-09",
+          "SCN-PRF-18"
+        ],
+        "layer": "listMyItems và PostgreSQL",
+        "expect": "Cursor chỉ lưu băm, ràng buộc tài khoản/tab, hiệu lực 24 giờ, thứ tự ổn định và áp quyền mỗi trang. Các biến thể sai có đúng phản hồi chung hoặc INVALID_REQUEST của tab.",
+        "evidence": [
+          "SQL và schema, trạng thái DB trước/tại hạn, kiểm 0/20/21 và ≥1.000 mục/tab",
+          "Kiểm trùng thời điểm, thêm/gỡ hàng, tài khoản hoặc tab khác và thứ tự ID"
+        ]
+      },
+      {
+        "id": "SR-03",
+        "sec": [
+          "SEC-PRF-001"
+        ],
+        "scn": [
+          "SCN-PRF-01",
+          "SCN-PRF-04",
+          "SCN-PRF-05",
+          "SCN-PRF-06"
+        ],
+        "layer": "Projection API, dữ liệu fixture và đường ảnh",
+        "expect": "Chỉ trường theo schema, Found chỉ thumbnail đã xử lý hoặc thiếu URL. Trường hỏi đáp, tin nhắn và liên hệ nằm ngoài payload/UI.",
+        "evidence": [
+          "So payload với JSON Schema, URL và bytes thumbnail fixture",
+          "Điều kiện kiểm media thật chỉ quan sát được khi có UC và cấu hình sở hữu media"
+        ]
+      },
+      {
+        "id": "SR-04",
+        "sec": [
+          "SEC-PRF-001",
+          "SEC-AUTH-002"
+        ],
+        "scn": [
+          "SCN-PRF-03",
+          "SCN-PRF-09",
+          "SCN-PRF-10",
+          "SCN-PRF-11",
+          "SCN-PRF-15",
+          "SCN-PRF-16"
+        ],
+        "layer": "Mobile state, cache và header HTTP",
+        "expect": "200 có no-store. Dữ liệu và lỗi theo đúng phiên/tab/lượt. Lỗi tạm giữ đúng dữ liệu, 401 còn thuộc phiên hiện hành kích hoạt dọn, phản hồi của phiên cũ bị bỏ.",
+        "evidence": [
+          "HTTP header, kiểm app A→B, đổi tab/làm mới và HTTP/ảnh đến muộn",
+          "Trace endpoint và trạng thái trên native phù hợp"
+        ]
+      },
+      {
+        "id": "SR-05",
+        "sec": [
+          "SEC-AUTH-002"
+        ],
+        "scn": [
+          "SCN-PRF-01",
+          "SCN-PRF-12",
+          "SCN-PRF-15"
+        ],
+        "layer": "Guard phiên, HTTP Core/gateway, PostgreSQL",
+        "expect": "401 kèm Bearer challenge khi phiên thiếu/sai/hết hạn/thu hồi. Chỉ lần đọc hợp lệ thành công cập nhật hoạt động, giữ trần hết hạn và không phục hồi phiên cũ.",
+        "evidence": [
+          "Mã transaction và fixture HTTP/DB có kiểm thời gian",
+          "PostgreSQL nhiều kết nối kiểm đọc cùng thu hồi, cùng kết quả kiểm hồi quy UC-01"
+        ]
+      },
+      {
+        "id": "SR-06",
+        "sec": [
+          "SEC-AUTH-002"
+        ],
+        "scn": [
+          "SCN-PRF-11",
+          "SCN-PRF-15",
+          "SCN-PRF-16",
+          "SCN-PRF-19"
+        ],
+        "layer": "Vận hành, mobile, kho và ảnh",
+        "expect": "Bearer đúng đường, HTTPS khi dùng thông tin thật, dọn dữ liệu/lượt tải sau kết thúc phiên và giữ quyền OS. Kiểm timeout cho mạng/ảnh; khi kho hoạt động, từ phát hiện 401 tới SCR-01 trong 2 giây và đăng xuất theo mốc 1 giây của UC-01.",
+        "evidence": [
+          "Kiểm nguồn, trace đã che dữ liệu, native và kho/cache trước/sau",
+          "TLS thực theo môi trường nghiệm thu và số đo native"
+        ]
+      },
+      {
+        "id": "SR-07",
+        "sec": [
+          "SEC-PRF-001"
+        ],
+        "scn": [
+          "SCN-PRF-13",
+          "SCN-PRF-14"
+        ],
+        "layer": "Điều hướng và UI",
+        "expect": "Lost/Found chuyển đúng loại và ID tới đích thử nghiệm. Claims chỉ đọc và giữ nguyên điều hướng.",
+        "evidence": [
+          "Kiểm render, trợ năng và điều hướng với fixture; quyền ở đích thật do UC sở hữu"
+        ]
+      },
+      {
+        "id": "SR-08",
+        "sec": [],
+        "scn": [
+          "SCN-PRF-01",
+          "SCN-PRF-12",
+          "SCN-PRF-16"
+        ],
+        "layer": "Ràng buộc dự án về schema và hồi quy tích hợp",
+        "expect": "Migrations áp theo thứ tự, tương thích baseline đã kiểm chứng, bảo toàn dữ liệu và hành vi UC-01.",
+        "evidence": [
+          "Đối chiếu cột, ràng buộc, index và dữ liệu trên DB rỗng, DB đã áp 001 và baseline đã áp 002 khi có",
+          "Kết quả Core readiness, identity và kiểm tra hồi quy mobile"
+        ]
+      }
+    ],
+    "F_repair_and_acceptance": {
+      "first_pass": "Đóng băng revision và bằng chứng build/runtime đầu. Giao Terra 6.1 medium audit đủ SR và ràng buộc. Ghi met, unmet, not_evaluable và số lượng trước lần sửa đầu.",
+      "repair": "Ghi một repair cho mỗi lỗi có bằng chứng, đổi tối thiểu, kiểm build/runtime và giao audit lại SR liên quan. Giới hạn 10 lần đã bắt đầu, tạm ngừng từng lỗi sau ba lần liên tiếp chưa khắc phục hoặc khi thiếu bằng chứng.",
+      "functional_acceptance": "Kiểm SCN-PRF-01–16 và 18 đã chọn trên cùng revision. Tích hợp Android/iOS, gateway và PostgreSQL thật với dữ liệu tổng hợp. Kiểm một lần chạm, hai vùng độc lập, Đăng xuất cố định màu xanh lá đậm, trạng thái UI, mạng và điều kiện mất phiên.",
+      "performance_acceptance": "PR-09 đối chiếu ≥1.000 mục/tab theo ID và thứ tự, kể cả trùng thời điểm. Với SCN-PRF-17, ghi mốc Core, phản hồi và hiển thị dữ liệu/ảnh riêng. Khi đủ điều kiện, đánh giá PR-04/05 ≥95% lượt trong 2 giây theo cửa sổ ổn định ≥200 phiên; cách tính ảnh thay thế chờ sản phẩm. Với SCN-PRF-19, kiểm chung mốc 20 MB với UC-01 sau ba tab, làm mới, mở lại và đăng xuất khi cách tính MB/cache OS được chốt. Ghi thiếu điều kiện và kết quả đã đo riêng.",
+      "final": "Giao audit cuối đủ SR tại revision chạy nghiệm thu. Ghi build, nguồn chứng cứ, điều kiện chưa quan sát, kết quả và lỗi còn lại. Giữ blocked khi chưa đủ bằng chứng bắt buộc; ghi rõ phạm vi kiểm thay thế nếu thiếu Docker hoặc thiết bị."
+    }
+  },
+  "approval": {
+    "response": "approve",
+    "date": "2026-11-22",
+    "bundle_sha256": "04a885d77a0b5c4f2d94537dd306485711d314dcbd7a094ec0cc6464bbe6055f"
+  },
+  "initial_source_revision": {
+    "sha256": "051d405cfd574959827f407a010c71ba669e722d8fae0270019bc3a5c7563091",
+    "algorithm": "SHA-256 JSON UTF-8 của map đường dẫn và SHA-256 LF, sắp xếp theo đường dẫn.",
+    "files": {
+      ".github/workflows/check.yml": "42b3bf930ebf6ee4b01df94eca12e998a8cac55875290ec5ad9cb2a1cccfdaa9",
+      "apps/core/package.json": "14636925632a47e0e862e07694c4254ec14dfe3b23a4bc863700bc9f5c499d6e",
+      "apps/core/src/ai/mock.ts": "626fdb0b37b93dd8b7b00b35e3feaee937b2862c1b66482b8f8433be5dfd711a",
+      "apps/core/src/ai/redacted-fixture.ts": "f5b301c98f74f10306f0aaf96b8116b86b8bf9133aaddb664dee384dc5e17bd7",
+      "apps/core/src/api.ts": "eaa4bf4450844275568bb91e3c574c821b119594c86d53476dbf8ca0d1c99a35",
+      "apps/core/src/db.ts": "bac0b20349a20f60b1a715bf3af5d247b3f5a663899cbd915541cc1ea19317d5",
+      "apps/core/src/modules/chat/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/core/src/modules/claims/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/core/src/modules/geo/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/core/src/modules/identity/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/core/src/modules/identity/google.ts": "ee2fa86931924f2c34f6415e374872b03e3ac74494f944512a03f605c28e8bc6",
+      "apps/core/src/modules/identity/routes.ts": "9d9265c160cb0708e52918aea94b169cf4cad1a7055080b5724fffe73c4356c1",
+      "apps/core/src/modules/identity/sessions.ts": "fd48d80fcf1a192fa5d3dfc39ee7c109a91050f2eb6804bc1242f5fb03d855e2",
+      "apps/core/src/modules/inbox/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/core/src/modules/lifecycle/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/core/src/modules/media/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/core/src/modules/my-area/reads.ts": "745ce2f8b3fb8bbceeee3c657e01ff2772cf8bdc9dcfdd289d57f84b7cbc64f9",
+      "apps/core/src/modules/my-area/routes.ts": "0abaeb9de4011f0475ebd60d99ca6c951d4d850839ca4a7fce848b13c142ed85",
+      "apps/core/src/modules/posts/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "apps/core/src/worker.ts": "dbeb368dd5a770857d2a36b3cad2037dfbafc90d0926f663bddaa98710d6d56b",
+      "apps/core/tsconfig.json": "a48d14223056982e2f9a5aced70ec0b0d07d5b9b795c4a3a915541d255b029f5",
+      "apps/mobile/App.tsx": "aedd08f021e146a89246bb7580e0595c7b5c04e3f9afc07e8548471523412576",
+      "apps/mobile/app.config.ts": "8fec19e5bd8ecc33fda27d4d1bfaee57e54285f4810baf16449c372571bb3fde",
+      "apps/mobile/index.ts": "3cc816440c81db1b45a7d796c25ee6b45e19cfa2d64f1f934e42b1384c82d90b",
+      "apps/mobile/package-lock.json": "096607cb629ff9d6d5b68f7381802e240aec809078bd9db88230c8125ba165bc",
+      "apps/mobile/package.json": "664f7ac8cbf3bab49eea4388061ab0b9b6483de4033faeb4ea8e9eaa5476b6e6",
+      "apps/mobile/src/auth-flow.ts": "cc9ddcccbec466e600c7e3b6931db2245e0889f4352fc6ccda2f2162436344e7",
+      "apps/mobile/src/auth-platform.tsx": "cfaae90f457126d76fa794d6ce403b5473bcd30c0c5c6e525f58289e8475b6c1",
+      "apps/mobile/src/auth-platform.web.tsx": "95da9626f55a3f92eae80931ca88b2af4447d01eb46c86c515512a9ea836ba84",
+      "apps/mobile/src/identity-api.ts": "d6370d27c07882c19d6ecb17b4c7437d1158c91efdd4bcdfdcd6cb151ec630c5",
+      "apps/mobile/src/installation.ts": "9b8c876a8f6662e7d697908915fd5b44de34b82dc52ab33813f4d699a3794051",
+      "apps/mobile/src/my-area-api.ts": "29284167094b04faf9b70c5a25afafa2b96f66581cfa83cad49a9b29446ff0e7",
+      "apps/mobile/src/my-area-flow.ts": "d9bafa8469d22910e8ab3a7abba713bd37427886aba53b639cc3e7ab3257e320",
+      "apps/mobile/src/my-area-screens.tsx": "f6975e8834c80f4a9307a15bb226824d356c4659fe49fc284a8d8653cfa1c906",
+      "apps/mobile/tests/auth-flow.test.ts": "7770f186da5a2ef2c51d9b1ff3fd304e5fdc3368033d73e6caca70410ad1565c",
+      "apps/mobile/tests/my-area-flow.test.ts": "5944aee4f6caaaae82ef41197fb456718b2b344f32a428689fe28bfb389cd26c",
+      "apps/mobile/tsconfig.json": "ebbb676f2dffbd4bb20fcb3ad6b775c525d4a8398f7280c17e6e58601a3ab0fb",
+      "compose.yaml": "f4416985f0d931e5607c3dae0bfda5330abe64b436621392f0d8a8eaaf602fe4",
+      "db/migrations/001_identity.sql": "fd3af3e312b722326d640e112788d489bfbffad540facad86be03a7250b91cad",
+      "db/migrations/002_my_area.sql": "f82e2e575c80d99e60cf95ddbed718fbcf4395b054cbb683e6a955fd943e6439",
+      "db/migrations/README.md": "b75fd18c3ec550b9ea330056b393592ab206590ce47cc616fb81e94874ae7f85",
+      "docs/operations/environments.md": "89bd0acda182daab622331bf657125b8acd02fe0dbed94629acc68e27061096f",
+      "infra/nginx/default.conf": "560c8bbdf6eccd9cb732a7f279ce29639fd7ddda9923f0aa8f4b8cdb1e8d0b88",
+      "package-lock.json": "00b778f5c3ab8b795001daddfbdb28d9fdc9f2306d94246ab05953adaa8fac50",
+      "package.json": "d38219447996c3a07d58b9ea672f8e1e541327fbc90b6964ac19888efbb61c6c",
+      "tests/integration/core-identity.sh": "76f4b5dd47260991fd97bdf27c271144026e35113c32e752d56d90e258c5ff28",
+      "tests/integration/core-identity.test.mjs": "617da109f46b4d7b0e0d6d42a896f67373c0af64715702a4ba5152f7bd0e0aa7",
+      "tests/unit/ai-mock.test.mjs": "6b34d02c3cdc37fecda0acd97f8283f53d9fa9f72feb48110ac12851b9f48a4a",
+      "tests/unit/google-token.test.mjs": "2b3034e100d4ad9b9bc2f7908aeff8bcef4a7e2bea4204bd7b99bfe205ad8336"
+    }
+  },
+  "first_pass_security": {
+    "source_sha256": "051d405cfd574959827f407a010c71ba669e722d8fae0270019bc3a5c7563091",
+    "auditor": {
+      "model": "GPT-6.1 Terra",
+      "reasoning_effort": "medium"
+    },
+    "results": [
+      {
+        "id": "SR-01",
+        "status": "met",
+        "evidence": [
+          "apps/core/src/modules/my-area/routes.ts:29",
+          "apps/core/src/modules/my-area/reads.ts:33",
+          "tests/integration/core-identity.test.mjs:128"
+        ],
+        "reason": "Fixture A/B/C xác nhận chủ thể lấy từ phiên, đúng hồ sơ và phạm vi tác giả/hai vai trò qua API."
+      },
+      {
+        "id": "SR-02",
+        "status": "met",
+        "evidence": [
+          "apps/core/src/modules/my-area/reads.ts:44",
+          "db/migrations/002_my_area.sql:33",
+          "tests/integration/core-identity.test.mjs:178",
+          "tests/integration/core-identity.test.mjs:239"
+        ],
+        "reason": "Fixture kiểm 0/20/21 và 1.000 mục/tab, trùng thời gian, gỡ hàng mốc, thêm mục sau cấp cursor, làm mới, sai tab/tài khoản và cursor hết hạn."
+      },
+      {
+        "id": "SR-03",
+        "status": "met",
+        "evidence": [
+          "apps/core/src/modules/my-area/reads.ts:103",
+          "db/migrations/002_my_area.sql:13",
+          "docs/api/core/openapi.json"
+        ],
+        "reason": "AJV xác minh response live của cả hai route, gồm ba tab. Kiểm projection, URL và bytes của ảnh Found tổng hợp đã xử lý, bỏ URL ở hàng thiếu ảnh. Điều kiện media thật chưa được quan sát."
+      },
+      {
+        "id": "SR-04",
+        "status": "not_evaluable",
+        "evidence": [
+          "apps/core/src/modules/my-area/routes.ts:14",
+          "apps/mobile/src/my-area-flow.ts",
+          "apps/mobile/src/auth-flow.ts:255",
+          "apps/mobile/tests/my-area-flow.test.ts"
+        ],
+        "reason": "HTTP xác nhận no-store. Mock đạt phân biệt lượt hiện hành, đáp ứng 401 sau đổi tab, giữ dữ liệu và dọn khi đổi phiên. Thiếu trace native về ảnh/HTTP đến muộn và cache."
+      },
+      {
+        "id": "SR-05",
+        "status": "not_evaluable",
+        "evidence": [
+          "apps/core/src/modules/identity/sessions.ts:141",
+          "apps/core/src/modules/my-area/routes.ts",
+          "tests/integration/core-identity.test.mjs:206"
+        ],
+        "reason": "HTTP fixture đạt 401/Bearer, rollback khi đọc bị từ chối, và hồi quy UC-01. Thiếu PostgreSQL nhiều kết nối độc lập để đánh giá tranh chấp thu hồi và đọc."
+      },
+      {
+        "id": "SR-06",
+        "status": "not_evaluable",
+        "evidence": [
+          "infra/nginx/default.conf",
+          "apps/mobile/src/identity-api.ts",
+          "apps/mobile/src/my-area-screens.tsx:49",
+          "apps/mobile/src/auth-flow.ts:207"
+        ],
+        "reason": "Proxy TLS loopback và mã cho thấy đường truyền/kho theo thiết kế. Thiếu TLS của môi trường nghiệm thu, thử timeout ảnh và mạng native, cache OS/quyền, thao tác dọn kho và số đo 1/2 giây."
+      },
+      {
+        "id": "SR-07",
+        "status": "not_evaluable",
+        "evidence": [
+          "apps/mobile/src/my-area-screens.tsx:119",
+          "apps/mobile/src/my-area-flow.ts:103",
+          "apps/mobile/tests/my-area-flow.test.ts"
+        ],
+        "reason": "Mock kiểm điều hướng bằng loại/ID và mã render claim chỉ đọc. Thiếu render/trợ năng và thao tác thật trên native."
+      },
+      {
+        "id": "SR-08",
+        "status": "met",
+        "evidence": [
+          "db/migrations/001_identity.sql",
+          "db/migrations/002_my_area.sql",
+          "db/migrations/README.md",
+          "tests/integration/core-identity.sh"
+        ],
+        "reason": "Fresh/upgrade/baseline cùng catalog trong PGlite; dữ liệu identity và UC-01 giữ nguyên. Kiểm readiness, Core identity và mobile mocks đạt."
+      }
+    ],
+    "counts": {
+      "met": 4,
+      "unmet": 0,
+      "not_evaluable": 4
+    },
+    "project_constraints": {
+      "supported": [
+        "V2 vào Hồ sơ một lần chạm, đọc hai vùng độc lập; CI giữ các bài UC-01.",
+        "API qua Core, schema và baseline tương thích theo fixture. Dữ liệu tổng hợp, secrets ngoài Git."
+      ],
+      "gaps": [
+        "Build và thiết bị Android/iOS; PostgreSQL nhiều kết nối; gateway triển khai; bằng chứng quyền/hiệu năng native."
+      ]
+    }
+  },
+  "repairs": [],
+  "final_assessment": null,
+  "next_action": "Chạy nghiệm thu trên môi trường có đầy đủ dependency, Android/iOS, gateway Nginx/TLS và PostgreSQL nhiều kết nối. Đo native SCN-PRF-17/19 khi đủ phương pháp, thiết bị và tải. Ghi chứng cứ và đánh giá những SR còn thiếu trước khi kết thúc lượt.",
+  "first_pass_checks": [
+    {
+      "name": "Biên dịch TS/TSX và kiểm kiểu luồng mobile",
+      "result": "passed",
+      "evidence": "TypeScript cache transpileModule cho mã Core, mobile và test. Strict TypeScript pass riêng auth-flow, identity-api, my-area-api, my-area-flow và test state. Build Expo đầy đủ chưa chạy."
+    },
+    {
+      "name": "Suite hành vi fixture",
+      "result": "passed",
+      "evidence": "21/21 trên adapter Core HTTP PGlite với một kết nối tuần tự và mock Node. Gồm 5 test AuthFlow, 6 test MyAreaFlow, 5 test Core HTTP/DB, 2 test Google verifier và 3 test AI."
+    },
+    {
+      "name": "SCN-PRF-18",
+      "result": "passed",
+      "evidence": "Đọc đủ 1.000 ID của mỗi tab qua 50 trang, tổng 3.000 ID đúng thứ tự, không thiếu/lặp trong fixture có timestamp trùng. Cùng suite kiểm 0/20/21, thêm/gỡ và làm mới."
+    },
+    {
+      "name": "Core entry và hợp đồng OpenAPI",
+      "result": "passed",
+      "evidence": "Core entry thật qua proxy TLS Node loopback dùng CA tổng hợp và PGlite. Readiness 200, thiếu Bearer 401, profile có no-store. AJV Draft 2020-12 + formats kiểm live response 200 cho profile và đủ ba tab. Tải bytes thumbnail Found tổng hợp khớp mẫu, hàng còn lại bỏ URL."
+    },
+    {
+      "name": "Baseline migration 002",
+      "result": "passed",
+      "evidence": "SQL 002 giống lịch sử Git theo byte LF. Fresh 001+002, nâng từ 001 có dữ liệu và baseline 002 trước trùng catalog ba bảng khu vực ở 19 cột, 33 ràng buộc, 7 index. Accounts, sessions và login_attempts giữ dữ liệu trên baseline có sẵn."
+    },
+    {
+      "name": "Runtime Nginx, PostgreSQL server và build Expo",
+      "result": "unavailable",
+      "evidence": "Docker/Nginx/PostgreSQL server không có trên máy. Adapter PGlite không có nhiều kết nối riêng. Gói npm thiếu trong cache offline."
+    },
+    {
+      "name": "Android/iOS và đo native",
+      "result": "unavailable",
+      "evidence": "ADB không có thiết bị, Expo thiếu dependency. Chưa chạy iOS, quyền/trợ năng, cache OS, timeout thực tế và đo mốc SCN-PRF-17/19."
+    }
+  ],
+  "assessment_on_candidate": {
+    "source_sha256": "051d405cfd574959827f407a010c71ba669e722d8fae0270019bc3a5c7563091",
+    "auditor": {
+      "model": "GPT-6.1 Terra",
+      "reasoning_effort": "medium"
+    },
+    "results": [
+      {
+        "id": "SR-01",
+        "status": "met",
+        "evidence": [
+          "apps/core/src/modules/my-area/routes.ts:29",
+          "apps/core/src/modules/my-area/reads.ts:33",
+          "tests/integration/core-identity.test.mjs:128"
+        ],
+        "reason": "Fixture A/B/C xác nhận chủ thể lấy từ phiên, đúng hồ sơ và phạm vi tác giả/hai vai trò qua API."
+      },
+      {
+        "id": "SR-02",
+        "status": "met",
+        "evidence": [
+          "apps/core/src/modules/my-area/reads.ts:44",
+          "db/migrations/002_my_area.sql:33",
+          "tests/integration/core-identity.test.mjs:178",
+          "tests/integration/core-identity.test.mjs:239"
+        ],
+        "reason": "Fixture kiểm 0/20/21 và 1.000 mục/tab, trùng thời gian, gỡ hàng mốc, thêm mục sau cấp cursor, làm mới, sai tab/tài khoản và cursor hết hạn."
+      },
+      {
+        "id": "SR-03",
+        "status": "met",
+        "evidence": [
+          "apps/core/src/modules/my-area/reads.ts:103",
+          "db/migrations/002_my_area.sql:13",
+          "docs/api/core/openapi.json"
+        ],
+        "reason": "AJV xác minh response live của cả hai route, gồm ba tab. Kiểm projection, URL và bytes của ảnh Found tổng hợp đã xử lý, bỏ URL ở hàng thiếu ảnh. Điều kiện media thật chưa được quan sát."
+      },
+      {
+        "id": "SR-04",
+        "status": "not_evaluable",
+        "evidence": [
+          "apps/core/src/modules/my-area/routes.ts:14",
+          "apps/mobile/src/my-area-flow.ts",
+          "apps/mobile/src/auth-flow.ts:255",
+          "apps/mobile/tests/my-area-flow.test.ts"
+        ],
+        "reason": "HTTP xác nhận no-store. Mock đạt phân biệt lượt hiện hành, đáp ứng 401 sau đổi tab, giữ dữ liệu và dọn khi đổi phiên. Thiếu trace native về ảnh/HTTP đến muộn và cache."
+      },
+      {
+        "id": "SR-05",
+        "status": "not_evaluable",
+        "evidence": [
+          "apps/core/src/modules/identity/sessions.ts:141",
+          "apps/core/src/modules/my-area/routes.ts",
+          "tests/integration/core-identity.test.mjs:206"
+        ],
+        "reason": "HTTP fixture đạt 401/Bearer, rollback khi đọc bị từ chối, và hồi quy UC-01. Thiếu PostgreSQL nhiều kết nối độc lập để đánh giá tranh chấp thu hồi và đọc."
+      },
+      {
+        "id": "SR-06",
+        "status": "not_evaluable",
+        "evidence": [
+          "infra/nginx/default.conf",
+          "apps/mobile/src/identity-api.ts",
+          "apps/mobile/src/my-area-screens.tsx:49",
+          "apps/mobile/src/auth-flow.ts:207"
+        ],
+        "reason": "Proxy TLS loopback và mã cho thấy đường truyền/kho theo thiết kế. Thiếu TLS của môi trường nghiệm thu, thử timeout ảnh và mạng native, cache OS/quyền, thao tác dọn kho và số đo 1/2 giây."
+      },
+      {
+        "id": "SR-07",
+        "status": "not_evaluable",
+        "evidence": [
+          "apps/mobile/src/my-area-screens.tsx:119",
+          "apps/mobile/src/my-area-flow.ts:103",
+          "apps/mobile/tests/my-area-flow.test.ts"
+        ],
+        "reason": "Mock kiểm điều hướng bằng loại/ID và mã render claim chỉ đọc. Thiếu render/trợ năng và thao tác thật trên native."
+      },
+      {
+        "id": "SR-08",
+        "status": "met",
+        "evidence": [
+          "db/migrations/001_identity.sql",
+          "db/migrations/002_my_area.sql",
+          "db/migrations/README.md",
+          "tests/integration/core-identity.sh"
+        ],
+        "reason": "Fresh/upgrade/baseline cùng catalog trong PGlite; dữ liệu identity và UC-01 giữ nguyên. Kiểm readiness, Core identity và mobile mocks đạt."
+      }
+    ],
+    "counts": {
+      "met": 4,
+      "unmet": 0,
+      "not_evaluable": 4
+    },
+    "project_constraints": {
+      "core": "Đọc qua guard và transaction chung. 21 test fixture đạt, gồm hồi quy UC-01, readiness, quyền đọc và cursor. Cần PostgreSQL nhiều kết nối.",
+      "mobile": "Nguồn React Native dùng UI v2, cố định Đăng xuất, có tiếng Việt và khai báo kích thước chạm. Cần kiểm layout, tương phản, trợ năng, quyền và cache trên thiết bị.",
+      "environment": "Core chạy với proxy TLS Node loopback và fixture tổng hợp. Nginx/TLS triển khai thật và full build chưa xác minh.",
+      "migration": "002 giữ nguyên DDL. Ba baseline fixture đối chiếu catalog và dữ liệu identity thành công."
+    }
+  },
+  "verification_on_candidate": {
+    "source_sha256": "051d405cfd574959827f407a010c71ba669e722d8fae0270019bc3a5c7563091",
+    "checks": [
+      {
+        "name": "Biên dịch TS/TSX và kiểm kiểu luồng mobile",
+        "result": "passed",
+        "evidence": "TypeScript cache transpileModule cho mã Core, mobile và test. Strict TypeScript pass riêng auth-flow, identity-api, my-area-api, my-area-flow và test state. Build Expo đầy đủ chưa chạy."
+      },
+      {
+        "name": "Suite hành vi fixture",
+        "result": "passed",
+        "evidence": "21/21 trên adapter Core HTTP PGlite với một kết nối tuần tự và mock Node. Gồm 5 test AuthFlow, 6 test MyAreaFlow, 5 test Core HTTP/DB, 2 test Google verifier và 3 test AI."
+      },
+      {
+        "name": "SCN-PRF-18",
+        "result": "passed",
+        "evidence": "Đọc đủ 1.000 ID của mỗi tab qua 50 trang, tổng 3.000 ID đúng thứ tự, không thiếu/lặp trong fixture có timestamp trùng. Cùng suite kiểm 0/20/21, thêm/gỡ và làm mới."
+      },
+      {
+        "name": "Core entry và hợp đồng OpenAPI",
+        "result": "passed",
+        "evidence": "Core entry thật qua proxy TLS Node loopback dùng CA tổng hợp và PGlite. Readiness 200, thiếu Bearer 401, profile có no-store. AJV Draft 2020-12 + formats kiểm live response 200 cho profile và đủ ba tab. Tải bytes thumbnail Found tổng hợp khớp mẫu, hàng còn lại bỏ URL."
+      },
+      {
+        "name": "Baseline migration 002",
+        "result": "passed",
+        "evidence": "SQL 002 giống lịch sử Git theo byte LF. Fresh 001+002, nâng từ 001 có dữ liệu và baseline 002 trước trùng catalog ba bảng khu vực ở 19 cột, 33 ràng buộc, 7 index. Accounts, sessions và login_attempts giữ dữ liệu trên baseline có sẵn."
+      },
+      {
+        "name": "Runtime Nginx, PostgreSQL server và build Expo",
+        "result": "unavailable",
+        "evidence": "Docker/Nginx/PostgreSQL server không có trên máy. Adapter PGlite không có nhiều kết nối riêng. Gói npm thiếu trong cache offline."
+      },
+      {
+        "name": "Android/iOS và đo native",
+        "result": "unavailable",
+        "evidence": "ADB không có thiết bị, Expo thiếu dependency. Chưa chạy iOS, quyền/trợ năng, cache OS, timeout thực tế và đo mốc SCN-PRF-17/19."
+      }
+    ]
+  }
+}

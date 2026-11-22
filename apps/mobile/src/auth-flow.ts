@@ -6,13 +6,14 @@ const unavailable = 'Máy chủ đang bận. Hãy thử lại sau.';
 const rejected = 'Không xác minh được tài khoản Google. Hãy thử lại hoặc chọn tài khoản khác.';
 const expired = 'Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại';
 const localLogout = 'Đã đăng xuất khỏi ứng dụng trên thiết bị này';
+const saveError = 'Không thể lưu phiên đăng nhập trên thiết bị. Hãy thử lại.';
 const storageError = 'Không thể cập nhật dữ liệu đăng nhập trên thiết bị. Hãy thử lại.';
 
 export type AuthState =
-  | { screen: 'starting' | 'restoring' | 'selecting' | 'consent' | 'issuing' | 'clearing' }
+  | { screen: 'starting' | 'restoring' | 'selecting' | 'consent' | 'issuing' | 'saving' | 'clearing' }
   | { screen: 'signedOut'; notice?: string; retryAttempt?: boolean }
   | { screen: 'blocked'; notice: string; retry: 'restore' | 'clear' }
-  | { screen: 'home'; session: CurrentSession; confirming: boolean };
+  | { screen: 'home'; session: CurrentSession; page: 'main' | 'profile'; confirming: boolean };
 
 export interface AuthDependencies {
   installation: {
@@ -78,12 +79,12 @@ export class AuthFlow {
       }
       const session = await this.deps.api.validate(token);
       this.deps.mark('auth.cold-session-validated');
-      this.show({ screen: 'home', session, confirming: false });
+      this.show({ screen: 'home', session, page: 'main', confirming: false });
     } catch (error) {
       if (error instanceof IdentityError && error.code === 'SESSION_INVALID') {
         this.invalidateSession();
       } else {
-        this.show({ screen: 'blocked', notice: unavailable, retry: 'restore' });
+        this.show({ screen: 'blocked', notice: await this.isOnline() ? unavailable : offline, retry: 'restore' });
       }
     }
   }
@@ -136,13 +137,11 @@ export class AuthFlow {
   // Allow a new Google choice while Core is pending. A save already started
   // is completed before the screen can leave the issuing state.
   chooseAgain() {
-    if (this.state.screen !== 'issuing' || this.committing) return;
+    if (this.state.screen !== 'issuing') return;
     ++this.generation;
     this.attempt = null;
     this.show({ screen: 'signedOut' });
   }
-
-  private committing = false;
 
   private async issue(generation: number) {
     const attempt = this.attempt;
@@ -157,19 +156,20 @@ export class AuthFlow {
       if (generation !== this.generation) return;
       const { sessionToken, ...session } = await this.deps.api.create(attempt);
       if (generation !== this.generation) return;
-      saving = this.committing = true;
+      saving = true;
+      this.show({ screen: 'saving' });
       await this.deps.installation.prepareSave(this.accepted);
       await this.deps.installation.save(sessionToken, !this.accepted);
       this.accepted = true;
       this.token = sessionToken;
       this.attempt = null;
-      this.show({ screen: 'home', session, confirming: false });
+      this.show({ screen: 'home', session, page: 'main', confirming: false });
     } catch (error) {
       if (generation !== this.generation) return;
       if (saving) {
         this.generation++;
         this.attempt = null;
-        this.clearNotice = storageError;
+        this.clearNotice = saveError;
         await this.finishClear();
         return;
       }
@@ -179,13 +179,25 @@ export class AuthFlow {
       if (generation !== this.generation) return;
       if (shouldReselect) this.attempt = null;
       this.show({ screen: 'signedOut', notice, retryAttempt: !shouldReselect });
-    } finally {
-      if (saving) this.committing = false;
     }
   }
 
+  openProfile() {
+    if (this.state.screen === 'home' && this.state.page === 'main') {
+      this.show({ ...this.state, page: 'profile' });
+    }
+  }
+
+  goHome() {
+    if (this.state.screen !== 'home' || this.state.page !== 'profile' || this.state.confirming) return false;
+    this.show({ ...this.state, page: 'main' });
+    return true;
+  }
+
   openLogout() {
-    if (this.state.screen === 'home') this.show({ ...this.state, confirming: true });
+    if (this.state.screen === 'home' && this.state.page === 'profile') {
+      this.show({ ...this.state, confirming: true });
+    }
   }
 
   cancelLogout() {

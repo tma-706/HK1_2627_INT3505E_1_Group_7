@@ -25,10 +25,11 @@ export const installation = {
     if (needsConsent) await native.write('accepted');
   },
   async clear(accepted: boolean) {
-    const tombstone = await native.write(accepted ? 'discard-accepted' : 'discard-new').then(() => true, () => false);
-    await SecureStore.deleteItemAsync(key, options).catch((error: unknown) => {
-      if (!tombstone) throw error;
-    });
+    // The marker prevents a restart from restoring the old session if deleting it fails.
+    const marked = await native.write(accepted ? 'discard-accepted' : 'discard-new')
+      .then(() => true, () => false);
+    await SecureStore.deleteItemAsync(key, options);
+    if (!marked) await native.write(accepted ? 'accepted' : 'new');
   },
   async prepareSave(accepted: boolean) {
     await SecureStore.deleteItemAsync(key, options);

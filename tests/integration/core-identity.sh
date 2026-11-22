@@ -9,6 +9,7 @@ for _ in {1..60}; do
   sleep 1
 done
 docker exec -i "$dbid" psql -v ON_ERROR_STOP=1 -U postgres < db/migrations/001_identity.sql
+docker exec -i "$dbid" psql -v ON_ERROR_STOP=1 -U postgres < db/migrations/002_my_area.sql
 dbport=$(docker port "$dbid" 5432/tcp | cut -d: -f2)
 export DATABASE_URL="postgres://postgres:pilot_fixture@127.0.0.1:$dbport/postgres"
 npm run build

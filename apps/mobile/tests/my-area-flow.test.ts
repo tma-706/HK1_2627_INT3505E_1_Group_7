@@ -11,7 +11,9 @@ const page = (id: string, nextCursor: string | null = null, tab: Page['tab'] = '
   tab, nextCursor, items: [post(id)],
 });
 
-async function setup(items: MyAreaApi['items']) {
+async function setup(items: MyAreaApi['items'], profile: MyAreaApi['profile'] = async () => ({
+  displayName: 'Nguyễn Minh Anh', email: 'a@example.test', avatarUrl: null,
+})) {
   let stored = 'fixture-a';
   const auth = new AuthFlow({
     api: {
@@ -34,10 +36,11 @@ async function setup(items: MyAreaApi['items']) {
   });
   const flow = new MyAreaFlow(auth, {
     items,
-    async profile() { return { displayName: 'Nguyễn Minh Anh', email: 'a@example.test', avatarUrl: null }; },
+    profile,
   }, async () => true);
   await auth.restore();
-  await flow.openProfile();
+  auth.openProfile();
+  void flow.openProfile();
   return { auth, flow, stored: () => stored };
 }
 
@@ -47,7 +50,6 @@ test('refresh supersedes an in-flight next page and tab changes discard stale er
   const { flow } = await setup((_token, tab, cursor, signal) => new Promise((resolve, reject) => {
     requests.push({ tab, cursor, signal, resolve, reject });
   }));
-  flow.openItems();
   assert.equal(requests[0].tab, 'lost');
   requests[0].resolve(page('original', 'next-token'));
   await settle();
@@ -82,7 +84,6 @@ test('invalid cursor restarts at page one, retains content on failure and retrie
     if (cursors.length === 3) throw new IdentityError('READ_UNAVAILABLE');
     return cursors.length === 1 ? page('original', 'next') : page('replacement');
   });
-  flow.openItems();
   await settle();
   flow.next();
   await settle();
@@ -98,7 +99,6 @@ test('invalid cursor restarts at page one, retains content on failure and retrie
 
 test('current session invalidation clears the profile, list and stored session', async () => {
   const { auth, flow, stored } = await setup(async () => { throw new IdentityError('SESSION_INVALID'); });
-  flow.openItems();
   await settle();
   assert.deepEqual(flow.getState(), { screen: 'home' });
   assert.equal(auth.getState().screen, 'signedOut');
@@ -108,10 +108,45 @@ test('current session invalidation clears the profile, list and stored session',
 test('logout discards the invalid-session result of a pending old read', async () => {
   let complete!: (error: Error) => void;
   const { auth, flow } = await setup(async () => new Promise((_resolve, reject) => { complete = reject; }));
-  flow.openItems();
   auth.openLogout();
   auth.confirmLogout();
   complete(new IdentityError('SESSION_INVALID'));
+  await settle();
+  assert.equal(auth.getState().screen, 'signedOut');
+  assert.deepEqual(flow.getState(), { screen: 'home' });
+});
+
+test('one profile entry loads its list before the profile finishes and retries only the failed region', async () => {
+  let failProfile!: (error: Error) => void;
+  let profileCalls = 0;
+  let listCalls = 0;
+  const { flow } = await setup(async () => {
+    ++listCalls;
+    return page('first');
+  }, async () => {
+    if (++profileCalls === 1) return new Promise((_resolve, reject) => { failProfile = reject; });
+    return { displayName: 'Hồ sơ mẫu', email: 'test@example.test', avatarUrl: null };
+  });
+  await settle();
+  assert.equal(flow.getState().profileLoading, true);
+  assert.equal(flow.getState().list?.items[0].id, 'first');
+  failProfile(new IdentityError('READ_UNAVAILABLE'));
+  await settle();
+  flow.retryProfile();
+  await settle();
+  assert.equal(flow.getState().profile?.displayName, 'Hồ sơ mẫu');
+  assert.equal(listCalls, 1);
+});
+
+test('an already received 401 on a previous tab ends the current session', async () => {
+  let rejectOld!: (error: Error) => void;
+  const { auth, flow } = await setup(async (_token, tab) => {
+    if (tab === 'lost') return new Promise((_resolve, reject) => { rejectOld = reject; });
+    return page('found', null, 'found');
+  });
+  flow.selectTab('found');
+  await settle();
+  rejectOld(new IdentityError('SESSION_INVALID'));
   await settle();
   assert.equal(auth.getState().screen, 'signedOut');
   assert.deepEqual(flow.getState(), { screen: 'home' });

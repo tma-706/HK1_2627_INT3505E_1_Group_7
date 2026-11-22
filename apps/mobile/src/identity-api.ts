@@ -42,16 +42,24 @@ export function requestCore(baseUrl: string | undefined) {
           : options.body ? { 'Content-Type': 'application/json' } : undefined,
         body: options.body ? JSON.stringify(options.body) : undefined,
       });
-      if (response.status === 204) return;
+      if (method === 'DELETE' && response.status === 204) return;
+      if (method === 'GET' && response.status === 401) throw new IdentityError('SESSION_INVALID');
+      if (response.ok && (method === 'DELETE' || response.status !== 200)) {
+        throw new IdentityError('AUTH_UNAVAILABLE');
+      }
       const body = await response.json() as Record<string, unknown>;
       if (!response.ok) {
         const code = typeof body?.code === 'string' ? body.code : 'AUTH_UNAVAILABLE';
+        if (response.status === 401 && code === 'SESSION_INVALID') throw new IdentityError(code);
         if (method === 'GET') {
-          if (response.status === 401 && code === 'SESSION_INVALID') throw new IdentityError(code);
           if (response.status === 400 && code === 'INVALID_CURSOR') throw new IdentityError(code);
           throw new IdentityError('READ_UNAVAILABLE');
         }
-        throw new IdentityError(code);
+        if (response.status === 400 && (code === 'INVALID_REQUEST' || code === 'GOOGLE_TOKEN_REJECTED')) {
+          throw new IdentityError(code);
+        }
+        if (response.status === 409 && code === 'LOGIN_ATTEMPT_CONFLICT') throw new IdentityError(code);
+        throw new IdentityError('AUTH_UNAVAILABLE');
       }
       return body;
     } finally {

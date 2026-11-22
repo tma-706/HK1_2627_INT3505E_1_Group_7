@@ -26,6 +26,7 @@ interface AttemptRow extends SessionRow {
   google_token_fingerprint: Buffer;
   device_type: DeviceType;
   replay_key_version: string;
+  token_hash: Buffer;
 }
 
 export class LoginAttemptConflict extends Error {}
@@ -90,7 +91,7 @@ export class Sessions {
     return this.transaction(async (client) => {
       await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1, 0))', [input.attemptId]);
       const { rows: [prior] } = await client.query<AttemptRow>(`
-        SELECT s.id, s.account_id, s.revoked_at, ${expiry('s.')} AS expires_at, s.device_type,
+        SELECT s.id, s.account_id, s.revoked_at, ${expiry('s.')} AS expires_at, s.device_type, s.token_hash,
                l.google_token_fingerprint, l.replay_key_version, a.google_sub
         FROM login_attempts l JOIN sessions s ON s.id = l.session_id
         JOIN accounts a ON a.id = s.account_id
@@ -104,10 +105,12 @@ export class Sessions {
             prior.google_sub !== identity.sub || prior.revoked_at || prior.expires_at <= now) {
           throw new LoginAttemptConflict();
         }
+        const sessionToken = this.derive(prior.replay_key_version, input, fingerprint, identity.sub);
+        if (!prior.token_hash.equals(sha256(sessionToken))) throw new Error('Replay key does not match the session');
         return {
           accountId: prior.account_id,
           expiresAt: prior.expires_at.toISOString(),
-          sessionToken: this.derive(prior.replay_key_version, input, fingerprint, identity.sub),
+          sessionToken,
         };
       }
 
@@ -143,7 +146,11 @@ export class Sessions {
     return session;
   }
 
-  // UC-02 can use this transaction boundary for authenticated reads.
+  async validate(sessionToken: string): Promise<CurrentSession | null> {
+    const result = await this.withCurrentSession(sessionToken, async () => undefined);
+    return result?.session ?? null;
+  }
+
   async withCurrentSession<T>(
     sessionToken: string,
     read: (client: PoolClient, accountId: string) => Promise<T>,

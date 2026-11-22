@@ -13,7 +13,7 @@
 | UC-02 | `local-pilot` | 45 s | 3 | 79 | 0 | 34 ms | 1,70 | `20261121T202057Z-3dee2b25` |
 | UC-02 | `local-deep-pagination` | tối đa 75 s | 3 | 453 | 0 | 42 ms | 21,22 | `20261121T202439Z-5c9cd46f` |
 
-Hai smoke bổ sung chạy trên đúng fixture của bài chuyên biệt. UC-01 đạt 9/9 với 12 danh tính chuẩn bị sẵn (`20261121T202207Z-0ab5788e`). UC-02 đạt 10/10 với 1.000 mục mỗi tab (`20261121T202418Z-adbd127d`). Tổng cộng có tám lượt Locust. Runner hồi quy dùng [danh sách CI](ci.yml), cả bốn lượt bắt buộc có mã thoát 0 (`dist/performance/ci-7f380e430b5748e08f8255dfee7a0aec.json`).
+Hai smoke bổ sung chạy trên đúng fixture của bài chuyên biệt. UC-01 đạt 9/9 với 12 danh tính chuẩn bị sẵn (`20261121T202207Z-0ab5788e`). UC-02 đạt 10/10 với 1.000 mục mỗi tab (`20261121T202418Z-adbd127d`). Tổng cộng có tám lượt Locust. Runner hồi quy dùng [danh sách CI](https://github.com/tma-706/HK1_2627_INT3505E_1_Group_7/blob/f6f5ff50049918b558ac023c2216d097483cdc7c/tests/performance/ci.yml), cả bốn lượt bắt buộc có mã thoát 0 (`dist/performance/ci-7f380e430b5748e08f8255dfee7a0aec.json`).
 
 ### UC-01 · Tải kết nối lại
 
@@ -52,7 +52,7 @@ Locust quan sát request trong khoảng 21,34 giây từ số mẫu và RPS toà
 
 ## Lần chạy lại trước đó ngày 22/11/2026
 
-Đã chạy lại [danh sách CI](ci.yml) cho UC-01 và UC-02 với cùng bản Core và môi trường fixture local như lần trước. Runner xác nhận đủ ba user trong mỗi pilot. Mỗi pilot dùng ba danh tính hoặc phiên tổng hợp riêng, tăng 1 user/giây. Thời lượng cấu hình gồm ramp là 40 giây cho UC-01 và 45 giây cho UC-02. Các số liệu lấy từ CSV toàn phiên, với lỗi chia cho tổng số request.
+Đã chạy lại [danh sách CI](https://github.com/tma-706/HK1_2627_INT3505E_1_Group_7/blob/f6f5ff50049918b558ac023c2216d097483cdc7c/tests/performance/ci.yml) cho UC-01 và UC-02 với cùng bản Core và môi trường fixture local như lần trước. Runner xác nhận đủ ba user trong mỗi pilot. Mỗi pilot dùng ba danh tính hoặc phiên tổng hợp riêng, tăng 1 user/giây. Thời lượng cấu hình gồm ramp là 40 giây cho UC-01 và 45 giây cho UC-02. Các số liệu lấy từ CSV toàn phiên, với lỗi chia cho tổng số request.
 
 | UC | Smoke | Pilot | p95 pilot | RPS pilot |
 | --- | --- | --- | --- | --- |
@@ -78,7 +78,7 @@ Từng kế hoạch UC có năm thiết kế `load`, `stress`, `spike`, `soak` v
 
 ## Lần chạy trước
 
-Đã chạy danh sách [CI](ci.yml) trên cùng Core build `core-and-migrations:sha256:ed92c3ffcd032743fcb91503733310d434de20466479efe42e3a2a88278f46db`. Môi trường local dùng proxy Node HTTPS và PGlite 0.5.10 với adapter tuần tự hóa giao dịch. Smoke và pilot đều dùng dữ liệu tổng hợp. Báo cáo từng lượt lưu trong `dist/performance/` theo ID dưới đây.
+Đã chạy danh sách [CI](https://github.com/tma-706/HK1_2627_INT3505E_1_Group_7/blob/f6f5ff50049918b558ac023c2216d097483cdc7c/tests/performance/ci.yml) trên cùng Core build `core-and-migrations:sha256:ed92c3ffcd032743fcb91503733310d434de20466479efe42e3a2a88278f46db`. Môi trường local dùng proxy Node HTTPS và PGlite 0.5.10 với adapter tuần tự hóa giao dịch. Smoke và pilot đều dùng dữ liệu tổng hợp. Báo cáo từng lượt lưu trong `dist/performance/` theo ID dưới đây.
 
 | UC | Smoke | Pilot | p95 pilot | RPS pilot |
 | --- | --- | --- | --- | --- |

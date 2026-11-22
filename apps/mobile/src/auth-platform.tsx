@@ -32,7 +32,7 @@ export const auth = new AuthFlow({
     const result = await GoogleOneTapSignIn.presentExplicitSignIn();
     if (result.type === 'cancelled') return null;
     if (result.type !== 'success' || !result.data?.idToken) throw new Error('Google sign-in unavailable');
-    await GoogleOneTapSignIn.signOut();
+    await GoogleOneTapSignIn.signOut().catch(() => undefined);
     return result.data.idToken;
   },
   attemptId: randomUUID,
@@ -50,11 +50,20 @@ export function subscribeBack(handler: () => boolean) {
 
 export function openPolicy(policy: keyof typeof policies) {
   const url = policies[policy];
-  if (!url?.startsWith('https://')) {
+  if (!url) {
     Alert.alert('Liên kết chưa sẵn sàng');
     return;
   }
-  void Linking.openURL(url).catch(() => Alert.alert('Không mở được liên kết'));
+  try {
+    const destination = new URL(url);
+    if (destination.protocol !== 'https:' || destination.username || destination.password) {
+      Alert.alert('Liên kết chưa sẵn sàng');
+      return;
+    }
+    void Linking.openURL(destination.href).catch(() => Alert.alert('Không mở được liên kết'));
+  } catch {
+    Alert.alert('Liên kết chưa sẵn sàng');
+  }
 }
 
 export function SignInButton({ disabled, onPress }: { disabled: boolean; onPress: () => void }) {

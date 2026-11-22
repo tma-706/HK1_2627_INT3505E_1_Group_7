@@ -46,8 +46,23 @@ $missing = @($packages | Where-Object {
 if ($missing.Count -gt 0) {
     & $sdkManager "--sdk_root=$sdk" --licenses
     if ($LASTEXITCODE -ne 0) { throw 'Android SDK license check failed.' }
-    & $sdkManager "--sdk_root=$sdk" --install @missing
-    if ($LASTEXITCODE -ne 0) { throw 'Android SDK package installation failed.' }
+
+    # The Windows sdkmanager wrapper can split package IDs at semicolons in arguments.
+    $packageFile = New-TemporaryFile
+    try {
+        $missing | Set-Content -LiteralPath $packageFile.FullName -Encoding Ascii
+        & $sdkManager "--sdk_root=$sdk" --install "--package_file=$($packageFile.FullName)"
+        if ($LASTEXITCODE -ne 0) { throw 'Android SDK package installation failed.' }
+    } finally {
+        Remove-Item -LiteralPath $packageFile.FullName
+    }
+
+    $stillMissing = @($missing | Where-Object {
+        -not (Test-Path (Join-Path $sdk (($_ -replace ';', '\') + '\package.xml')))
+    })
+    if ($stillMissing.Count -gt 0) {
+        throw "Android SDK packages still missing after installation: $($stillMissing -join ', ')"
+    }
 }
 
 $avdName = 'LostFound_API_36'
@@ -78,6 +93,41 @@ Push-Location $repo
 try {
     & $npm.Source run mobile:setup
     if ($LASTEXITCODE -ne 0) { throw 'Mobile dependency installation failed.' }
+
+    $adb = Join-Path $sdk 'platform-tools\adb.exe'
+    $bootDeadline = (Get-Date).AddMinutes(8)
+    $emulatorProcess = $null
+    $bootComplete = $false
+    Write-Host "Waiting for Android to boot on $avdName (up to 8 minutes)..."
+    do {
+        $targetFound = $false
+        foreach ($device in (& $adb devices)) {
+            if ($device -notmatch '^(emulator-\d+)\s+(device|offline|unauthorized)\s*$') { continue }
+            $serial = $Matches[1]
+            $deviceState = $Matches[2]
+            if ((& $adb -s $serial emu avd name) -notcontains $avdName) { continue }
+
+            $targetFound = $true
+            if ($deviceState -eq 'device') {
+                $bootComplete = (& $adb -s $serial shell getprop sys.boot_completed) -contains '1'
+            }
+            break
+        }
+        if ($bootComplete) { break }
+
+        if (-not $targetFound) {
+            if (-not $emulatorProcess) {
+                $emulatorProcess = Start-Process -FilePath $emulator -ArgumentList @('-avd', $avdName) -WindowStyle Normal -PassThru
+            } elseif ($emulatorProcess.HasExited) {
+                throw "Android Emulator exited before $avdName finished booting (exit code $($emulatorProcess.ExitCode))."
+            }
+        }
+        Start-Sleep -Seconds 3
+    } while ((Get-Date) -lt $bootDeadline)
+    if (-not $bootComplete) {
+        throw "$avdName did not finish booting within 8 minutes. Check the emulator window and adb devices before retrying."
+    }
+
     $env:REACT_NATIVE_PACKAGER_HOSTNAME = '127.0.0.1'
     & $npm.Source run android --prefix apps/mobile -- --device $avdName
     if ($LASTEXITCODE -ne 0) { throw 'The Android development build failed.' }

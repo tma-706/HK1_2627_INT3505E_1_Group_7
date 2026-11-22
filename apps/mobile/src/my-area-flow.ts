@@ -11,7 +11,7 @@ interface ListState {
   load?: Load;
   error?: { reason: Failure; retry: Load };
 }
-type Screen = 'home' | 'profile' | 'items' | 'detail';
+type Screen = 'home' | 'profile' | 'detail';
 interface State {
   screen: Screen;
   profile?: Profile;
@@ -53,25 +53,32 @@ export class MyAreaFlow {
     this.show({ screen: 'home' });
   };
 
-  back = () => {
-    const { screen } = this.state;
-    if (screen === 'home') return false;
-    if (screen === 'profile') this.clear();
-    else if (screen === 'detail') this.show({ ...this.state, screen: 'items', detail: undefined });
-    else {
-      this.listRequest?.abort();
-      this.listRequest = undefined;
-      this.show({ ...this.state, screen: 'profile', list: undefined });
-    }
-    return true;
-  };
-
   async openProfile() {
-    if (this.profileRequest) return;
+    if (this.state.screen !== 'home') return;
     performance.mark?.('my-area.profile-open');
+    this.show({
+      screen: 'profile',
+      profileLoading: true,
+      list: { tab: 'lost', items: [], nextCursor: null, load: 'first' },
+    });
+    await Promise.all([this.loadProfile(), this.loadItems('first')]);
+  }
+
+  retryProfile() {
+    if (this.state.screen === 'profile' && this.state.profileError) void this.loadProfile();
+  }
+
+  backFromDetail() {
+    if (this.state.screen !== 'detail') return false;
+    this.show({ ...this.state, screen: 'profile', detail: undefined });
+    return true;
+  }
+
+  private async loadProfile() {
+    if (this.profileRequest) return;
     const request = new AbortController();
     this.profileRequest = request;
-    this.show({ ...this.state, screen: 'profile', profileLoading: true, profileError: undefined });
+    this.show({ ...this.state, profileLoading: true, profileError: undefined });
     try {
       const profile = await this.auth.withCurrentToken((token) => this.api.profile(token, request.signal));
       if (profile && this.profileRequest === request) {
@@ -87,20 +94,18 @@ export class MyAreaFlow {
     }
   }
 
-  openItems() {
-    this.selectTab('lost');
-  }
-
   selectTab(tab: Tab) {
-    if (this.state.screen === 'items' && this.state.list?.tab === tab) return;
-    this.show({ ...this.state, screen: 'items', list: { tab, items: [], nextCursor: null, load: 'first' } });
+    if (this.state.screen !== 'profile' || this.state.list?.tab === tab) return;
+    this.show({ ...this.state, list: { tab, items: [], nextCursor: null, load: 'first' } });
     void this.loadItems('first');
   }
 
   openPost(post: Post) {
     const tab = this.state.list?.tab;
-    if (this.state.screen === 'items' && (tab === 'lost' || tab === 'found')) {
-      this.show({ ...this.state, screen: 'detail', detail: { tab, post } });
+    if (this.state.screen === 'profile' && (tab === 'lost' || tab === 'found')) {
+      const selected = this.state.list?.items.find((item) => item.id === post.id);
+      if (!selected || 'role' in selected) return;
+      this.show({ ...this.state, screen: 'detail', detail: { tab, post: selected } });
     }
   }
 
@@ -130,7 +135,7 @@ export class MyAreaFlow {
 
   private async loadItems(load: Load) {
     const list = this.state.list;
-    if (!list || this.state.screen !== 'items') return;
+    if (!list || this.state.screen !== 'profile') return;
     this.listRequest?.abort();
     const request = new AbortController();
     this.listRequest = request;
