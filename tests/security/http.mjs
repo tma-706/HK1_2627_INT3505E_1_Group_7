@@ -1,11 +1,11 @@
 import { request } from 'node:https';
 import { STATUS_CODES as statusCodes } from 'node:http';
 import { performance } from 'node:perf_hooks';
+import { sentinelPath } from './model.mjs';
 
 const harHeaders = (headers) => Object.entries(headers).flatMap(([name, value]) =>
   (Array.isArray(value) ? value : [value]).map((entry) => ({ name, value: String(entry) })),
 );
-export const sentinelPath = '/api/_security_tool_selfcheck';
 export const sentinelRule = '10010';
 
 function harEntry(url, method, headers, body, status, responseHeaders, responseBody, startedDateTime, time) {
@@ -30,7 +30,7 @@ function harEntry(url, method, headers, body, status, responseHeaders, responseB
 
 export function recordedClient(origin, ca, operations) {
   const exchanges = [];
-  async function send(caseId, step, operation, { token, data, query = {} } = {}) {
+  async function send(caseId, { step, operation, sessionState }, { token, data, query = {} } = {}) {
     const { method, path } = operations.get(operation);
     const target = new URL(path, origin);
     for (const [name, value] of Object.entries(query)) target.searchParams.set(name, value);
@@ -54,7 +54,7 @@ export function recordedClient(origin, ca, operations) {
     });
     const har = harEntry(target.href, method, headers, body, response.status, response.headers, response.body,
       startedDateTime, Math.round(performance.now() - started));
-    exchanges.push({ caseId, step, operation, method, path, status: response.status, har });
+    exchanges.push({ source: 'runner', caseId, step, operation, sessionState, method, path, status: response.status, har });
     return response;
   }
   return { exchanges, send };

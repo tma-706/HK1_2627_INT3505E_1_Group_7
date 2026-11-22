@@ -35,6 +35,20 @@ export function expectedPages(tab, actor) {
   return fixture.pageOrder[actor].map((indices) => indices.map((n) => row(tab, actor, n)));
 }
 
+export async function ageSession(attemptId, state, compose) {
+  assert.match(attemptId, /^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/u);
+  assert.ok(['expired-idle', 'expired-absolute'].includes(state));
+  const absolute = state === 'expired-absolute';
+  // Leave one limit in the future so each rejection exercises only one expiry rule.
+  await compose(`DO $$ BEGIN
+    UPDATE sessions SET created_at = clock_timestamp() - interval '${absolute ? 2184 : 744} hours',
+      last_activity_at = clock_timestamp() - interval '${absolute ? 24 : 744} hours'
+    FROM login_attempts
+    WHERE sessions.id = login_attempts.session_id AND attempt_id = '${attemptId}' AND revoked_at IS NULL;
+    IF NOT FOUND THEN RAISE EXCEPTION 'Missing fixture session'; END IF;
+  END $$;`);
+}
+
 // This is the only security adapter with DB access. It seeds, then the suite reads exclusively over HTTPS.
 export async function seedItems(accounts, compose) {
   const ids = Object.fromEntries(['a', 'b', 'c'].map((actor) => [actor, accounts[actor].accountId]));

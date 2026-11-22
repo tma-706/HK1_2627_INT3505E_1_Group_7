@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { makeHar, sentinelPath, sentinelRule } from './http.mjs';
-import { readJSON } from './model.mjs';
+import { makeHar, sentinelRule } from './http.mjs';
+import { readJSON, sentinelPath } from './model.mjs';
 import { command } from './runtime.mjs';
 
 const image = 'ghcr.io/zaproxy/zaproxy@sha256:9624669db72f54d86c4b46a7064518bd9bf79d8c61a4c31befa9923489f328af';
@@ -8,7 +8,7 @@ const addonIds = ['automation', 'authhelper', 'exim', 'pscan', 'pscanrules', 're
 export const zapIntegration = { image, mode: 'automation-har-import-no-replay', network: 'none' };
 const key = ({ method, path, status }) => `${method} ${path} ${status}`;
 
-function inspectExport(run, entries, exchanges) {
+export function inspectExport(run, entries, exchanges) {
   const received = new Map();
   for (const { request, response } of entries) {
     const url = new URL(request.url);
@@ -19,23 +19,27 @@ function inspectExport(run, entries, exchanges) {
     const tuple = key({ method: request.method, path: url.pathname, status: response.status });
     received.set(tuple, (received.get(tuple) || 0) + 1);
   }
-  const missing = [];
+  const groups = Map.groupBy(exchanges, key);
+  for (const [tuple, count] of received) {
+    if (count > (groups.get(tuple)?.length ?? 0)) throw new Error('zap-unexpected-http');
+  }
   const matches = [];
-  for (const { caseId, step, operation, method, path, status } of exchanges) {
-    const tuple = key({ method, path, status });
-    const count = received.get(tuple) ?? 0;
-    if (count > 0) {
-      received.set(tuple, count - 1);
-      matches.push({ caseId, step, operation, method, path, status });
-    } else {
-      missing.push({ caseId, step, operation, method, path, status });
+  const evidence = [];
+  for (const [tuple, group] of groups) {
+    const { source, operation, method, path, status } = group[0];
+    const receivedCount = received.get(tuple) ?? 0;
+    const expectedCount = group.length;
+    evidence.push({ source, operation, method, path, status, expectedCount, receivedCount });
+    // An incomplete group cannot identify which of the indistinguishable steps arrived.
+    if (receivedCount === expectedCount) {
+      const zapEvidence = expectedCount === 1 ? 'single' : 'aggregate';
+      matches.push(...group.map(({ har, ...exchange }) => ({ ...exchange, zapEvidence })));
     }
   }
-  if ([...received.values()].some((count) => count > 0)) throw new Error('zap-unexpected-http');
-  return { missing, received: matches };
+  return { evidence, received: matches };
 }
 
-function inspectAlerts(run, report, exchanges) {
+function inspectAlerts(run, report, exchanges, source) {
   let passiveSelfcheck = false;
   const findings = new Map();
   for (const site of report.site ?? []) {
@@ -48,14 +52,13 @@ function inspectAlerts(run, report, exchanges) {
           if (pluginid === sentinelRule) passiveSelfcheck = true;
           continue;
         }
-        const affected = exchanges.filter((item) => item.path === pathname && item.method === method);
-        if (!affected.length) throw new Error('zap-alert-without-exchange');
+        const affected = exchanges.find((item) => item.path === pathname && item.method === method);
+        if (!affected) throw new Error('zap-alert-without-exchange');
         const id = `${pluginid}/${method}/${pathname}`;
         findings.set(id, {
           rule: pluginid, cwe: /^\d{1,6}$/u.test(cweid) ? 'CWE-' + cweid : null,
           risk: ['info', 'low', 'medium', 'high'][Number(riskcode)] ?? 'unknown',
-          operation: affected[0].operation, method, path: pathname,
-          caseIds: [...new Set(affected.map(({ caseId }) => caseId))],
+          operation: affected.operation, method, path: pathname, source,
         });
       }
     }
@@ -63,16 +66,16 @@ function inspectAlerts(run, report, exchanges) {
   return { passiveSelfcheck, findings: [...findings.values()] };
 }
 
-export async function runZap(run, exchanges) {
-  const dir = run.dir + '/zap';
-  mkdirSync(dir, { mode: 0o700 });
+async function scanSource(run, source, exchanges) {
+  const dir = `${run.dir}/zap/${source}`;
+  mkdirSync(dir, { recursive: true, mode: 0o700 });
   writeFileSync(dir + '/input.har', JSON.stringify(makeHar(exchanges, run.origin)), { mode: 0o600 });
   const af = readFileSync('tests/security/zap.yaml', 'utf8').replaceAll('@ORIGIN@', run.origin)
     .replaceAll('@ORIGIN_REGEX@', run.origin.replaceAll('.', '\\.'));
   writeFileSync(dir + '/plan.yaml', af, { mode: 0o600 });
   writeFileSync(run.dir + '/zap-started', '', { mode: 0o600 });
   const result = await command('docker', [
-    'run', '--rm', '--network', 'none', '--hostname', 'localhost', '--name', run.scanner,
+    'run', '--rm', '--network', 'none', '--hostname', 'localhost', '--name', `${run.scanner}-${source}`,
     '--label', `lf.security.owner=${run.project}`,
     '--user', `${process.getuid()}:${process.getgid()}`, '-e', 'HOME=/zap/wrk',
     '-v', `${dir}:/zap/wrk`, image, 'zap.sh', '-dir', '/zap/wrk/home', '-cmd', '-autorun', '/zap/wrk/plan.yaml',
@@ -81,7 +84,7 @@ export async function runZap(run, exchanges) {
   if (!existsSync(dir + '/received.har')) throw new Error('zap-export-missing');
   const report = readJSON(dir + '/passive.json');
   const entries = readJSON(dir + '/received.har').log.entries;
-  const { passiveSelfcheck, findings } = inspectAlerts(run, report, exchanges);
+  const { passiveSelfcheck, findings } = inspectAlerts(run, report, exchanges, source);
   const http = inspectExport(run, entries, exchanges);
   const jobs = ['passiveScan-config', 'import', 'passiveScan-wait', 'export', 'report', 'exitStatus'];
   const completedJobs = jobs.filter((job) => result.stdout.includes(`Job ${job} finished`));
@@ -93,8 +96,28 @@ export async function runZap(run, exchanges) {
     if (match) addons[id] = match[1];
   }
   return {
-    ...zapIntegration, exitCode: result.status, version, addons, completedJobs,
+    source, exitCode: result.status, version, addons, completedJobs,
     passiveSelfcheck, findings, ...http,
-    ok: result.status === 0 && completedJobs.length === jobs.length && passiveSelfcheck && http.missing.length === 0 && Boolean(version) && Object.keys(addons).length === addonIds.length,
+    ok: result.status === 0 && completedJobs.length === jobs.length && passiveSelfcheck &&
+      http.received.length === exchanges.length && Boolean(version) && Object.keys(addons).length === addonIds.length,
+  };
+}
+
+export async function runZap(run, exchanges, toolErrors) {
+  const scans = [];
+  for (const [source, group] of Map.groupBy(exchanges, ({ source }) => source)) {
+    try {
+      scans.push(await scanSource(run, source, group));
+    } catch (error) {
+      if (error instanceof Error && /^zap-[a-z-]+$/u.test(error.message)) toolErrors.add(error.message);
+      scans.push({ source, ok: false });
+    }
+  }
+  return {
+    ...scans[0], sources: scans, ok: scans.length > 0 && scans.every(({ ok }) => ok),
+    passiveSelfcheck: scans.length > 0 && scans.every(({ passiveSelfcheck }) => passiveSelfcheck),
+    received: scans.flatMap(({ received }) => received ?? []),
+    evidence: scans.flatMap(({ evidence }) => evidence ?? []),
+    findings: scans.flatMap(({ findings }) => findings ?? []),
   };
 }

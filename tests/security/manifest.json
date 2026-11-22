@@ -1,6 +1,6 @@
 {
-  "version": 1,
-  "fixtureVersion": 1,
+  "version": 2,
+  "fixtureVersion": 2,
   "inputs": {
     "catalog": {
       "path": "docs/requirements/quality/security-owasp-2025.json",
@@ -71,6 +71,76 @@
     "config": "Compose, lockfile, secrets và build",
     "google": "Google Identity và JWKS"
   },
+  "scope": {
+    "getCoreReadiness": {
+      "kind": "readiness"
+    },
+    "createGoogleSession": {
+      "kind": "business"
+    },
+    "validateCurrentSession": {
+      "kind": "business"
+    },
+    "getMyProfile": {
+      "kind": "business"
+    },
+    "listMyItems": {
+      "kind": "business"
+    },
+    "revokeCurrentSession": {
+      "kind": "business"
+    }
+  },
+  "unobservedCells": [
+    {
+      "source": "runner",
+      "operation": "validateCurrentSession",
+      "sessionState": "idle-boundary",
+      "reason": "SCN-AUTH-14 cần điều khiển thời điểm giao dịch Core/DB. Fixture hiện đặt tuổi phiên để kiểm trạng thái đã hết hạn."
+    },
+    {
+      "source": "runner",
+      "operation": "getMyProfile",
+      "sessionState": "idle-boundary",
+      "reason": "SCN-AUTH-14 cần điều khiển thời điểm giao dịch Core/DB. Fixture hiện đặt tuổi phiên để kiểm trạng thái đã hết hạn."
+    },
+    {
+      "source": "runner",
+      "operation": "listMyItems",
+      "sessionState": "idle-boundary",
+      "reason": "SCN-AUTH-14 cần điều khiển thời điểm giao dịch Core/DB. Fixture hiện đặt tuổi phiên để kiểm trạng thái đã hết hạn."
+    },
+    {
+      "source": "runner",
+      "operation": "revokeCurrentSession",
+      "sessionState": "idle-boundary",
+      "reason": "SCN-AUTH-14 cần điều khiển thời điểm giao dịch Core/DB. Fixture hiện đặt tuổi phiên để kiểm trạng thái đã hết hạn."
+    },
+    {
+      "source": "runner",
+      "operation": "validateCurrentSession",
+      "sessionState": "absolute-boundary",
+      "reason": "SCN-AUTH-14 cần điều khiển thời điểm giao dịch Core/DB. Fixture hiện đặt tuổi phiên để kiểm trạng thái đã hết hạn."
+    },
+    {
+      "source": "runner",
+      "operation": "getMyProfile",
+      "sessionState": "absolute-boundary",
+      "reason": "SCN-AUTH-14 cần điều khiển thời điểm giao dịch Core/DB. Fixture hiện đặt tuổi phiên để kiểm trạng thái đã hết hạn."
+    },
+    {
+      "source": "runner",
+      "operation": "listMyItems",
+      "sessionState": "absolute-boundary",
+      "reason": "SCN-AUTH-14 cần điều khiển thời điểm giao dịch Core/DB. Fixture hiện đặt tuổi phiên để kiểm trạng thái đã hết hạn."
+    },
+    {
+      "source": "runner",
+      "operation": "revokeCurrentSession",
+      "sessionState": "absolute-boundary",
+      "reason": "SCN-AUTH-14 cần điều khiển thời điểm giao dịch Core/DB. Fixture hiện đặt tuổi phiên để kiểm trạng thái đã hết hạn."
+    }
+  ],
   "cases": [
     {
       "id": "UC01-SESSION",
@@ -116,47 +186,56 @@
         {
           "step": "first-a",
           "operation": "createGoogleSession",
-          "status": 200
+          "status": 200,
+          "sessionState": "public"
         },
         {
           "step": "second-a",
           "operation": "createGoogleSession",
-          "status": 200
+          "status": 200,
+          "sessionState": "public"
         },
         {
           "step": "validate-a",
           "operation": "validateCurrentSession",
-          "status": 200
+          "status": 200,
+          "sessionState": "valid"
         },
         {
           "step": "profile-a",
           "operation": "getMyProfile",
-          "status": 200
+          "status": 200,
+          "sessionState": "valid"
         },
         {
           "step": "profile-a-original-session",
           "operation": "getMyProfile",
-          "status": 200
+          "status": 200,
+          "sessionState": "valid"
         },
         {
           "step": "create-b",
           "operation": "createGoogleSession",
-          "status": 200
+          "status": 200,
+          "sessionState": "public"
         },
         {
           "step": "create-c",
           "operation": "createGoogleSession",
-          "status": 200
+          "status": 200,
+          "sessionState": "public"
         },
         {
           "step": "create-d",
           "operation": "createGoogleSession",
-          "status": 200
+          "status": 200,
+          "sessionState": "public"
         },
         {
           "step": "profile-b",
           "operation": "getMyProfile",
-          "status": 200
+          "status": 200,
+          "sessionState": "valid"
         }
       ],
       "obligations": [
@@ -164,7 +243,8 @@
         "SEC-A04-04/gateway-tls",
         "SEC-A06-05/core",
         "SEC-A07-01/core"
-      ]
+      ],
+      "source": "runner"
     },
     {
       "id": "UC01-REVOKE",
@@ -200,42 +280,200 @@
         {
           "step": "revoke-a1",
           "operation": "revokeCurrentSession",
-          "status": 204
+          "status": 204,
+          "sessionState": "valid"
         },
         {
           "step": "repeat-a1",
           "operation": "revokeCurrentSession",
-          "status": 204
+          "status": 204,
+          "sessionState": "revoked"
         },
         {
           "step": "validate-a1-denied",
           "operation": "validateCurrentSession",
-          "status": 401
+          "status": 401,
+          "sessionState": "revoked"
         },
         {
           "step": "profile-a1-denied",
           "operation": "getMyProfile",
-          "status": 401
+          "status": 401,
+          "sessionState": "revoked"
         },
         {
           "step": "items-a1-denied",
           "operation": "listMyItems",
-          "status": 401
+          "status": 401,
+          "sessionState": "revoked"
         },
         {
           "step": "validate-a2",
           "operation": "validateCurrentSession",
-          "status": 200
+          "status": 200,
+          "sessionState": "valid"
         },
         {
           "step": "profile-a2",
           "operation": "getMyProfile",
-          "status": 200
+          "status": 200,
+          "sessionState": "valid"
         }
       ],
       "obligations": [
         "SEC-A01-01/core",
         "SEC-A06-05/core",
+        "SEC-A07-01/core"
+      ],
+      "source": "runner"
+    },
+    {
+      "id": "UC01-SESSION-ABSENT",
+      "sourceRefs": [
+        {
+          "input": "uc01",
+          "locator": "SCN-AUTH-13",
+          "version": "v2"
+        },
+        {
+          "input": "uc01",
+          "locator": "SCN-AUTH-18",
+          "version": "v2"
+        },
+        {
+          "input": "openapi",
+          "locator": "InvalidCoreSession",
+          "version": "0.3.0"
+        }
+      ],
+      "layer": "https",
+      "preconditions": "Gateway và Core đã sẵn sàng.",
+      "fixture": "Yêu cầu không mang mã phiên; tab lost hợp lệ.",
+      "action": "Gọi xác minh, đọc hồ sơ, đọc danh sách và thu hồi phiên.",
+      "expected": "Cả bốn trả 401, Bearer challenge và đúng JSON SESSION_INVALID.",
+      "requiredForPilot": true,
+      "source": "runner",
+      "http": [
+        {
+          "step": "absent-validate",
+          "operation": "validateCurrentSession",
+          "status": 401,
+          "sessionState": "absent"
+        },
+        {
+          "step": "absent-profile",
+          "operation": "getMyProfile",
+          "status": 401,
+          "sessionState": "absent"
+        },
+        {
+          "step": "absent-items",
+          "operation": "listMyItems",
+          "status": 401,
+          "sessionState": "absent"
+        },
+        {
+          "step": "absent-revoke",
+          "operation": "revokeCurrentSession",
+          "status": 401,
+          "sessionState": "absent"
+        }
+      ],
+      "obligations": [
+        "SEC-A01-01/core",
+        "SEC-A07-01/core"
+      ]
+    },
+    {
+      "id": "UC01-SESSION-EXPIRED",
+      "sourceRefs": [
+        {
+          "input": "uc01",
+          "locator": "SCN-AUTH-14",
+          "version": "v2"
+        },
+        {
+          "input": "uc01",
+          "locator": "SCN-AUTH-18",
+          "version": "v2"
+        },
+        {
+          "input": "openapi",
+          "locator": "InvalidCoreSession",
+          "version": "0.3.0"
+        }
+      ],
+      "layer": "https",
+      "preconditions": "Core, DB và danh tính tổng hợp của fixture sẵn sàng.",
+      "fixture": "Hai phiên chưa thu hồi. Một phiên quá hạn không hoạt động, phiên kia quá trần tuyệt đối.",
+      "action": "Dùng từng phiên để xác minh, đọc hồ sơ, đọc danh sách và thu hồi sau khi đặt tuổi phiên trong DB fixture.",
+      "expected": "Cả bốn operation trả 401, Bearer challenge và đúng JSON SESSION_INVALID cho từng trạng thái hết hạn.",
+      "requiredForPilot": true,
+      "source": "runner",
+      "http": [
+        {
+          "step": "create-expired-idle",
+          "operation": "createGoogleSession",
+          "status": 200,
+          "sessionState": "public"
+        },
+        {
+          "step": "expired-idle-validate",
+          "operation": "validateCurrentSession",
+          "status": 401,
+          "sessionState": "expired-idle"
+        },
+        {
+          "step": "expired-idle-profile",
+          "operation": "getMyProfile",
+          "status": 401,
+          "sessionState": "expired-idle"
+        },
+        {
+          "step": "expired-idle-items",
+          "operation": "listMyItems",
+          "status": 401,
+          "sessionState": "expired-idle"
+        },
+        {
+          "step": "expired-idle-revoke",
+          "operation": "revokeCurrentSession",
+          "status": 401,
+          "sessionState": "expired-idle"
+        },
+        {
+          "step": "create-expired-absolute",
+          "operation": "createGoogleSession",
+          "status": 200,
+          "sessionState": "public"
+        },
+        {
+          "step": "expired-absolute-validate",
+          "operation": "validateCurrentSession",
+          "status": 401,
+          "sessionState": "expired-absolute"
+        },
+        {
+          "step": "expired-absolute-profile",
+          "operation": "getMyProfile",
+          "status": 401,
+          "sessionState": "expired-absolute"
+        },
+        {
+          "step": "expired-absolute-items",
+          "operation": "listMyItems",
+          "status": 401,
+          "sessionState": "expired-absolute"
+        },
+        {
+          "step": "expired-absolute-revoke",
+          "operation": "revokeCurrentSession",
+          "status": 401,
+          "sessionState": "expired-absolute"
+        }
+      ],
+      "obligations": [
+        "SEC-A01-01/core",
         "SEC-A07-01/core"
       ]
     },
@@ -268,27 +506,32 @@
         {
           "step": "a-page-1",
           "operation": "listMyItems",
-          "status": 200
+          "status": 200,
+          "sessionState": "valid"
         },
         {
           "step": "a-page-2",
           "operation": "listMyItems",
-          "status": 200
+          "status": 200,
+          "sessionState": "valid"
         },
         {
           "step": "b-page-1",
           "operation": "listMyItems",
-          "status": 200
+          "status": 200,
+          "sessionState": "valid"
         },
         {
           "step": "d-empty-page",
           "operation": "listMyItems",
-          "status": 200
+          "status": 200,
+          "sessionState": "valid"
         }
       ],
       "obligations": [
         "SEC-A01-02/db"
-      ]
+      ],
+      "source": "runner"
     },
     {
       "id": "UC02-FOUND",
@@ -324,27 +567,32 @@
         {
           "step": "a-page-1",
           "operation": "listMyItems",
-          "status": 200
+          "status": 200,
+          "sessionState": "valid"
         },
         {
           "step": "a-page-2",
           "operation": "listMyItems",
-          "status": 200
+          "status": 200,
+          "sessionState": "valid"
         },
         {
           "step": "b-page-1",
           "operation": "listMyItems",
-          "status": 200
+          "status": 200,
+          "sessionState": "valid"
         },
         {
           "step": "d-empty-page",
           "operation": "listMyItems",
-          "status": 200
+          "status": 200,
+          "sessionState": "valid"
         }
       ],
       "obligations": [
         "SEC-A01-02/db"
-      ]
+      ],
+      "source": "runner"
     },
     {
       "id": "UC02-CLAIMS",
@@ -375,27 +623,32 @@
         {
           "step": "a-page-1",
           "operation": "listMyItems",
-          "status": 200
+          "status": 200,
+          "sessionState": "valid"
         },
         {
           "step": "a-page-2",
           "operation": "listMyItems",
-          "status": 200
+          "status": 200,
+          "sessionState": "valid"
         },
         {
           "step": "b-page-1",
           "operation": "listMyItems",
-          "status": 200
+          "status": 200,
+          "sessionState": "valid"
         },
         {
           "step": "d-empty-page",
           "operation": "listMyItems",
-          "status": 200
+          "status": 200,
+          "sessionState": "valid"
         }
       ],
       "obligations": [
         "SEC-A01-02/db"
-      ]
+      ],
+      "source": "runner"
     },
     {
       "id": "UC02-CURSOR",
@@ -426,26 +679,64 @@
         {
           "step": "cursor-first",
           "operation": "listMyItems",
-          "status": 200
+          "status": 200,
+          "sessionState": "valid"
         },
         {
           "step": "cursor-same-tab",
           "operation": "listMyItems",
-          "status": 200
+          "status": 200,
+          "sessionState": "valid"
         },
         {
           "step": "cursor-other-tab",
           "operation": "listMyItems",
-          "status": 400
+          "status": 400,
+          "sessionState": "invalid-parameter"
         },
         {
           "step": "cursor-other-account",
           "operation": "listMyItems",
-          "status": 400
+          "status": 400,
+          "sessionState": "invalid-parameter"
         }
       ],
       "obligations": [
         "SEC-A01-02/db",
+        "SEC-A06-05/core"
+      ],
+      "source": "runner"
+    },
+    {
+      "id": "UC02-INVALID-TAB",
+      "sourceRefs": [
+        {
+          "input": "profileNotes",
+          "locator": "GAP-PRF-003",
+          "version": "UC-02 Essential"
+        },
+        {
+          "input": "openapi",
+          "locator": "INVALID_REQUEST",
+          "version": "0.3.0"
+        }
+      ],
+      "layer": "https",
+      "preconditions": "A có phiên hợp lệ.",
+      "fixture": "Yêu cầu listMyItems thiếu tham số tab.",
+      "action": "Gọi đọc danh sách với Bearer hợp lệ và không gửi tab.",
+      "expected": "400 với Content-Type JSON và chỉ có code INVALID_REQUEST.",
+      "requiredForPilot": true,
+      "source": "runner",
+      "http": [
+        {
+          "step": "missing-tab",
+          "operation": "listMyItems",
+          "status": 400,
+          "sessionState": "invalid-parameter"
+        }
+      ],
+      "obligations": [
         "SEC-A06-05/core"
       ]
     },
@@ -478,14 +769,16 @@
         {
           "step": "gateway-ready",
           "operation": "getCoreReadiness",
-          "status": 200
+          "status": 200,
+          "sessionState": "readiness"
         }
       ],
       "obligations": [
         "SEC-A04-03/gateway-tls",
         "SEC-A04-04/gateway-tls",
         "SEC-A07-04/gateway-tls"
-      ]
+      ],
+      "source": "runner"
     },
     {
       "id": "MOBILE-SESSION-CLEANUP",

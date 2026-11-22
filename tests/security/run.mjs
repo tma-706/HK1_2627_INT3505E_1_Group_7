@@ -57,7 +57,7 @@ async function runSuite(model, buildSha) {
     if (client?.exchanges.length) {
       console.log('Đối soát bản ghi HTTPS qua ZAP Automation Framework.');
       try {
-        zap = await runZap(run, client.exchanges);
+        zap = await runZap(run, client.exchanges, toolErrors);
         if (!zap.ok) toolErrors.add('zap-execution-error');
       } catch (error) {
         toolErrors.add('zap-execution-error');

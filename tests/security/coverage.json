@@ -17,7 +17,9 @@
     "evidenceMethod": "runtime HTTPS",
     "caseIds": [
       "UC01-SESSION",
-      "UC01-REVOKE"
+      "UC01-REVOKE",
+      "UC01-SESSION-ABSENT",
+      "UC01-SESSION-EXPIRED"
     ]
   },
   {
@@ -454,7 +456,8 @@
     "caseIds": [
       "UC01-SESSION",
       "UC01-REVOKE",
-      "UC02-CURSOR"
+      "UC02-CURSOR",
+      "UC02-INVALID-TAB"
     ]
   },
   {
@@ -503,7 +506,9 @@
     "evidenceMethod": "runtime HTTPS",
     "caseIds": [
       "UC01-SESSION",
-      "UC01-REVOKE"
+      "UC01-REVOKE",
+      "UC01-SESSION-ABSENT",
+      "UC01-SESSION-EXPIRED"
     ]
   },
   {

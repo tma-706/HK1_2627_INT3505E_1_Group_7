@@ -4,7 +4,13 @@ env:
       urls:
         - "@ORIGIN@"
       includePaths:
-        - '@ORIGIN_REGEX@/api/(?:health/ready|auth/sessions(?:/current(?:/validate)?)?|me/(?:profile|items)|_security_tool_selfcheck)(?:\?.*)?'
+        - '@ORIGIN_REGEX@/api/_security_tool_selfcheck(?:\?.*)?'
+        - '@ORIGIN_REGEX@/api/auth/sessions(?:\?.*)?'
+        - '@ORIGIN_REGEX@/api/auth/sessions/current(?:\?.*)?'
+        - '@ORIGIN_REGEX@/api/auth/sessions/current/validate(?:\?.*)?'
+        - '@ORIGIN_REGEX@/api/health/ready(?:\?.*)?'
+        - '@ORIGIN_REGEX@/api/me/items(?:\?.*)?'
+        - '@ORIGIN_REGEX@/api/me/profile(?:\?.*)?'
   parameters:
     failOnError: true
     failOnWarning: true
