@@ -7,6 +7,7 @@ import { AssertionFailure, compareRows, verifyError } from './cases.mjs';
 import { expectedPages } from './fixture.mjs';
 import { contractOperations, loadModel, readJSON, validateScope } from './model.mjs';
 import { buildReport, writeReports } from './report.mjs';
+import { matchBrowserHar } from './web.mjs';
 import { inspectExport } from './zap.mjs';
 
 const model = loadModel();
@@ -126,4 +127,30 @@ test('a changed contract route requires both a selection and a matching context'
   assert.throws(() => validateScope(operations, scope, plan), /Context ZAP/u);
   scope.getNew = { kind: 'excluded', reason: 'Outside the selected sprint' };
   validateScope(operations, scope, plan);
+});
+
+test('UI without Core responses and UI missing its page action both fail with MISSING', () => {
+  for (const omit of [({ source }) => source === 'ui', ({ step }) => step === 'next-page']) {
+    const run = simulatedRun();
+    run.http = run.http.filter((exchange) => !omit(exchange));
+    run.zap = importSample(run.http);
+    const report = exportSample(buildReport(model, run), 1);
+    const result = report.cases.find(({ caseId }) => caseId === 'UC01-02-WEB-E2E');
+    assert.equal(result.outcome, 'MISSING');
+    assert.equal(result.reason, 'http-evidence-missing');
+    assert.ok(report.coverage.operations.find(({ operation }) => operation === 'listMyItems').sources.runner.received > 0);
+  }
+});
+
+test('browser HAR links each list response to its action using the in-memory URL', () => {
+  const path = '/api/me/items';
+  const observed = ['open-items', 'next-page'].map((step, index) => ({
+    method: 'GET', path, status: 200, source: 'ui', step, url: `${origin}${path}?tab=lost${index ? '&cursor=' + marker : ''}`,
+  }));
+  const entries = observed.map(({ url, method, status }) => ({ request: { url, method }, response: { status } }));
+  const matches = matchBrowserHar(origin, [...entries].reverse(), observed);
+  assert.equal(matches[1].har.request.url, observed[1].url);
+  assert.ok(!Object.hasOwn(matches[1], 'url'));
+  assert.throws(() => matchBrowserHar(origin, [entries[0]], observed), /ui-har-invalid/u);
+  assert.throws(() => matchBrowserHar(origin, [entries[0], entries[0], entries[1]], observed), /ui-har-invalid/u);
 });

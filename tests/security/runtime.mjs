@@ -81,6 +81,7 @@ export async function cleanupOwned(root, key, release = true) {
   }
   // Scrub raw exchanges even when Docker cleanup has to be retried.
   rmSync(dir + '/zap', { recursive: true, force: true });
+  rmSync(dir + '/web', { recursive: true, force: true });
   if (success) {
     rmSync(run.fixtureDir, { recursive: true, force: true });
     rmSync(dir + '/zap-started', { force: true });

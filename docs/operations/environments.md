@@ -15,12 +15,15 @@ Bộ kiểm AI mock dùng fixture tổng hợp. Kiểm tra integration dựng DB
 
 ## Nghiệm thu bảo mật UC-01/02
 
-Dùng Node 22, Docker Compose và OpenSSL. Suite dựng một Compose project riêng,
-dùng CA của fixture và lưu báo cáo đã lọc trong `dist/security/`.
+Dùng Node 22, Docker Compose, OpenSSL và `certutil` của NSS (`brew install nss` trên macOS,
+`libnss3-tools` trên Ubuntu). Suite dựng một Compose project riêng và dùng CA của fixture
+cho client HTTPS và profile Firefox tạm. Trên Ubuntu, cài thư viện hệ thống của Firefox
+qua `npm run security:web:setup -- --with-deps` sau `npm ci`. Báo cáo đã lọc nằm trong `dist/security/`.
 
 ```sh
 npm ci
 npm run mobile:setup
+npm run security:web:setup
 npm run security:validate
 npm run security:test
 ```

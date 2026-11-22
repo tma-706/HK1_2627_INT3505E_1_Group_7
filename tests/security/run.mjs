@@ -52,7 +52,7 @@ async function runSuite(model, buildSha) {
       toolErrors.add('fixture-start-error');
     }
     caseResults = await executeCases(model, {
-      client, root, fixtureDir: run.fixtureDir, toolErrors, command, seed: (sql) => seedFixture(run, sql),
+      client, root, run, fixtureDir: run.fixtureDir, toolErrors, command, seed: (sql) => seedFixture(run, sql),
     }, (id, outcome) => console.log(`${id} ${outcome}`));
     if (client?.exchanges.length) {
       console.log('Đối soát bản ghi HTTPS qua ZAP Automation Framework.');

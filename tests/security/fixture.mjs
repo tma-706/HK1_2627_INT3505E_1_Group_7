@@ -8,8 +8,9 @@ export const fixture = readJSON('tests/security/fixture.json');
 export async function fixtureIdentity(fixtureDir) {
   const key = await importJWK(readJSON(`${fixtureDir}/fixture-key.json`), 'RS256');
   const run = randomUUID();
-  return async (actor, deviceType) => {
-    const { email, displayName, avatarUrl, subject } = fixture.actors[actor];
+  return async (actor, deviceType, profile = fixture.actors[actor]) => {
+    const { email, displayName, avatarUrl } = profile;
+    const { subject } = fixture.actors[actor];
     const idToken = await new SignJWT({ email, name: displayName, ...(avatarUrl && { picture: avatarUrl }) })
       .setProtectedHeader({ alg: 'RS256', kid: 'uc01-local-key' })
       .setIssuer('https://accounts.google.com').setAudience('uc01-local-fixture')
@@ -18,11 +19,11 @@ export async function fixtureIdentity(fixtureDir) {
   };
 }
 
-function row(tab, actor, n) {
+function row(tab, actor, n, webTag) {
   const tabIndex = fixture.tabs.indexOf(tab) + 1;
   const id = `00000000-0000-4000-8000-${tabIndex}${{ a: 1, b: 2, c: 3 }[actor]}${String(n).padStart(10, '0')}`;
   const time = n === 1 ? fixture.newest : fixture.tied;
-  const title = `${tab}-${actor}-${n}`;
+  const title = webTag && tab === 'lost' && actor === 'a' ? `${webTag} Lost ${n}` : `${tab}-${actor}-${n}`;
   if (tab === 'claims') {
     return { id, title, sentAt: time, status: 'Pending', role: n % 2 ? fixture.claims.oddRole : fixture.claims.evenRole };
   }
@@ -31,8 +32,8 @@ function row(tab, actor, n) {
   }) };
 }
 
-export function expectedPages(tab, actor) {
-  return fixture.pageOrder[actor].map((indices) => indices.map((n) => row(tab, actor, n)));
+export function expectedPages(tab, actor, webTag) {
+  return fixture.pageOrder[actor].map((indices) => indices.map((n) => row(tab, actor, n, webTag)));
 }
 
 export async function ageSession(attemptId, state, compose) {
@@ -59,7 +60,7 @@ export async function seedItems(accounts, compose) {
     for (const [actor, count] of Object.entries(fixture.countByActor)) {
       if (tab === 'claims' && actor === fixture.claims.otherParty) continue;
       for (let n = 1; n <= count; ++n) {
-        const item = row(tab, actor, n);
+        const item = row(tab, actor, n, accounts.webTag);
         if (tab === 'claims') {
           const peer = ids[fixture.claims.otherParty];
           const [sender, owner] = item.role === 'sent' ? [ids[actor], peer] : [peer, ids[actor]];

@@ -8,7 +8,8 @@ const toolErrorCodes = new Set(['fixture-start-error', 'fixture-seed-error', 'ca
   'zap-report-missing', 'zap-export-missing', 'zap-unexpected-origin', 'zap-unexpected-http', 'zap-invalid-rule',
   'zap-alert-without-exchange', 'fixture-cleanup-error', 'runner-error', 'interrupted']);
 const resultReasons = new Set(['assertions-passed', 'fixture-unavailable', 'item-fixture-unavailable', 'session-fixture-unavailable',
-  'case-execution-error', 'case-not-executed']);
+  'case-execution-error', 'case-not-executed', 'ui-core-evidence-missing', 'ui-build-failed', 'ui-ca-setup-failed',
+  'ui-browser-failed', 'ui-har-invalid', 'ui-gateway-unavailable']);
 const countFields = ['observedCount', 'expectedCount', 'mismatchCount'];
 const priority = ['FAIL', 'REVIEW', 'MISSING', 'PASS', 'N/A'];
 const outcomeFor = (items) => priority.find((state) => items.includes(state)) ?? 'MISSING';

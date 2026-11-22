@@ -99,12 +99,14 @@ export function loadModel() {
     }
     assert.ok(unique(item.http.map(({ step }) => step)), item.id);
     if (item.http.length) assert.ok(httpSources.includes(item.source), `${item.id} thiếu nguồn HTTP`);
-    for (const { step, operation, status, sessionState } of item.http) {
+    for (const { step, operation, status, sessionState, scenario } of item.http) {
       assert.match(step, /^[a-z0-9-]+$/u);
       assert.ok(operations.get(operation)?.statuses.includes(status), `${item.id}: ${operation} ${status}`);
       assert.notEqual(manifest.scope[operation].kind, 'excluded', operation);
       assert.ok(sessionStates.includes(sessionState), `${item.id}: ${step} thiếu trạng thái`);
       assert.equal(sessionState === 'readiness', manifest.scope[operation].kind === 'readiness', step);
+      if (item.source === 'ui') assert.ok(item.sourceRefs.some(({ locator }) => locator === scenario) &&
+        allScenarios.includes(`| ${scenario} ·`), `${item.id}: ${step} thiếu SCN`);
       if (item.requiredForPilot && status >= 200 && status < 300) requiredOperations.add(operation);
     }
   }
