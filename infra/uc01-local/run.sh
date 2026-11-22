@@ -6,6 +6,10 @@ fixture_project="${LF_UC01_FIXTURE_PROJECT:-lf-uc01-local}"
 export LF_UC01_FIXTURE_DIR="$fixture_dir"
 local_url="https://127.0.0.1:${UC01_HTTPS_PORT:-8443}"
 
+assert_isolated() {
+  [[ $fixture_project =~ ^lf-security-[0-9a-f]{32}$ && $fixture_dir == "$PWD/dist/.security-run/fixture" ]]
+}
+
 compose() (
   # Ignore ambient production credentials. The overlay is a separate Compose project.
   unset GOOGLE_CLIENT_ID SESSION_REPLAY_KEY_VERSION SESSION_REPLAY_KEYS
@@ -48,7 +52,8 @@ verify() {
 }
 
 case "${1:-}" in
-  up)
+  up|up-isolated)
+    if [[ $1 == up-isolated ]]; then assert_isolated; fi
     initialize
     compose up -d --build gateway-tls
     compose exec -T gateway-tls nginx -s reload
@@ -64,7 +69,8 @@ case "${1:-}" in
     fi
     for ((trial = 0; trial < 40; trial++)); do
       if curl -fsS --cacert "$fixture_dir/tls/ca.crt" "$local_url/api/health/ready" >/dev/null 2>&1; then
-        verify
+        if [[ $1 == up ]]; then verify; fi
+        printf 'Fixture readiness retries: %s\n' "$trial"
         printf 'Gateway fixture: %s\n' "$local_url"
         exit 0
       fi
@@ -80,11 +86,11 @@ case "${1:-}" in
     ;;
   down) compose down ;;
   down-isolated)
-    [[ $fixture_project =~ ^lf-security-[0-9a-f]{32}$ && $fixture_dir == "$PWD/dist/.security-run/fixture" ]]
+    assert_isolated
     compose down --volumes
     ;;
   *)
-    printf 'Usage: bash infra/uc01-local/run.sh up|check|check-mobile|down|down-isolated\n' >&2
+    printf 'Usage: bash infra/uc01-local/run.sh up|up-isolated|check|check-mobile|down|down-isolated\n' >&2
     exit 2
     ;;
 esac

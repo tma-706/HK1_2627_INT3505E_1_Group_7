@@ -43,9 +43,13 @@ function runEnvironment(owner) {
 }
 
 export async function startFixture(run) {
-  if (!Number.isSafeInteger(run.port) || run.port < 1024 || run.port > 65535) return false;
-  const result = await command('bash', ['infra/uc01-local/run.sh', 'up'], { env: run.env, timeout: 240_000 });
-  return result.status === 0;
+  if (!Number.isSafeInteger(run.port) || run.port < 1024 || run.port > 65535) return { error: 'fixture-invalid-port' };
+  const probe = await command('docker', ['version', '--format', '{{.Server.Version}}'], { env: run.env, timeout: 10_000 });
+  if (probe.status !== 0) return { error: 'fixture-docker-unavailable' };
+  const result = await command('bash', ['infra/uc01-local/run.sh', 'up-isolated'], { env: run.env, timeout: 240_000 });
+  if (result.status !== 0) return { error: 'fixture-start-error' };
+  const retries = /^Fixture readiness retries: (\d+)$/mu.exec(result.stdout);
+  return { started: true, readinessRetries: retries ? Number(retries[1]) : null };
 }
 
 export async function seedFixture(run, input) {

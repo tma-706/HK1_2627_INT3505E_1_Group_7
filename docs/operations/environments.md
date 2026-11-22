@@ -18,7 +18,8 @@ Bộ kiểm AI mock dùng fixture tổng hợp. Kiểm tra integration dựng DB
 Dùng Node 22, Docker Compose, OpenSSL và `certutil` của NSS (`brew install nss` trên macOS,
 `libnss3-tools` trên Ubuntu). Suite dựng một Compose project riêng và dùng CA của fixture
 cho client HTTPS và profile Firefox tạm. Trên Ubuntu, cài thư viện hệ thống của Firefox
-qua `npm run security:web:setup -- --with-deps` sau `npm ci`. Báo cáo đã lọc nằm trong `dist/security/`.
+qua `npm run security:web:setup -- --with-deps` sau `npm ci`. Trên macOS đưa thư mục bin
+của NSS vào PATH để gọi được `certutil`. Báo cáo đã lọc nằm trong `dist/security/`.
 
 ```sh
 npm ci
@@ -31,6 +32,20 @@ npm run security:test
 Nếu cổng 8443 đang dùng, đặt `UC01_HTTPS_PORT` thành cổng loopback còn trống. Xem
 [skill test-security](../../.agents/skills/test-security/SKILL.md) để cập nhật
 suite hoặc điều tra bằng chứng ở revision đã chạy.
+
+Trong mỗi lượt, Node.js tạo trao đổi HTTPS nghiệp vụ và Firefox tạo trao đổi
+từ thao tác trên web fixture. ZAP nhập HAR theo từng nguồn trong Docker tắt mạng,
+chờ phân tích thụ động rồi đối soát export. Báo cáo ghi authenticated active DAST
+là hạng mục mở. HAR, profile trình duyệt và vật liệu fixture nằm dưới khóa
+`dist/.security-run` trong lúc chạy. So chủ sở hữu trước khi xử lý khóa còn sót.
+Một lượt bị chặn vì khóa ghi hai báo cáo riêng dưới `dist/.security-blocked-*/report/`.
+CI gọi `node tests/security/run.mjs --cleanup` với quyền sở hữu của cùng run/attempt.
+
+Cây local có thay đổi ghi HEAD và dấu vân tay từ nội dung checkout, gồm file Git
+theo dõi và file chưa theo dõi ngoài danh sách ignore. CI yêu cầu đúng SHA và cây sạch.
+Kiểm `summary.md`, `results.json`, trạng thái cleanup và các bước đã chạy kể cả khi lệnh
+trả mã lỗi. Xem số đo từng giai đoạn, số retry readiness và nguyên nhân nguồn ZAP thiếu
+trong hai báo cáo.
 
 ## Smoke test qua gateway
 

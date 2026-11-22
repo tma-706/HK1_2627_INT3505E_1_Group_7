@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "fixtureVersion": 3,
   "inputs": {
     "catalog": {
@@ -60,7 +60,7 @@
     "environments": {
       "path": "docs/operations/environments.md",
       "version": "UC-01/02 fixture",
-      "sha256": "2127d70402ae0c8b051248570d0aa5266216c073c4895bb46b7b57ed1e5a752e"
+      "sha256": "3237b4fbc24e8c04839deca3fb6bb73d1d45eb515ed59e0f791770f3abbf48d4"
     }
   },
   "surfaces": {
@@ -96,49 +96,49 @@
       "source": "runner",
       "operation": "validateCurrentSession",
       "sessionState": "idle-boundary",
-      "reason": "SCN-AUTH-14 cần điều khiển thời điểm giao dịch Core/DB. Fixture hiện đặt tuổi phiên để kiểm trạng thái đã hết hạn."
+      "reason": "SCN-AUTH-14 · Mốc 30 ngày idle. Cần cố định clock_timestamp() tại thời điểm quyết định trong giao dịch PostgreSQL. ageSession chỉ thay tuổi phiên để kiểm đã quá hạn."
     },
     {
       "source": "runner",
       "operation": "getMyProfile",
       "sessionState": "idle-boundary",
-      "reason": "SCN-AUTH-14 cần điều khiển thời điểm giao dịch Core/DB. Fixture hiện đặt tuổi phiên để kiểm trạng thái đã hết hạn."
+      "reason": "SCN-AUTH-14 · Mốc 30 ngày idle. Cần cố định clock_timestamp() tại thời điểm quyết định trong giao dịch PostgreSQL. ageSession chỉ thay tuổi phiên để kiểm đã quá hạn."
     },
     {
       "source": "runner",
       "operation": "listMyItems",
       "sessionState": "idle-boundary",
-      "reason": "SCN-AUTH-14 cần điều khiển thời điểm giao dịch Core/DB. Fixture hiện đặt tuổi phiên để kiểm trạng thái đã hết hạn."
+      "reason": "SCN-AUTH-14 · Mốc 30 ngày idle. Cần cố định clock_timestamp() tại thời điểm quyết định trong giao dịch PostgreSQL. ageSession chỉ thay tuổi phiên để kiểm đã quá hạn."
     },
     {
       "source": "runner",
       "operation": "revokeCurrentSession",
       "sessionState": "idle-boundary",
-      "reason": "SCN-AUTH-14 cần điều khiển thời điểm giao dịch Core/DB. Fixture hiện đặt tuổi phiên để kiểm trạng thái đã hết hạn."
+      "reason": "SCN-AUTH-14 · Mốc 30 ngày idle. Cần cố định clock_timestamp() tại thời điểm quyết định trong giao dịch PostgreSQL. ageSession chỉ thay tuổi phiên để kiểm đã quá hạn."
     },
     {
       "source": "runner",
       "operation": "validateCurrentSession",
       "sessionState": "absolute-boundary",
-      "reason": "SCN-AUTH-14 cần điều khiển thời điểm giao dịch Core/DB. Fixture hiện đặt tuổi phiên để kiểm trạng thái đã hết hạn."
+      "reason": "SCN-AUTH-14 · Mốc 90 ngày tuyệt đối. Cần cố định clock_timestamp() tại thời điểm quyết định trong giao dịch PostgreSQL. ageSession chỉ thay tuổi phiên để kiểm đã quá hạn."
     },
     {
       "source": "runner",
       "operation": "getMyProfile",
       "sessionState": "absolute-boundary",
-      "reason": "SCN-AUTH-14 cần điều khiển thời điểm giao dịch Core/DB. Fixture hiện đặt tuổi phiên để kiểm trạng thái đã hết hạn."
+      "reason": "SCN-AUTH-14 · Mốc 90 ngày tuyệt đối. Cần cố định clock_timestamp() tại thời điểm quyết định trong giao dịch PostgreSQL. ageSession chỉ thay tuổi phiên để kiểm đã quá hạn."
     },
     {
       "source": "runner",
       "operation": "listMyItems",
       "sessionState": "absolute-boundary",
-      "reason": "SCN-AUTH-14 cần điều khiển thời điểm giao dịch Core/DB. Fixture hiện đặt tuổi phiên để kiểm trạng thái đã hết hạn."
+      "reason": "SCN-AUTH-14 · Mốc 90 ngày tuyệt đối. Cần cố định clock_timestamp() tại thời điểm quyết định trong giao dịch PostgreSQL. ageSession chỉ thay tuổi phiên để kiểm đã quá hạn."
     },
     {
       "source": "runner",
       "operation": "revokeCurrentSession",
       "sessionState": "absolute-boundary",
-      "reason": "SCN-AUTH-14 cần điều khiển thời điểm giao dịch Core/DB. Fixture hiện đặt tuổi phiên để kiểm trạng thái đã hết hạn."
+      "reason": "SCN-AUTH-14 · Mốc 90 ngày tuyệt đối. Cần cố định clock_timestamp() tại thời điểm quyết định trong giao dịch PostgreSQL. ageSession chỉ thay tuổi phiên để kiểm đã quá hạn."
     }
   ],
   "cases": [
@@ -244,7 +244,240 @@
         "SEC-A06-05/core",
         "SEC-A07-01/core"
       ],
-      "source": "runner"
+      "source": "runner",
+      "oracle": {
+        "question": "Phiên độc lập hoặc hồ sơ cập nhật có bị gắn nhầm chủ thể?",
+        "limits": "Danh tính Google tổng hợp và dữ liệu hồ sơ Core.",
+        "assertions": [
+          {
+            "id": "first-a-http-status",
+            "step": "first-a"
+          },
+          {
+            "id": "second-a-http-status",
+            "step": "second-a"
+          },
+          {
+            "id": "validate-a-http-status",
+            "step": "validate-a"
+          },
+          {
+            "id": "profile-a-http-status",
+            "step": "profile-a"
+          },
+          {
+            "id": "profile-a-original-session-http-status",
+            "step": "profile-a-original-session"
+          },
+          {
+            "id": "create-b-http-status",
+            "step": "create-b"
+          },
+          {
+            "id": "create-c-http-status",
+            "step": "create-c"
+          },
+          {
+            "id": "create-d-http-status",
+            "step": "create-d"
+          },
+          {
+            "id": "profile-b-http-status",
+            "step": "profile-b"
+          },
+          {
+            "id": "first-a-contract",
+            "step": "first-a"
+          },
+          {
+            "id": "second-a-contract",
+            "step": "second-a"
+          },
+          {
+            "id": "profile-a-identity",
+            "step": "profile-a"
+          },
+          {
+            "id": "profile-a-original-session-identity",
+            "step": "profile-a-original-session"
+          },
+          {
+            "id": "create-b-contract",
+            "step": "create-b"
+          },
+          {
+            "id": "create-c-contract",
+            "step": "create-c"
+          },
+          {
+            "id": "create-d-contract",
+            "step": "create-d"
+          },
+          {
+            "id": "profile-b-identity",
+            "step": "profile-b"
+          },
+          {
+            "id": "same-account"
+          },
+          {
+            "id": "distinct-sessions"
+          },
+          {
+            "id": "fixture-actors-distinct"
+          },
+          {
+            "id": "validated-account",
+            "step": "validate-a"
+          }
+        ],
+        "controls": [
+          {
+            "caseId": "UC01-SESSION",
+            "assertion": "profile-b-identity",
+            "supports": [
+              "profile-a-identity",
+              "profile-a-original-session-identity"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "UC01-SESSION-REPLAY",
+      "sourceRefs": [
+        {
+          "input": "uc01",
+          "locator": "SCN-AUTH-09",
+          "version": "v2"
+        },
+        {
+          "input": "authNotes",
+          "locator": "GAP-AUTH-002",
+          "version": "UC-01 Essential"
+        },
+        {
+          "input": "openapi",
+          "locator": "createGoogleSession",
+          "version": "0.3.0"
+        },
+        {
+          "input": "openapi",
+          "locator": "validateCurrentSession",
+          "version": "0.3.0"
+        }
+      ],
+      "layer": "https",
+      "preconditions": "Phiên và tài khoản A đã được đối chiếu trong UC01-SESSION; token Google fixture gốc còn hạn.",
+      "fixture": "Cùng subject A, ID token và thiết bị. Lượt đối chứng đổi duy nhất attemptId.",
+      "action": "Gửi lại bộ cấp phiên sau phản hồi đầu. Cấp lượt đối chứng độc lập rồi xác minh phiên trả lại.",
+      "expected": "Mỗi phản hồi trả 200 đúng schema. Hai lần cùng lượt trả cùng mã phiên và cùng tài khoản A. Lượt độc lập trả mã khác. Xác minh phiên trả lại vẫn thấy tài khoản A.",
+      "requiredForPilot": true,
+      "source": "runner",
+      "http": [
+        {
+          "step": "initial",
+          "operation": "createGoogleSession",
+          "status": 200,
+          "sessionState": "public",
+          "scenario": "SCN-AUTH-09"
+        },
+        {
+          "step": "repeat",
+          "operation": "createGoogleSession",
+          "status": 200,
+          "sessionState": "public",
+          "scenario": "SCN-AUTH-09"
+        },
+        {
+          "step": "independent",
+          "operation": "createGoogleSession",
+          "status": 200,
+          "sessionState": "public",
+          "scenario": "SCN-AUTH-09"
+        },
+        {
+          "step": "validate-repeat",
+          "operation": "validateCurrentSession",
+          "status": 200,
+          "sessionState": "valid",
+          "scenario": "SCN-AUTH-09"
+        }
+      ],
+      "obligations": [
+        "SEC-A07-01/core"
+      ],
+      "oracle": {
+        "question": "Gửi lại có cấp thêm mã phiên hoặc trả phiên sai chủ thể?",
+        "limits": "Quan sát gửi tuần tự và hiệu lực API. Số bản ghi, thời điểm tạo/hoạt động, lưu hash và cạnh tranh cần bằng chứng DB riêng.",
+        "assertions": [
+          {
+            "id": "initial-http-status",
+            "step": "initial"
+          },
+          {
+            "id": "repeat-http-status",
+            "step": "repeat"
+          },
+          {
+            "id": "independent-http-status",
+            "step": "independent"
+          },
+          {
+            "id": "validate-repeat-http-status",
+            "step": "validate-repeat"
+          },
+          {
+            "id": "initial-contract",
+            "step": "initial"
+          },
+          {
+            "id": "repeat-contract",
+            "step": "repeat"
+          },
+          {
+            "id": "independent-contract",
+            "step": "independent"
+          },
+          {
+            "id": "same-attempt-session",
+            "step": "repeat"
+          },
+          {
+            "id": "same-attempt-account",
+            "step": "repeat"
+          },
+          {
+            "id": "independent-session",
+            "step": "independent"
+          },
+          {
+            "id": "independent-account",
+            "step": "independent"
+          },
+          {
+            "id": "validated-replay-account",
+            "step": "validate-repeat"
+          }
+        ],
+        "controls": [
+          {
+            "caseId": "UC01-SESSION-REPLAY",
+            "assertion": "independent-session",
+            "supports": [
+              "same-attempt-session"
+            ]
+          },
+          {
+            "caseId": "UC01-SESSION",
+            "assertion": "profile-a-identity",
+            "supports": [
+              "same-attempt-account",
+              "validated-replay-account"
+            ]
+          }
+        ]
+      }
     },
     {
       "id": "UC01-REVOKE",
@@ -325,7 +558,109 @@
         "SEC-A06-05/core",
         "SEC-A07-01/core"
       ],
-      "source": "runner"
+      "source": "runner",
+      "oracle": {
+        "question": "Phiên đã thu hồi còn quyền, hoặc phiên khác cùng tài khoản bị thu hồi nhầm?",
+        "limits": "Hai phiên fixture, thu hồi lặp khi bản ghi còn giữ.",
+        "assertions": [
+          {
+            "id": "revoke-a1-http-status",
+            "step": "revoke-a1"
+          },
+          {
+            "id": "repeat-a1-http-status",
+            "step": "repeat-a1"
+          },
+          {
+            "id": "validate-a1-denied-http-status",
+            "step": "validate-a1-denied"
+          },
+          {
+            "id": "profile-a1-denied-http-status",
+            "step": "profile-a1-denied"
+          },
+          {
+            "id": "items-a1-denied-http-status",
+            "step": "items-a1-denied"
+          },
+          {
+            "id": "validate-a2-http-status",
+            "step": "validate-a2"
+          },
+          {
+            "id": "profile-a2-http-status",
+            "step": "profile-a2"
+          },
+          {
+            "id": "revoke-a1-empty",
+            "step": "revoke-a1"
+          },
+          {
+            "id": "repeat-a1-empty",
+            "step": "repeat-a1"
+          },
+          {
+            "id": "validate-a1-denied-json-header",
+            "step": "validate-a1-denied"
+          },
+          {
+            "id": "validate-a1-denied-bearer",
+            "step": "validate-a1-denied"
+          },
+          {
+            "id": "validate-a1-denied-error",
+            "step": "validate-a1-denied"
+          },
+          {
+            "id": "profile-a1-denied-json-header",
+            "step": "profile-a1-denied"
+          },
+          {
+            "id": "profile-a1-denied-bearer",
+            "step": "profile-a1-denied"
+          },
+          {
+            "id": "profile-a1-denied-error",
+            "step": "profile-a1-denied"
+          },
+          {
+            "id": "items-a1-denied-json-header",
+            "step": "items-a1-denied"
+          },
+          {
+            "id": "items-a1-denied-bearer",
+            "step": "items-a1-denied"
+          },
+          {
+            "id": "items-a1-denied-error",
+            "step": "items-a1-denied"
+          },
+          {
+            "id": "surviving-account",
+            "step": "validate-a2"
+          },
+          {
+            "id": "surviving-profile",
+            "step": "profile-a2"
+          }
+        ],
+        "controls": [
+          {
+            "caseId": "UC01-REVOKE",
+            "assertion": "surviving-account",
+            "supports": [
+              "validate-a1-denied-error"
+            ]
+          },
+          {
+            "caseId": "UC01-REVOKE",
+            "assertion": "surviving-profile",
+            "supports": [
+              "profile-a1-denied-error"
+            ]
+          }
+        ]
+      }
     },
     {
       "id": "UC01-SESSION-ABSENT",
@@ -382,7 +717,107 @@
       "obligations": [
         "SEC-A01-01/core",
         "SEC-A07-01/core"
-      ]
+      ],
+      "oracle": {
+        "question": "Thiếu phiên có được cấp quyền trên operation bảo vệ?",
+        "limits": "Nhánh thiếu credential qua gateway fixture.",
+        "assertions": [
+          {
+            "id": "absent-validate-http-status",
+            "step": "absent-validate"
+          },
+          {
+            "id": "absent-profile-http-status",
+            "step": "absent-profile"
+          },
+          {
+            "id": "absent-items-http-status",
+            "step": "absent-items"
+          },
+          {
+            "id": "absent-revoke-http-status",
+            "step": "absent-revoke"
+          },
+          {
+            "id": "absent-validate-json-header",
+            "step": "absent-validate"
+          },
+          {
+            "id": "absent-validate-bearer",
+            "step": "absent-validate"
+          },
+          {
+            "id": "absent-validate-error",
+            "step": "absent-validate"
+          },
+          {
+            "id": "absent-profile-json-header",
+            "step": "absent-profile"
+          },
+          {
+            "id": "absent-profile-bearer",
+            "step": "absent-profile"
+          },
+          {
+            "id": "absent-profile-error",
+            "step": "absent-profile"
+          },
+          {
+            "id": "absent-items-json-header",
+            "step": "absent-items"
+          },
+          {
+            "id": "absent-items-bearer",
+            "step": "absent-items"
+          },
+          {
+            "id": "absent-items-error",
+            "step": "absent-items"
+          },
+          {
+            "id": "absent-revoke-json-header",
+            "step": "absent-revoke"
+          },
+          {
+            "id": "absent-revoke-bearer",
+            "step": "absent-revoke"
+          },
+          {
+            "id": "absent-revoke-error",
+            "step": "absent-revoke"
+          }
+        ],
+        "controls": [
+          {
+            "caseId": "UC01-SESSION",
+            "assertion": "validated-account",
+            "supports": [
+              "absent-validate-error"
+            ]
+          },
+          {
+            "caseId": "UC01-SESSION",
+            "assertion": "profile-a-identity",
+            "supports": [
+              "absent-profile-error"
+            ]
+          },
+          {
+            "caseId": "UC02-LOST",
+            "assertion": "a-page-1-records",
+            "supports": [
+              "absent-items-error"
+            ]
+          },
+          {
+            "caseId": "UC01-REVOKE",
+            "assertion": "revoke-a1-empty",
+            "supports": [
+              "absent-revoke-error"
+            ]
+          }
+        ]
+      }
     },
     {
       "id": "UC01-SESSION-EXPIRED",
@@ -475,7 +910,191 @@
       "obligations": [
         "SEC-A01-01/core",
         "SEC-A07-01/core"
-      ]
+      ],
+      "oracle": {
+        "question": "Phiên đã quá một trong hai hạn còn quyền?",
+        "limits": "Tuổi phiên đã vượt mốc, với hạn kia còn hiệu lực. Tám ô đúng biên SCN-AUTH-14 cần đồng hồ PostgreSQL điều khiển.",
+        "assertions": [
+          {
+            "id": "create-expired-idle-http-status",
+            "step": "create-expired-idle"
+          },
+          {
+            "id": "expired-idle-validate-http-status",
+            "step": "expired-idle-validate"
+          },
+          {
+            "id": "expired-idle-profile-http-status",
+            "step": "expired-idle-profile"
+          },
+          {
+            "id": "expired-idle-items-http-status",
+            "step": "expired-idle-items"
+          },
+          {
+            "id": "expired-idle-revoke-http-status",
+            "step": "expired-idle-revoke"
+          },
+          {
+            "id": "create-expired-absolute-http-status",
+            "step": "create-expired-absolute"
+          },
+          {
+            "id": "expired-absolute-validate-http-status",
+            "step": "expired-absolute-validate"
+          },
+          {
+            "id": "expired-absolute-profile-http-status",
+            "step": "expired-absolute-profile"
+          },
+          {
+            "id": "expired-absolute-items-http-status",
+            "step": "expired-absolute-items"
+          },
+          {
+            "id": "expired-absolute-revoke-http-status",
+            "step": "expired-absolute-revoke"
+          },
+          {
+            "id": "create-expired-idle-contract",
+            "step": "create-expired-idle"
+          },
+          {
+            "id": "expired-idle-validate-json-header",
+            "step": "expired-idle-validate"
+          },
+          {
+            "id": "expired-idle-validate-bearer",
+            "step": "expired-idle-validate"
+          },
+          {
+            "id": "expired-idle-validate-error",
+            "step": "expired-idle-validate"
+          },
+          {
+            "id": "expired-idle-profile-json-header",
+            "step": "expired-idle-profile"
+          },
+          {
+            "id": "expired-idle-profile-bearer",
+            "step": "expired-idle-profile"
+          },
+          {
+            "id": "expired-idle-profile-error",
+            "step": "expired-idle-profile"
+          },
+          {
+            "id": "expired-idle-items-json-header",
+            "step": "expired-idle-items"
+          },
+          {
+            "id": "expired-idle-items-bearer",
+            "step": "expired-idle-items"
+          },
+          {
+            "id": "expired-idle-items-error",
+            "step": "expired-idle-items"
+          },
+          {
+            "id": "expired-idle-revoke-json-header",
+            "step": "expired-idle-revoke"
+          },
+          {
+            "id": "expired-idle-revoke-bearer",
+            "step": "expired-idle-revoke"
+          },
+          {
+            "id": "expired-idle-revoke-error",
+            "step": "expired-idle-revoke"
+          },
+          {
+            "id": "create-expired-absolute-contract",
+            "step": "create-expired-absolute"
+          },
+          {
+            "id": "expired-absolute-validate-json-header",
+            "step": "expired-absolute-validate"
+          },
+          {
+            "id": "expired-absolute-validate-bearer",
+            "step": "expired-absolute-validate"
+          },
+          {
+            "id": "expired-absolute-validate-error",
+            "step": "expired-absolute-validate"
+          },
+          {
+            "id": "expired-absolute-profile-json-header",
+            "step": "expired-absolute-profile"
+          },
+          {
+            "id": "expired-absolute-profile-bearer",
+            "step": "expired-absolute-profile"
+          },
+          {
+            "id": "expired-absolute-profile-error",
+            "step": "expired-absolute-profile"
+          },
+          {
+            "id": "expired-absolute-items-json-header",
+            "step": "expired-absolute-items"
+          },
+          {
+            "id": "expired-absolute-items-bearer",
+            "step": "expired-absolute-items"
+          },
+          {
+            "id": "expired-absolute-items-error",
+            "step": "expired-absolute-items"
+          },
+          {
+            "id": "expired-absolute-revoke-json-header",
+            "step": "expired-absolute-revoke"
+          },
+          {
+            "id": "expired-absolute-revoke-bearer",
+            "step": "expired-absolute-revoke"
+          },
+          {
+            "id": "expired-absolute-revoke-error",
+            "step": "expired-absolute-revoke"
+          }
+        ],
+        "controls": [
+          {
+            "caseId": "UC01-SESSION",
+            "assertion": "validated-account",
+            "supports": [
+              "expired-idle-validate-error",
+              "expired-absolute-validate-error"
+            ]
+          },
+          {
+            "caseId": "UC01-SESSION",
+            "assertion": "profile-a-identity",
+            "supports": [
+              "expired-idle-profile-error",
+              "expired-absolute-profile-error"
+            ]
+          },
+          {
+            "caseId": "UC02-LOST",
+            "assertion": "a-page-1-records",
+            "supports": [
+              "expired-idle-items-error",
+              "expired-absolute-items-error"
+            ]
+          },
+          {
+            "caseId": "UC01-REVOKE",
+            "assertion": "revoke-a1-empty",
+            "supports": [
+              "expired-idle-revoke-error",
+              "expired-absolute-revoke-error"
+            ]
+          }
+        ]
+      }
     },
     {
       "id": "UC02-LOST",
@@ -531,7 +1150,87 @@
       "obligations": [
         "SEC-A01-02/db"
       ],
-      "source": "runner"
+      "source": "runner",
+      "oracle": {
+        "question": "Danh sách Lost có lộ bài ngoài chủ thể hoặc trả sai trang?",
+        "limits": "Tập hàng DB tổng hợp và trường API của tab Lost.",
+        "assertions": [
+          {
+            "id": "a-page-1-http-status",
+            "step": "a-page-1"
+          },
+          {
+            "id": "a-page-2-http-status",
+            "step": "a-page-2"
+          },
+          {
+            "id": "b-page-1-http-status",
+            "step": "b-page-1"
+          },
+          {
+            "id": "d-empty-page-http-status",
+            "step": "d-empty-page"
+          },
+          {
+            "id": "a-page-1-envelope",
+            "step": "a-page-1"
+          },
+          {
+            "id": "a-page-1-records",
+            "step": "a-page-1"
+          },
+          {
+            "id": "a-page-1-cursor",
+            "step": "a-page-1"
+          },
+          {
+            "id": "a-page-2-envelope",
+            "step": "a-page-2"
+          },
+          {
+            "id": "a-page-2-records",
+            "step": "a-page-2"
+          },
+          {
+            "id": "a-page-2-cursor",
+            "step": "a-page-2"
+          },
+          {
+            "id": "b-page-1-envelope",
+            "step": "b-page-1"
+          },
+          {
+            "id": "b-page-1-records",
+            "step": "b-page-1"
+          },
+          {
+            "id": "b-page-1-cursor",
+            "step": "b-page-1"
+          },
+          {
+            "id": "d-empty-page-envelope",
+            "step": "d-empty-page"
+          },
+          {
+            "id": "d-empty-page-records",
+            "step": "d-empty-page"
+          },
+          {
+            "id": "d-empty-page-cursor",
+            "step": "d-empty-page"
+          }
+        ],
+        "controls": [
+          {
+            "caseId": "UC02-LOST",
+            "assertion": "b-page-1-records",
+            "supports": [
+              "a-page-1-records",
+              "a-page-2-records"
+            ]
+          }
+        ]
+      }
     },
     {
       "id": "UC02-FOUND",
@@ -592,7 +1291,87 @@
       "obligations": [
         "SEC-A01-02/db"
       ],
-      "source": "runner"
+      "source": "runner",
+      "oracle": {
+        "question": "Danh sách Found có lộ bài ngoài chủ thể hoặc trả sai trang?",
+        "limits": "Tập hàng DB tổng hợp và URL thumbnail trả về qua API. Quyền tải ảnh cần kiểm riêng.",
+        "assertions": [
+          {
+            "id": "a-page-1-http-status",
+            "step": "a-page-1"
+          },
+          {
+            "id": "a-page-2-http-status",
+            "step": "a-page-2"
+          },
+          {
+            "id": "b-page-1-http-status",
+            "step": "b-page-1"
+          },
+          {
+            "id": "d-empty-page-http-status",
+            "step": "d-empty-page"
+          },
+          {
+            "id": "a-page-1-envelope",
+            "step": "a-page-1"
+          },
+          {
+            "id": "a-page-1-records",
+            "step": "a-page-1"
+          },
+          {
+            "id": "a-page-1-cursor",
+            "step": "a-page-1"
+          },
+          {
+            "id": "a-page-2-envelope",
+            "step": "a-page-2"
+          },
+          {
+            "id": "a-page-2-records",
+            "step": "a-page-2"
+          },
+          {
+            "id": "a-page-2-cursor",
+            "step": "a-page-2"
+          },
+          {
+            "id": "b-page-1-envelope",
+            "step": "b-page-1"
+          },
+          {
+            "id": "b-page-1-records",
+            "step": "b-page-1"
+          },
+          {
+            "id": "b-page-1-cursor",
+            "step": "b-page-1"
+          },
+          {
+            "id": "d-empty-page-envelope",
+            "step": "d-empty-page"
+          },
+          {
+            "id": "d-empty-page-records",
+            "step": "d-empty-page"
+          },
+          {
+            "id": "d-empty-page-cursor",
+            "step": "d-empty-page"
+          }
+        ],
+        "controls": [
+          {
+            "caseId": "UC02-FOUND",
+            "assertion": "b-page-1-records",
+            "supports": [
+              "a-page-1-records",
+              "a-page-2-records"
+            ]
+          }
+        ]
+      }
     },
     {
       "id": "UC02-CLAIMS",
@@ -648,11 +1427,96 @@
       "obligations": [
         "SEC-A01-02/db"
       ],
-      "source": "runner"
+      "source": "runner",
+      "oracle": {
+        "question": "Danh sách claims có lộ yêu cầu ngoài chủ thể hoặc trả sai vai trò?",
+        "limits": "Quy tắc quan hệ và trạng thái của bộ fixture.",
+        "assertions": [
+          {
+            "id": "a-page-1-http-status",
+            "step": "a-page-1"
+          },
+          {
+            "id": "a-page-2-http-status",
+            "step": "a-page-2"
+          },
+          {
+            "id": "b-page-1-http-status",
+            "step": "b-page-1"
+          },
+          {
+            "id": "d-empty-page-http-status",
+            "step": "d-empty-page"
+          },
+          {
+            "id": "a-page-1-envelope",
+            "step": "a-page-1"
+          },
+          {
+            "id": "a-page-1-records",
+            "step": "a-page-1"
+          },
+          {
+            "id": "a-page-1-cursor",
+            "step": "a-page-1"
+          },
+          {
+            "id": "a-page-2-envelope",
+            "step": "a-page-2"
+          },
+          {
+            "id": "a-page-2-records",
+            "step": "a-page-2"
+          },
+          {
+            "id": "a-page-2-cursor",
+            "step": "a-page-2"
+          },
+          {
+            "id": "b-page-1-envelope",
+            "step": "b-page-1"
+          },
+          {
+            "id": "b-page-1-records",
+            "step": "b-page-1"
+          },
+          {
+            "id": "b-page-1-cursor",
+            "step": "b-page-1"
+          },
+          {
+            "id": "d-empty-page-envelope",
+            "step": "d-empty-page"
+          },
+          {
+            "id": "d-empty-page-records",
+            "step": "d-empty-page"
+          },
+          {
+            "id": "d-empty-page-cursor",
+            "step": "d-empty-page"
+          }
+        ],
+        "controls": [
+          {
+            "caseId": "UC02-CLAIMS",
+            "assertion": "b-page-1-records",
+            "supports": [
+              "a-page-1-records",
+              "a-page-2-records"
+            ]
+          }
+        ]
+      }
     },
     {
       "id": "UC02-CURSOR",
       "sourceRefs": [
+        {
+          "input": "uc02",
+          "locator": "SCN-PRF-07",
+          "version": "v2"
+        },
         {
           "input": "uc02",
           "locator": "SCN-PRF-09",
@@ -680,32 +1544,122 @@
           "step": "cursor-first",
           "operation": "listMyItems",
           "status": 200,
-          "sessionState": "valid"
+          "sessionState": "valid",
+          "scenario": "SCN-PRF-07"
         },
         {
           "step": "cursor-same-tab",
           "operation": "listMyItems",
           "status": 200,
-          "sessionState": "valid"
+          "sessionState": "valid",
+          "scenario": "SCN-PRF-07"
         },
         {
           "step": "cursor-other-tab",
           "operation": "listMyItems",
           "status": 400,
-          "sessionState": "invalid-parameter"
+          "sessionState": "invalid-parameter",
+          "scenario": "SCN-PRF-09"
         },
         {
           "step": "cursor-other-account",
           "operation": "listMyItems",
           "status": 400,
-          "sessionState": "invalid-parameter"
+          "sessionState": "invalid-parameter",
+          "scenario": "SCN-PRF-09"
         }
       ],
       "obligations": [
         "SEC-A01-02/db",
         "SEC-A06-05/core"
       ],
-      "source": "runner"
+      "source": "runner",
+      "oracle": {
+        "question": "Cursor có trả sai hàng hoặc áp dụng với tài khoản/tab khác?",
+        "limits": "Cursor mới cấp; các nhánh đúng tab, khác tab và khác tài khoản. Hết hạn, sai định dạng và khôi phục UI cần bằng chứng riêng.",
+        "assertions": [
+          {
+            "id": "cursor-first-http-status",
+            "step": "cursor-first"
+          },
+          {
+            "id": "cursor-same-tab-http-status",
+            "step": "cursor-same-tab"
+          },
+          {
+            "id": "cursor-other-tab-http-status",
+            "step": "cursor-other-tab"
+          },
+          {
+            "id": "cursor-other-account-http-status",
+            "step": "cursor-other-account"
+          },
+          {
+            "id": "cursor-first-envelope",
+            "step": "cursor-first"
+          },
+          {
+            "id": "cursor-first-records",
+            "step": "cursor-first"
+          },
+          {
+            "id": "cursor-first-cursor",
+            "step": "cursor-first"
+          },
+          {
+            "id": "cursor-same-tab-envelope",
+            "step": "cursor-same-tab"
+          },
+          {
+            "id": "cursor-same-tab-records",
+            "step": "cursor-same-tab"
+          },
+          {
+            "id": "cursor-same-tab-cursor",
+            "step": "cursor-same-tab"
+          },
+          {
+            "id": "cursor-other-tab-json-header",
+            "step": "cursor-other-tab"
+          },
+          {
+            "id": "cursor-other-tab-error",
+            "step": "cursor-other-tab"
+          },
+          {
+            "id": "cursor-other-account-json-header",
+            "step": "cursor-other-account"
+          },
+          {
+            "id": "cursor-other-account-error",
+            "step": "cursor-other-account"
+          }
+        ],
+        "controls": [
+          {
+            "caseId": "UC02-CURSOR",
+            "assertion": "cursor-same-tab-records",
+            "supports": [
+              "cursor-other-tab-error",
+              "cursor-other-account-error"
+            ]
+          },
+          {
+            "caseId": "UC02-FOUND",
+            "assertion": "a-page-1-records",
+            "supports": [
+              "cursor-other-tab-error"
+            ]
+          },
+          {
+            "caseId": "UC02-LOST",
+            "assertion": "b-page-1-records",
+            "supports": [
+              "cursor-other-account-error"
+            ]
+          }
+        ]
+      }
     },
     {
       "id": "UC02-INVALID-TAB",
@@ -738,7 +1692,34 @@
       ],
       "obligations": [
         "SEC-A06-05/core"
-      ]
+      ],
+      "oracle": {
+        "question": "Tab thiếu có được nhận như yêu cầu hợp lệ?",
+        "limits": "Nhánh thiếu tab với phiên hợp lệ.",
+        "assertions": [
+          {
+            "id": "missing-tab-http-status",
+            "step": "missing-tab"
+          },
+          {
+            "id": "missing-tab-json-header",
+            "step": "missing-tab"
+          },
+          {
+            "id": "missing-tab-error",
+            "step": "missing-tab"
+          }
+        ],
+        "controls": [
+          {
+            "caseId": "UC02-LOST",
+            "assertion": "a-page-1-records",
+            "supports": [
+              "missing-tab-error"
+            ]
+          }
+        ]
+      }
     },
     {
       "id": "EDGE-FIXTURE-TLS",
@@ -778,7 +1759,28 @@
         "SEC-A04-04/gateway-tls",
         "SEC-A07-04/gateway-tls"
       ],
-      "source": "runner"
+      "source": "runner",
+      "oracle": {
+        "question": "Gateway fixture có mở listener ngoài loopback hoặc mất HTTPS tin cậy?",
+        "limits": "Config fixture và response readiness qua HTTPS. Gateway triển khai cần quan sát riêng.",
+        "assertions": [
+          {
+            "id": "gateway-ready-http-status",
+            "step": "gateway-ready"
+          },
+          {
+            "id": "listener-config"
+          },
+          {
+            "id": "loopback-config"
+          },
+          {
+            "id": "ready-json",
+            "step": "gateway-ready"
+          }
+        ],
+        "controls": []
+      }
     },
     {
       "id": "MOBILE-SESSION-CLEANUP",
@@ -808,7 +1810,29 @@
       "http": [],
       "obligations": [
         "SEC-A06-05/mobile"
-      ]
+      ],
+      "oracle": {
+        "question": "Luồng đăng xuất hoặc mất phiên có giữ dữ liệu và nhận phản hồi cũ?",
+        "limits": "Unit test luồng mobile với dependency mô phỏng. Kho OS, cache ảnh và thiết bị thật cần bằng chứng riêng.",
+        "assertions": [
+          {
+            "id": "flow-tests-executed"
+          },
+          {
+            "id": "flow-tests-pass"
+          },
+          {
+            "id": "logout-and-late-read"
+          },
+          {
+            "id": "invalidation-clears-data"
+          },
+          {
+            "id": "logout-discards-old-error"
+          }
+        ],
+        "controls": []
+      }
     },
     {
       "id": "CORE-HTTP-PRIVACY",
@@ -844,7 +1868,57 @@
       "obligations": [
         "SEC-A06-01/core",
         "SEC-A06-03/core"
-      ]
+      ],
+      "source": "runner",
+      "oracle": {
+        "question": "Phản hồi cá nhân thiếu no-store hoặc credential xuất hiện ngoài vị trí cho phép?",
+        "limits": "Vị trí credential và chỉ thị no-store của trao đổi runner qua gateway fixture. Cache native và log triển khai cần bằng chứng riêng.",
+        "assertions": [
+          {
+            "id": "createGoogleSession-recorded"
+          },
+          {
+            "id": "createGoogleSession-credential-location"
+          },
+          {
+            "id": "createGoogleSession-no-store"
+          },
+          {
+            "id": "validateCurrentSession-recorded"
+          },
+          {
+            "id": "validateCurrentSession-credential-location"
+          },
+          {
+            "id": "validateCurrentSession-no-store"
+          },
+          {
+            "id": "getMyProfile-recorded"
+          },
+          {
+            "id": "getMyProfile-credential-location"
+          },
+          {
+            "id": "getMyProfile-no-store"
+          },
+          {
+            "id": "listMyItems-recorded"
+          },
+          {
+            "id": "listMyItems-credential-location"
+          },
+          {
+            "id": "listMyItems-no-store"
+          },
+          {
+            "id": "revokeCurrentSession-recorded"
+          },
+          {
+            "id": "revokeCurrentSession-credential-location"
+          }
+        ],
+        "controls": []
+      }
     },
     {
       "id": "UC01-02-WEB-E2E",
@@ -878,6 +1952,11 @@
           "input": "uc02",
           "locator": "SCN-PRF-07",
           "version": "v2"
+        },
+        {
+          "input": "analysis",
+          "locator": "uc-02-profile-layout",
+          "version": "Essential 2026-11-22"
         }
       ],
       "layer": "web E2E",
@@ -928,7 +2007,225 @@
         "SEC-A01-02/db",
         "SEC-A06-05/core",
         "SEC-A07-01/core"
-      ]
+      ],
+      "oracle": {
+        "question": "Hành trình web có hiển thị sai chủ thể, bỏ trang sau hoặc giữ màn riêng tư sau đăng xuất?",
+        "limits": "Firefox qua fixture tổng hợp. Bản app đối chiếu dùng nút Mục của tôi trung gian. Bố cục SCN-PRF-03 theo quyết định 2026-11-22, kho OS và gateway triển khai cần nghiệm thu riêng.",
+        "assertions": [
+          {
+            "id": "sign-in-http-status",
+            "step": "sign-in"
+          },
+          {
+            "id": "open-profile-http-status",
+            "step": "open-profile"
+          },
+          {
+            "id": "open-items-http-status",
+            "step": "open-items"
+          },
+          {
+            "id": "next-page-http-status",
+            "step": "next-page"
+          },
+          {
+            "id": "confirm-logout-http-status",
+            "step": "confirm-logout"
+          },
+          {
+            "id": "fixture-gateway-ready-with-ca"
+          },
+          {
+            "id": "browser-har-finalized-and-matched"
+          },
+          {
+            "id": "preview-no-core-evidence"
+          },
+          {
+            "id": "preview-signed-out-screen"
+          },
+          {
+            "id": "preview-terms-screen"
+          },
+          {
+            "id": "preview-home-after-login"
+          },
+          {
+            "id": "preview-profile-screen"
+          },
+          {
+            "id": "preview-profile-fixture-name"
+          },
+          {
+            "id": "preview-profile-fixture-email"
+          },
+          {
+            "id": "preview-items-screen"
+          },
+          {
+            "id": "preview-lost-selected"
+          },
+          {
+            "id": "preview-items-first-page"
+          },
+          {
+            "id": "preview-items-end"
+          },
+          {
+            "id": "preview-profile-after-back"
+          },
+          {
+            "id": "preview-logout-confirmation"
+          },
+          {
+            "id": "preview-signed-out-after-logout"
+          },
+          {
+            "id": "preview-private-view-cleared"
+          },
+          {
+            "id": "signed-out-screen"
+          },
+          {
+            "id": "terms-screen"
+          },
+          {
+            "id": "profile-after-back"
+          },
+          {
+            "id": "next-page-absent-before-scroll"
+          },
+          {
+            "id": "sign-in-fixture-account",
+            "step": "sign-in"
+          },
+          {
+            "id": "sign-in-no-store",
+            "step": "sign-in"
+          },
+          {
+            "id": "home-after-login",
+            "step": "sign-in"
+          },
+          {
+            "id": "open-profile-fixture-bearer",
+            "step": "open-profile"
+          },
+          {
+            "id": "open-profile-no-store",
+            "step": "open-profile"
+          },
+          {
+            "id": "profile-response-fixture",
+            "step": "open-profile"
+          },
+          {
+            "id": "profile-screen",
+            "step": "open-profile"
+          },
+          {
+            "id": "profile-fixture-name",
+            "step": "open-profile"
+          },
+          {
+            "id": "profile-fixture-email",
+            "step": "open-profile"
+          },
+          {
+            "id": "open-items-fixture-bearer",
+            "step": "open-items"
+          },
+          {
+            "id": "open-items-no-store",
+            "step": "open-items"
+          },
+          {
+            "id": "open-items-cursor-scope",
+            "step": "open-items"
+          },
+          {
+            "id": "open-items-response-fixture",
+            "step": "open-items"
+          },
+          {
+            "id": "open-items-response-cursor",
+            "step": "open-items"
+          },
+          {
+            "id": "items-screen",
+            "step": "open-items"
+          },
+          {
+            "id": "lost-selected",
+            "step": "open-items"
+          },
+          {
+            "id": "items-first-page",
+            "step": "open-items"
+          },
+          {
+            "id": "next-page-fixture-bearer",
+            "step": "next-page"
+          },
+          {
+            "id": "next-page-no-store",
+            "step": "next-page"
+          },
+          {
+            "id": "next-page-cursor-scope",
+            "step": "next-page"
+          },
+          {
+            "id": "next-page-response-fixture",
+            "step": "next-page"
+          },
+          {
+            "id": "next-page-response-cursor",
+            "step": "next-page"
+          },
+          {
+            "id": "items-second-page",
+            "step": "next-page"
+          },
+          {
+            "id": "items-end",
+            "step": "next-page"
+          },
+          {
+            "id": "confirm-logout-fixture-bearer",
+            "step": "confirm-logout"
+          },
+          {
+            "id": "confirm-logout-empty",
+            "step": "confirm-logout"
+          },
+          {
+            "id": "logout-confirmation",
+            "step": "confirm-logout"
+          },
+          {
+            "id": "signed-out-after-logout",
+            "step": "confirm-logout"
+          },
+          {
+            "id": "private-view-cleared",
+            "step": "confirm-logout"
+          }
+        ],
+        "controls": [
+          {
+            "caseId": "UC01-02-WEB-E2E",
+            "assertion": "preview-no-core-evidence",
+            "supports": [
+              "sign-in-fixture-account",
+              "profile-response-fixture",
+              "open-items-response-fixture",
+              "next-page-response-fixture",
+              "confirm-logout-fixture-bearer"
+            ]
+          }
+        ]
+      }
     }
   ],
   "openQuestions": [

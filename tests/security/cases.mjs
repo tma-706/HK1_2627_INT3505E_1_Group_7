@@ -21,6 +21,10 @@ function sessionShape(body, withToken) {
     (!withToken || (typeof body.sessionToken === 'string' && body.sessionToken.length > 0));
 }
 
+export function sameSession(first, repeated) {
+  return first.sessionToken === repeated.sessionToken;
+}
+
 export function compareRows(actual, expected) {
   const rows = Array.isArray(actual) ? actual : [];
   const mismatched = expected.filter((value, index) => !isDeepStrictEqual(rows[index], value)).length;
@@ -93,6 +97,7 @@ export const handlers = {
   },
   'UC01-SESSION': async ({ api, check, state, fixtureDir }) => {
     const sign = await fixtureIdentity(fixtureDir);
+    state.signIdentity = sign;
     state.signWebIdentity = (profile) => sign('a', 'android', profile);
     async function enroll(step, actor, deviceType) {
       const data = await sign(actor, deviceType);
@@ -113,6 +118,29 @@ export const handlers = {
     for (const actor of ['b', 'c', 'd']) state[actor] = await enroll('create-' + actor, actor, 'android');
     check('fixture-actors-distinct', new Set(['a', 'b', 'c', 'd'].map((actor) => state[actor].accountId)).size === 4);
     check('profile-b-identity', isDeepStrictEqual((await api('profile-b', { token: state.b.sessionToken })).json(), profile('b')));
+  },
+  'UC01-SESSION-REPLAY': async ({ api, check, state }) => {
+    const data = await state.signIdentity('a', 'ios');
+    async function enroll(step, attempt) {
+      const response = await api(step, { data: attempt });
+      const body = response.json();
+      check(step + '-contract', /^application\/json(?:;|$)/iu.test(response.headers['content-type'] ?? '') &&
+        sessionShape(body, true));
+      return body;
+    }
+    const first = await enroll('initial', data);
+    const repeated = await enroll('repeat', data);
+    check('same-attempt-session', sameSession(first, repeated));
+    check('same-attempt-account', first.accountId === state.a.accountId && repeated.accountId === state.a.accountId);
+
+    const independent = await enroll('independent', { ...data, attemptId: randomUUID() });
+    check('independent-session', !sameSession(first, independent));
+    check('independent-account', independent.accountId === state.a.accountId);
+
+    const response = await api('validate-repeat', { token: repeated.sessionToken });
+    const body = response.json();
+    check('validated-replay-account', /^application\/json(?:;|$)/iu.test(response.headers['content-type'] ?? '') &&
+      sessionShape(body, false) && body.accountId === state.a.accountId);
   },
   'UC01-REVOKE': async ({ api, check, state }) => {
     const token = state.a1.sessionToken;
@@ -150,10 +178,11 @@ export const handlers = {
     const cursor = verifyPage(check, first.json(), tab, pages[0], true, 'cursor-first');
     const next = await api('cursor-same-tab', { token, query: { tab, cursor } });
     verifyPage(check, next.json(), tab, pages[1], false, 'cursor-same-tab');
-    const wrongTab = await api('cursor-other-tab', { token, query: { tab: 'found', cursor } });
-    const wrongAccount = await api('cursor-other-account', { token: state.b.sessionToken, query: { tab, cursor } });
-    for (const [step, response] of [['other-tab', wrongTab], ['other-account', wrongAccount]]) {
-      check(step + '-invalid-cursor', isDeepStrictEqual(response.json(), { code: 'INVALID_CURSOR' }));
+    for (const [step, options] of [
+      ['cursor-other-tab', { token, query: { tab: 'found', cursor } }],
+      ['cursor-other-account', { token: state.b.sessionToken, query: { tab, cursor } }],
+    ]) {
+      verifyError(check, step, await api(step, options), 'INVALID_CURSOR');
     }
   },
   'UC02-INVALID-TAB': async ({ api, check, state }) => {
@@ -180,23 +209,26 @@ export const handlers = {
     for (const operation of operations) {
       const messages = client.exchanges.filter((item) => item.operation === operation);
       check(operation + '-recorded', messages.length > 0, { observedCount: messages.length });
-      for (const { har, sessionState } of messages) {
-        const { request, response } = har;
+      const credentials = messages.every(({ har: { request }, sessionState }) => {
         const queryAllowed = request.queryString.every(({ name }) => operation === 'listMyItems' && ['tab', 'cursor'].includes(name));
         const auth = request.headers.find(({ name }) => name === 'authorization');
         if (operation === 'createGoogleSession') {
           const body = JSON.parse(request.postData?.text ?? '{}');
-          check(operation + '-body-only', queryAllowed && !auth && typeof body.idToken === 'string' && !request.url.includes(body.idToken));
-        } else if (sessionState === 'absent') {
-          check(operation + '-no-credential', queryAllowed && !auth && !request.postData);
-        } else {
-          check(operation + '-bearer-only', queryAllowed && auth?.value.startsWith('Bearer ') &&
-            !request.url.includes(auth.value.slice('Bearer '.length)) && !request.postData);
+          return queryAllowed && !auth && typeof body.idToken === 'string' && !request.url.includes(body.idToken);
         }
-        if (response.status === 200) {
-          check(operation + '-no-store', response.headers.some(({ name, value }) =>
-            name === 'cache-control' && value.split(',').some((directive) => directive.trim().toLowerCase() === 'no-store')));
-        }
+        if (sessionState === 'absent') return queryAllowed && !auth && !request.postData;
+        return queryAllowed && auth?.value.startsWith('Bearer ') &&
+          !request.url.includes(auth.value.slice('Bearer '.length)) && !request.postData;
+      });
+      check(operation + '-credential-location', credentials, { observedCount: messages.length });
+      const expectedCache = model.operations.get(operation).cacheControl[200];
+      if (expectedCache) {
+        const responses = messages.filter(({ status }) => status === 200);
+        const matches = responses.filter(({ har }) => har.response.headers.some(({ name, value }) =>
+          name === 'cache-control' && value === expectedCache));
+        check(operation + '-no-store', responses.length > 0 && matches.length === responses.length, {
+          observedCount: matches.length, expectedCount: responses.length,
+        });
       }
     }
   },
@@ -205,7 +237,7 @@ export const handlers = {
 export async function executeCases(model, context, onCase = () => {}) {
   const results = new Map();
   const state = { webTag: 'Fixture-' + randomUUID().slice(0, 8) };
-  for (const id of ['EDGE-FIXTURE-TLS', 'UC01-SESSION', 'UC01-REVOKE', 'UC01-SESSION-ABSENT', 'UC01-SESSION-EXPIRED',
+  for (const id of ['EDGE-FIXTURE-TLS', 'UC01-SESSION', 'UC01-SESSION-REPLAY', 'UC01-REVOKE', 'UC01-SESSION-ABSENT', 'UC01-SESSION-EXPIRED',
     'UC02-LOST', 'UC02-FOUND', 'UC02-CLAIMS', 'UC02-CURSOR', 'UC02-INVALID-TAB', 'CORE-HTTP-PRIVACY', 'MOBILE-SESSION-CLEANUP',
     'UC01-02-WEB-E2E']) {
     const definition = model.cases.get(id);
@@ -223,7 +255,7 @@ export async function executeCases(model, context, onCase = () => {}) {
       } else if ((id.startsWith('UC02-') || definition.source === 'ui') && !state.seeded) {
         outcome = 'MISSING';
         reason = 'item-fixture-unavailable';
-      } else if (id === 'UC01-REVOKE' && !state.sessionReady) {
+      } else if (['UC01-REVOKE', 'UC01-SESSION-REPLAY'].includes(id) && !state.sessionReady) {
         outcome = 'MISSING';
         reason = 'session-fixture-unavailable';
       } else {

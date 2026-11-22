@@ -4,7 +4,11 @@ import { readJSON, sentinelPath } from './model.mjs';
 import { command } from './runtime.mjs';
 
 const image = 'ghcr.io/zaproxy/zaproxy@sha256:9624669db72f54d86c4b46a7064518bd9bf79d8c61a4c31befa9923489f328af';
-const addonIds = ['automation', 'authhelper', 'exim', 'pscan', 'pscanrules', 'reports'];
+export const addonIds = ['automation', 'authhelper', 'exim', 'pscan', 'pscanrules', 'reports'];
+export const zapJobs = ['passiveScan-config', 'import', 'passiveScan-wait', 'export', 'report', 'exitStatus'];
+export const zapErrorCodes = ['zap-launch-error', 'zap-automation-incomplete', 'zap-report-missing', 'zap-report-invalid',
+  'zap-export-missing', 'zap-export-invalid', 'zap-unexpected-origin', 'zap-unexpected-http', 'zap-invalid-rule',
+  'zap-alert-without-exchange', 'zap-addon-metadata-missing', 'zap-selfcheck-missing', 'zap-reconciliation-incomplete'];
 export const zapIntegration = { image, mode: 'automation-har-import-no-replay', network: 'none' };
 const key = ({ method, path, status }) => `${method} ${path} ${status}`;
 
@@ -80,37 +84,49 @@ async function scanSource(run, source, exchanges) {
     '--user', `${process.getuid()}:${process.getgid()}`, '-e', 'HOME=/zap/wrk',
     '-v', `${dir}:/zap/wrk`, image, 'zap.sh', '-dir', '/zap/wrk/home', '-cmd', '-autorun', '/zap/wrk/plan.yaml',
   ], { timeout: 240_000 });
-  if (!existsSync(dir + '/passive.json')) throw new Error('zap-report-missing');
-  if (!existsSync(dir + '/received.har')) throw new Error('zap-export-missing');
-  const report = readJSON(dir + '/passive.json');
-  const entries = readJSON(dir + '/received.har').log.entries;
-  const { passiveSelfcheck, findings } = inspectAlerts(run, report, exchanges, source);
-  const http = inspectExport(run, entries, exchanges);
-  const jobs = ['passiveScan-config', 'import', 'passiveScan-wait', 'export', 'report', 'exitStatus'];
-  const completedJobs = jobs.filter((job) => result.stdout.includes(`Job ${job} finished`));
-  const version = /^\d+\.\d+\.\d+$/u.test(report['@version']) ? report['@version'] : null;
+  const completedJobs = zapJobs.filter((job) => result.stdout.includes(`Job ${job} finished`));
+  const started = completedJobs.length > 0 || zapJobs.some((job) => result.stdout.includes(`Job ${job} started`));
+  const errors = [];
+  if (!started) errors.push('zap-launch-error');
+  else if (result.status !== 0 || completedJobs.length !== zapJobs.length) errors.push('zap-automation-incomplete');
+  function readOutput(name, filename, inspect) {
+    const path = dir + '/' + filename;
+    if (!existsSync(path)) {
+      errors.push(`zap-${name}-missing`);
+      return {};
+    }
+    try {
+      return inspect(readJSON(path));
+    } catch (error) {
+      errors.push(zapErrorCodes.includes(error.message) ? error.message : `zap-${name}-invalid`);
+      return {};
+    }
+  }
+  const alerts = readOutput('report', 'passive.json', (report) => ({
+    ...inspectAlerts(run, report, exchanges, source),
+    version: /^\d+\.\d+\.\d+$/u.test(report['@version']) ? report['@version'] : null,
+  }));
+  const http = readOutput('export', 'received.har', (har) => inspectExport(run, har.log.entries, exchanges));
   const addons = {};
-  const installed = readFileSync(dir + '/home/zap.log', 'utf8').split('\n').find((line) => line.includes('Installed add-ons:')) ?? '';
+  const log = readFileSync(dir + '/home/zap.log', { encoding: 'utf8', throwIfNoEntry: false });
+  const installed = log?.split('\n').find((line) => line.includes('Installed add-ons:')) ?? '';
   for (const id of addonIds) {
     const match = new RegExp(`\\[id=${id}, version=(\\d+(?:\\.\\d+)*)\\]`, 'u').exec(installed);
     if (match) addons[id] = match[1];
   }
-  return {
-    source, exitCode: result.status, version, addons, completedJobs,
-    passiveSelfcheck, findings, ...http,
-    ok: result.status === 0 && completedJobs.length === jobs.length && passiveSelfcheck &&
-      http.received.length === exchanges.length && Boolean(version) && Object.keys(addons).length === addonIds.length,
-  };
+  if (started && (!alerts.version || Object.keys(addons).length !== addonIds.length)) errors.push('zap-addon-metadata-missing');
+  if (alerts.passiveSelfcheck === false) errors.push('zap-selfcheck-missing');
+  if (http.received && http.received.length !== exchanges.length) errors.push('zap-reconciliation-incomplete');
+  return { source, started, exitCode: result.status, addons, completedJobs, errors, ...alerts, ...http, ok: errors.length === 0 };
 }
 
-export async function runZap(run, exchanges, toolErrors) {
+export async function runZap(run, exchanges, measure = (_stage, work) => work()) {
   const scans = [];
   for (const [source, group] of Map.groupBy(exchanges, ({ source }) => source)) {
     try {
-      scans.push(await scanSource(run, source, group));
-    } catch (error) {
-      if (error instanceof Error && /^zap-[a-z-]+$/u.test(error.message)) toolErrors.add(error.message);
-      scans.push({ source, ok: false });
+      scans.push(await measure(`zap-${source}`, () => scanSource(run, source, group)));
+    } catch {
+      scans.push({ source, ok: false, errors: ['zap-launch-error'] });
     }
   }
   return {

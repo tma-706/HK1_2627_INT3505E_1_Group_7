@@ -74,10 +74,13 @@ async function withBrowser(run, ca, variant, journey) {
     await journey(page, `${run.origin}/__security/${variant}/`);
   } catch (error) {
     failure = error;
-  } finally {
-    await context.close();
   }
-  return { entries: readJSON(har).log.entries, failure };
+  try {
+    await context.close();
+    return { entries: readJSON(har).log.entries, failure };
+  } catch {
+    return { entries: null, failure: failure ?? new WebEvidenceMissing('ui-har-invalid') };
+  }
 }
 
 async function performJourney(page, url, check, observe, details) {
@@ -130,25 +133,27 @@ async function performJourney(page, url, check, observe, details) {
   check('private-view-cleared', await text(details.profile.email).count() === 0 && await heading('Hồ sơ').count() === 0);
 }
 
-export async function runWebE2E({ check, client, definition, model, run, state }) {
+export async function runWebE2E({ check, client, definition, model, run, state, measure = (_stage, work) => work() }) {
   const ca = `${run.fixtureDir}/tls/ca.crt`;
   await verifyGateway(run.origin, ca);
   check('fixture-gateway-ready-with-ca', true);
-  await buildWeb(run, 'fixture');
-  await buildWeb(run, 'preview');
+  await measure('web-build', async () => {
+    await buildWeb(run, 'fixture');
+    await buildWeb(run, 'preview');
+  });
 
-  const preview = await withBrowser(run, ca, 'preview', (page, url) => performJourney(page, url,
+  const preview = await measure('firefox-preview', () => withBrowser(run, ca, 'preview', (page, url) => performJourney(page, url,
     (label, ok) => check('preview-' + label, ok), (_step, act) => act(), {
       profile: { displayName: 'Nguyễn Minh Anh', email: 'minh.anh@example.test' }, firstTitle: 'Ví màu nâu',
-    }));
+    })));
   if (preview.failure) throw preview.failure;
-  check('preview-no-core-evidence', preview.entries.length === 0);
+  check('preview-no-core-evidence', preview.entries.length === 0, { observedCount: preview.entries.length, expectedCount: 0 });
 
   const profile = { displayName: state.webTag, email: `${state.webTag.toLowerCase()}@example.test`, avatarUrl: null };
   const { idToken } = await state.signWebIdentity(profile);
   const pages = expectedPages('lost', 'a', state.webTag);
   const observations = [];
-  const browser = await withBrowser(run, ca, 'fixture', async (page, url) => {
+  const browser = await measure('firefox-fixture', () => withBrowser(run, ca, 'fixture', async (page, url) => {
     await page.addInitScript(({ idToken, origin }) => {
       if (location.origin === origin) globalThis.lostFoundFixtureIdToken = idToken;
     }, { idToken, origin: run.origin });
@@ -156,7 +161,7 @@ export async function runWebE2E({ check, client, definition, model, run, state }
     let cursor;
     await performJourney(page, url, check, async (step, act) => {
       const { operation, sessionState, status } = definition.http.find((item) => item.step === step);
-      const { method, path } = model.operations.get(operation);
+      const { method, path, cacheControl } = model.operations.get(operation);
       const pending = page.waitForResponse((response) => {
         const route = new URL(response.url());
         return route.origin === run.origin && route.pathname === path && response.request().method() === method;
@@ -168,6 +173,7 @@ export async function runWebE2E({ check, client, definition, model, run, state }
         url: response.url(), status: response.status() });
       // Retain the observed status for reporting even when the corresponding oracle fails.
       check(`${step}-http-status`, response.status() === status);
+      if (cacheControl[status]) check(`${step}-no-store`, (await response.headerValue('cache-control')) === cacheControl[status]);
       if (step === 'sign-in') {
         const body = await response.json().catch(() => null);
         token = body?.sessionToken;
@@ -175,8 +181,10 @@ export async function runWebE2E({ check, client, definition, model, run, state }
         return;
       }
       check(`${step}-fixture-bearer`, await response.request().headerValue('authorization') === `Bearer ${token}`);
-      if (step === 'confirm-logout') return;
-      check(`${step}-no-store`, (await response.headerValue('cache-control'))?.toLowerCase() === 'no-store');
+      if (step === 'confirm-logout') {
+        check('confirm-logout-empty', (await response.body()).length === 0);
+        return;
+      }
       const body = await response.json().catch(() => null);
       if (step === 'open-profile') {
         check('profile-response-fixture', isDeepStrictEqual(body, profile));
@@ -189,9 +197,9 @@ export async function runWebE2E({ check, client, definition, model, run, state }
         cursor = body.nextCursor;
       }
     }, { profile, firstTitle: pages[0][0].title, nextTitle: pages[1][0].title });
-  });
+  }));
   try {
-    client.exchanges.push(...matchBrowserHar(run.origin, browser.entries, observations));
+    if (browser.entries) client.exchanges.push(...matchBrowserHar(run.origin, browser.entries, observations));
   } finally {
     if (browser.failure) throw browser.failure;
   }

@@ -9,6 +9,7 @@ export const obligationKey = ({ chunkId, surface }) => `${chunkId}/${surface}`;
 export const apiPrefix = '/api';
 export const sentinelPath = '/api/_security_tool_selfcheck';
 export const httpSources = ['runner', 'ui'];
+export const assertionId = /^[A-Za-z0-9-]{1,90}$/u;
 export const sessionStates = ['readiness', 'public', 'valid', 'absent', 'revoked', 'expired-idle', 'expired-absolute',
   'idle-boundary', 'absolute-boundary', 'invalid-parameter'];
 const httpMethods = ['get', 'post', 'put', 'patch', 'delete', 'options', 'head', 'trace'];
@@ -19,9 +20,15 @@ export function contractOperations(openapi) {
   for (const [path, pathEntry] of Object.entries(openapi.paths)) {
     for (const [method, op] of Object.entries(pathEntry).filter(([method]) => httpMethods.includes(method))) {
       assert.ok(op.operationId && !operations.has(op.operationId), `operationId thiếu/trùng: ${method} ${path}`);
+      const cacheControl = Object.fromEntries(Object.entries(op.responses).flatMap(([status, response]) => {
+        const header = response.headers?.['Cache-Control'];
+        const name = header?.$ref?.match(/^#\/components\/headers\/([^/]+)$/u)?.[1];
+        const schema = name ? openapi.components?.headers?.[name]?.schema : header?.schema;
+        return typeof schema?.const === 'string' ? [[status, schema.const]] : [];
+      }));
       operations.set(op.operationId, {
         method: method.toUpperCase(), path: apiPrefix + path, statuses: Object.keys(op.responses).map(Number),
-        security: op.security ?? openapi.security ?? [],
+        security: op.security ?? openapi.security ?? [], cacheControl,
       });
     }
   }
@@ -29,7 +36,8 @@ export function contractOperations(openapi) {
 }
 
 export function validateScope(operations, scope, plan) {
-  assert.deepEqual(Object.keys(scope).sort(), [...operations.keys()].sort(), 'Đối chiếu phạm vi từng operation với OpenAPI');
+  for (const id of operations.keys()) assert.ok(Object.hasOwn(scope, id), `Thiếu quyết định phạm vi từng operation: ${id}`);
+  for (const id of Object.keys(scope)) assert.ok(operations.has(id), `Operation ngoài OpenAPI: ${id}`);
   const paths = new Set([sentinelPath]);
   for (const [id, operation] of operations) {
     const selection = scope[id];
@@ -45,12 +53,47 @@ export function validateScope(operations, scope, plan) {
   assert.deepEqual(context.match(/[^\n]+\n/gu)?.sort(), expected.sort(), 'Context ZAP lệch tập route OpenAPI đã chọn');
 }
 
-export function loadModel() {
-  const manifest = readJSON('tests/security/manifest.json');
+export function validateOracles(manifest) {
+  assert.ok([3, 4].includes(manifest.version), 'Phiên bản manifest chưa hỗ trợ');
+  if (manifest.version === 3) return;
+  const oracles = new Map();
+  for (const { id, source, layer, http, oracle } of manifest.cases) {
+    assert.ok(oracle?.question?.trim() && oracle.limits?.trim(), `${id} thiếu câu hỏi hoặc giới hạn oracle`);
+    assert.ok(oracle.assertions?.length && Array.isArray(oracle.controls), `${id} thiếu assertion hoặc đối chứng`);
+    const assertions = new Map(oracle.assertions.map((item) => [item.id, item]));
+    assert.equal(assertions.size, oracle.assertions.length, `${id} trùng assertion`);
+    assert.ok(unique(oracle.controls.map(({ caseId, assertion }) => `${caseId}/${assertion}`)), `${id} trùng đối chứng`);
+    if (source === 'ui') assert.equal(layer, 'web E2E', `${id} UI fixture phải ở tầng web E2E`);
+    for (const item of assertions.values()) {
+      assert.match(item.id, assertionId, id);
+      if (item.step !== undefined) assert.ok(http.some(({ step }) => step === item.step), `${id} sai step của ${item.id}`);
+    }
+    for (const { step } of http) {
+      assert.equal(assertions.get(step + '-http-status')?.step, step, `${id}/${step} thiếu oracle HTTP`);
+    }
+    oracles.set(id, assertions);
+  }
+  for (const { id, oracle } of manifest.cases) {
+    for (const { caseId, assertion, supports } of oracle.controls) {
+      const control = oracles.get(caseId)?.get(assertion);
+      assert.ok(control && supports?.length && unique(supports), `${id} sai đối chứng ${caseId}/${assertion}`);
+      for (const targetId of supports) {
+        const target = oracles.get(id).get(targetId);
+        assert.ok(target, `${id} sai assertion đích ${targetId}`);
+        if (caseId === id) {
+          assert.ok(assertion !== targetId && (!control.step || control.step !== target.step),
+            `${id} đối chứng dùng chính kết quả ${targetId}`);
+        }
+      }
+    }
+  }
+}
+
+export function loadModel(manifest = readJSON('tests/security/manifest.json')) {
   const obligations = readJSON('tests/security/coverage.json');
   const review = new Map();
   const inputs = new Map();
-  assert.ok(Number.isSafeInteger(manifest.version) && Number.isSafeInteger(manifest.fixtureVersion));
+  assert.ok(Number.isSafeInteger(manifest.fixtureVersion));
   for (const [key, def] of Object.entries(manifest.inputs)) {
     const bytes = readFileSync(def.path);
     assert.equal(digest(bytes), def.sha256, `Đầu vào đã thay đổi: ${def.path}; đối chiếu trước khi cập nhật digest.`);
@@ -67,8 +110,10 @@ export function loadModel() {
   validateScope(operations, manifest.scope, readFileSync('tests/security/zap.yaml', 'utf8'));
   const cases = new Map(manifest.cases.map((item) => [item.id, item]));
   const keys = new Set(obligations.map(obligationKey));
-  const allScenarios = inputs.get('uc01').text + inputs.get('uc02').text;
+  const scenarios = new Map(['uc01', 'uc02'].flatMap((input) =>
+    [...inputs.get(input).text.matchAll(/^\| (SCN-[A-Z]+-\d+) ·/gmu)].map((match) => [match[1], input])));
   assert.equal(cases.size, manifest.cases.length, 'ID ca trùng');
+  validateOracles(manifest);
   assert.equal(keys.size, obligations.length, 'Hàng chunk/bề mặt trùng');
   assert.equal(new Set(obligations.map(({ chunkId }) => chunkId)).size, chunks.size, 'Thiếu chunk trong ma trận');
   for (const row of obligations) {
@@ -79,7 +124,7 @@ export function loadModel() {
     assert.ok(unique(row.caseIds) && unique(row.ucs) && unique(row.scenarios), obligationKey(row));
     for (const uc of row.ucs) assert.ok(['UC-01', 'UC-02'].includes(uc), uc);
     for (const scn of row.scenarios) {
-      assert.ok(allScenarios.includes(`| ${scn} ·`), scn);
+      assert.ok(scenarios.has(scn), scn);
       assert.ok(row.ucs.includes(scn.startsWith('SCN-AUTH') ? 'UC-01' : 'UC-02'), scn);
     }
     for (const id of row.caseIds) assert.ok(cases.get(id)?.obligations.includes(obligationKey(row)), `Thiếu liên kết ngược: ${id}`);
@@ -93,6 +138,7 @@ export function loadModel() {
     for (const { input, locator, version } of item.sourceRefs) {
       assert.equal(version, inputs.get(input)?.version, item.id);
       assert.ok(locator && inputs.get(input).text.includes(locator), `${item.id}: ${locator}`);
+      if (/^SCN-[A-Z]+-\d+$/u.test(locator)) assert.equal(scenarios.get(locator), input, `${item.id}: ${locator}`);
     }
     for (const key of item.obligations) {
       assert.ok(obligations.find((row) => obligationKey(row) === key)?.caseIds.includes(item.id), `Thiếu liên kết ngược: ${key}`);
@@ -105,8 +151,9 @@ export function loadModel() {
       assert.notEqual(manifest.scope[operation].kind, 'excluded', operation);
       assert.ok(sessionStates.includes(sessionState), `${item.id}: ${step} thiếu trạng thái`);
       assert.equal(sessionState === 'readiness', manifest.scope[operation].kind === 'readiness', step);
-      if (item.source === 'ui') assert.ok(item.sourceRefs.some(({ locator }) => locator === scenario) &&
-        allScenarios.includes(`| ${scenario} ·`), `${item.id}: ${step} thiếu SCN`);
+      if (item.source === 'ui' || scenario !== undefined) assert.ok(scenarios.has(scenario) &&
+        item.sourceRefs.some(({ input, locator }) => locator === scenario && scenarios.get(scenario) === input),
+      `${item.id}: ${step} thiếu SCN`);
       if (item.requiredForPilot && status >= 200 && status < 300) requiredOperations.add(operation);
     }
   }
@@ -125,17 +172,23 @@ export function loadModel() {
     assert.ok(inputs.get(input)?.text.includes(locator) && question && evidenceNeeded, locator);
     return { sourcePath: inputs.get(input).path, locator, question, evidenceNeeded };
   });
-  for (const item of readJSON('tests/security/review.json')) {
-    assert.ok(/^\d{1,8}$/u.test(item.rule) && !review.has(item.rule) && item.cause && item.refs.length, item.rule);
-    // A source edit invalidates the saved interpretation until the rule is reviewed again.
-    if (item.refs.every(({ path, sha256, line }) => {
-      const data = readFileSync(path);
-      return digest(data) === sha256 && Number.isInteger(line) && line > 0 && line <= data.toString().split('\n').length;
-    })) review.set(item.rule, item);
+  const reviewItems = readJSON('tests/security/review.json');
+  assert.ok(unique(reviewItems.map(({ rule }) => rule)), 'ID rule review trùng');
+  for (const item of reviewItems) {
+    assert.ok(/^\d{1,8}$/u.test(item.rule) && item.cause && item.refs.length, item.rule);
+    if (reviewRefsCurrent(item)) review.set(item.rule, item);
   }
   const suiteFiles = readdirSync('tests/security').sort().map((name) => [name, digest(readFileSync(join('tests/security', name)))]);
   return {
     manifest, cases, obligations, operations, chunks, openQuestions, review,
     revisions: { sources: manifest.inputs, suite: digest(JSON.stringify(suiteFiles)), fixture: digest(readFileSync('tests/security/fixture.json')) },
   };
+}
+
+export function reviewRefsCurrent(item) {
+  return item.refs.every(({ path, sha256, line }) => {
+    const data = readFileSync(path, { throwIfNoEntry: false });
+    return data !== undefined && digest(data) === sha256 &&
+      Number.isInteger(line) && line > 0 && line <= data.toString().split('\n').length;
+  });
 }

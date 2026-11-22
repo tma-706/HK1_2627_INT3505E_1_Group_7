@@ -500,14 +500,16 @@
       "UC-01"
     ],
     "scenarios": [
+      "SCN-AUTH-09",
       "SCN-AUTH-11",
       "SCN-AUTH-16"
     ],
     "applicability": "covered",
-    "reason": "Quan sát hạn trả về và vòng đời hai phiên khi thu hồi.",
+    "reason": "Quan sát hạn và vòng đời hai phiên khi thu hồi, cùng việc trả lại phiên còn dùng được cho cùng lượt đăng nhập.",
     "evidenceMethod": "runtime HTTPS",
     "caseIds": [
       "UC01-SESSION",
+      "UC01-SESSION-REPLAY",
       "UC01-REVOKE",
       "UC01-SESSION-ABSENT",
       "UC01-SESSION-EXPIRED",
@@ -522,10 +524,11 @@
       "UC-01"
     ],
     "scenarios": [
+      "SCN-AUTH-09",
       "SCN-AUTH-14"
     ],
     "applicability": "missing",
-    "reason": "Chưa chạy biên 30/90 ngày và yêu cầu đồng thời tại mốc hết hạn trong suite này.",
+    "reason": "Thiếu phép đo số bản ghi, mốc hoạt động và gửi đồng thời của một lượt. Thiếu đồng hồ DB điều khiển cho các biên 30/90 ngày và yêu cầu cạnh tranh.",
     "evidenceMethod": "runtime clock + DB transaction",
     "caseIds": []
   },

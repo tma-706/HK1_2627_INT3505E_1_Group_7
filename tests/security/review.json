@@ -4,8 +4,13 @@
     "addon": "pscanrules",
     "version": "77.0.0",
     "catalogSurface": "core",
-    "cause": "Rule 10015 yêu cầu thêm no-cache và must-revalidate. Core đặt no-store theo OpenAPI; đối chiếu assertion CORE-HTTP-PRIVACY. Cache của thiết bị cần bằng chứng riêng.",
+    "cause": "Rule 10015 xem thêm no-cache và must-revalidate. AuthNoStore yêu cầu no-store cho phản hồi 200 thuộc hợp đồng. Đối chiếu assertion theo operation và nguồn của lượt này. Cache thiết bị cần bằng chứng riêng.",
     "refs": [
+      {
+        "path": "docs/api/core/openapi.json",
+        "line": 662,
+        "sha256": "837aac16902c2383a0d849eb2e2404048682f7fe8519a50dd65bbc35ce21ee25"
+      },
       {
         "path": "apps/core/src/modules/my-area/routes.ts",
         "line": 14,
