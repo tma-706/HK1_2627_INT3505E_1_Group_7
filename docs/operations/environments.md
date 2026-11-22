@@ -53,6 +53,8 @@ Kiểm contract và phiên với `bash tests/integration/core-identity.sh`. Lệ
 
 ### App Android/iOS
 
+Trên Windows x64, dùng [script PowerShell trong README](../../README.md#chạy-android-trên-windows). Script dùng SDK của Android Studio và mặc định lưu cấu hình máy ảo trong `.mobile/android/avd/`.
+
 Trên Mac Apple Silicon, cài Node.js và JDK 17, rồi chạy từ gốc repo:
 
 ```sh

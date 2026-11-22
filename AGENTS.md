@@ -7,7 +7,6 @@
 
 ## GitHub
 
-- Khi được yêu cầu push, dùng tài khoản GitHub `hehuanglu`. Trước khi push, xác minh tài khoản thực tế mà Git sẽ xác thực và remote đích. Nếu không xác minh hoặc sử dụng được `hehuanglu`, dừng và giải thích.
 - Dùng repo và nhánh người dùng chỉ định. Nếu người dùng không chỉ định, kiểm tra cấu hình Git và nhánh hiện tại rồi báo đích sẽ dùng.
 
 ## Nhận việc sau khi pull

@@ -25,4 +25,18 @@ npm run mobile:web
 
 Mở [localhost:8082](http://localhost:8082) và chọn **Dùng tài khoản mô phỏng**. Xem [hướng dẫn chạy mobile](docs/operations/environments.md#app-androidios) để thử Google thật trên Android hoặc iOS.
 
+## Chạy Android trên Windows
+
+Sau khi pull nhánh `experiment/tool-evaluation`, cài Node.js 22.13+ hoặc 24.3+, JDK 17 và Android Studio. Đặt `JAVA_HOME` trỏ tới thư mục JDK 17. Trong Android Studio, mở **SDK Manager → SDK Tools** và cài **Android SDK Command-line Tools (latest)**. Mở PowerShell ở gốc repo trên Windows x64 và chạy:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File .\scripts\mobile-android.ps1
+```
+
+Script sẽ hỏi giấy phép SDK nếu còn gói cần cài, tải các gói Android, tạo giả lập Pixel 6 có Google Play, cài thư viện và mở bản debug Lost & Found. Lần đầu cần mạng và khoảng 16 GB trống. Nếu dùng SDK ngoài đường dẫn mặc định của Android Studio, đặt `ANDROID_HOME` trước khi chạy. Xem [cách bật tăng tốc giả lập trên Windows](https://developer.android.com/studio/run/emulator-acceleration#vm-windows).
+
+Để thử các nhánh đăng nhập mô phỏng và lỗi đã có trong bộ test, chạy `npm.cmd test --prefix apps/mobile`. Đăng nhập Google thật cần [cấu hình OAuth và gateway HTTPS thử nghiệm](docs/operations/environments.md#app-androidios) từ nhóm.
+
+## Chạy Android trên Mac Apple Silicon
+
 Trên Mac Apple Silicon, sau khi cài JDK 17 và chạy `npm run mobile:setup`, dùng `npm run mobile:android:setup` để cài SDK và tạo giả lập, rồi dùng `npm run mobile:android` để build và mở app. Xem [cấu hình Android/iOS](docs/operations/environments.md#app-androidios) để chạy trên các máy khác hoặc nghiệm thu với Google OAuth.
