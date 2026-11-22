@@ -26,3 +26,24 @@ Bổ sung bằng chứng HTTP từ các trạng thái phiên và từ thao tác 
 - Đánh giá zaproxy/action-af bằng cùng một AF plan, image digest và input đã dùng ở local. Action có input plan và docker_name. So bản ghi nhận được, kết quả self-check, mã thoát, khả năng truy cập thư mục tạm và nội dung artifact. Dùng action nếu tương đương và bảo toàn vòng đời fixture cùng nguyên tắc lọc dữ liệu. Nếu không tương đương, giữ runner Docker và ghi nguyên nhân cụ thể. [Khai báo action](https://github.com/zaproxy/action-af/blob/v0.3.0/action.yml)
 - Mỗi PR chạy suite hồi quy cũ và phần mới. Dùng quy trình xác minh tài khoản hehuanglu, PR và CI sau merge của [kế hoạch nghiệm thu](security-test-plan.md). Cho phép sửa lỗi rồi chạy lại. Bàn giao artifact đúng SHA với bảng trước/sau theo operation, nguồn, trạng thái phiên, chunk chuyển trạng thái và số còn thiếu. Số request quan sát thay đổi theo ca; giữ oracle của các ca baseline và đối soát mọi trao đổi bắt buộc của lần chạy.
 - Hoàn tất khi cả hai phần vận hành trên CI, ca đối chứng phát hiện mất bằng chứng, và người đọc có thể chỉ ra bước UI nào đi qua gateway, phản hồi nào được ZAP phân tích, tiêu chí nào còn mở cùng lý do. Việc bổ sung bằng chứng chỉ thay đổi kết luận của nghĩa vụ có oracle tương ứng.
+
+## Quyết định về action-af
+
+Giữ Docker runner cô lập cho suite. Phép đối chiếu trên GitHub-hosted runner dùng cùng AF plan, image digest và từng byte HAR đầu vào với một phản hồi readiness tổng hợp cùng mẫu tự kiểm. Docker runner nhận phản hồi readiness, báo tín hiệu passive đạt và trả mã 0. `zaproxy/action-af@v0.3.0` trả mã 1, thiếu export HAR, report passive và tín hiệu tự kiểm. Phép chạy cũng ghi nhận mode của thư mục riêng bị thay đổi. Action cấp quyền ghi workspace cho mọi user, mount workspace cả cây và dùng host networking. Runner hiện hành chỉ mount thư mục của nguồn đã chọn, chạy theo UID/GID chủ thư mục, tắt networking và upload đúng hai báo cáo đã lọc. [Lượt đối chiếu](https://github.com/tma-706/HK1_2627_INT3505E_1_Group_7/actions/runs/45023437759) · [Mã action được kiểm](https://github.com/zaproxy/action-af/blob/v0.3.0/index.js)
+
+## Nghiệm thu trước merge PR 2
+
+| Operation | Runner trước → sau | UI trước → sau | Trạng thái và bước được bổ sung |
+| --- | ---: | ---: | --- |
+| `getCoreReadiness` | 1 → 1 | 0 → 0 | Readiness HTTPS theo CA fixture ở dòng riêng |
+| `createGoogleSession` | 5 → 7 | 0 → 1 | Cấp hai phiên tổng hợp cho ca hết hạn và đăng nhập từ UI (SCN-AUTH-04) |
+| `validateCurrentSession` | 3 → 6 | 0 → 0 | Thiếu phiên, quá hạn không hoạt động và quá trần tuyệt đối |
+| `revokeCurrentSession` | 2 → 5 | 0 → 1 | Ba trạng thái mới trả 401. Thu hồi lặp vẫn trả 204. Xác nhận đăng xuất từ UI (SCN-AUTH-16) |
+| `getMyProfile` | 5 → 8 | 0 → 1 | Ba trạng thái phiên mới và phản hồi 200 khớp danh tính fixture khi mở Hồ sơ (SCN-PRF-01) |
+| `listMyItems` | 17 → 21 | 0 → 2 | Ba trạng thái phiên mới, lỗi thiếu tab và hai phản hồi 200 qua thao tác mở danh sách và cuộn (SCN-PRF-03/07). ZAP đối soát hai phản hồi theo nhóm |
+
+Cột trước lấy từ baseline, cột sau lấy từ build `66ecb66b9a80e0126c9244f153bbec3b72715e05`. Cả 53 trao đổi đã được ZAP nhận, gồm 48 runner và 5 UI. Runner đủ bằng chứng 23/31 ô, UI đủ 4/4 ô. Tám ô MISSING ở runner là các biên chính xác 30 và 90 ngày cho bốn operation bảo vệ. Hai fixture đã quá hạn kiểm các nhánh từ chối tương ứng. [Baseline](https://github.com/tma-706/HK1_2627_INT3505E_1_Group_7/actions/runs/45011388901) · [Lượt mở rộng](https://github.com/tma-706/HK1_2627_INT3505E_1_Group_7/actions/runs/45023437701)
+
+Không có chunk đổi trạng thái. Catalog có 4 PASS, 0 FAIL, 1 REVIEW, 32 MISSING và 13 N/A. `SEC-A06-03` giữ REVIEW cho cảnh báo cache 10015. Header `no-store` của các phản hồi đọc đã được đối chiếu với hợp đồng. Kiểm lưu ảnh và kho phiên native cần bằng chứng thiết bị. `results.json` liệt kê các nghĩa vụ còn mở cùng lý do và tham chiếu nhóm theo nguồn.
+
+Lượt CI web đầu tiên dừng ở assertion `preview-items-end`. Một lần cuộn tới rìa phần đã render của FlatList chưa đủ để kích hoạt trang sau. Sau khi cuộn theo nhiều bước, preview hoàn tất và có 0 trao đổi Core. Tự kiểm gate xác nhận thiếu bước phân trang hoặc thiếu nguồn UI đều cho MISSING. [Lượt tái hiện](https://github.com/tma-706/HK1_2627_INT3505E_1_Group_7/actions/runs/45015584391)
