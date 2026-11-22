@@ -16,6 +16,13 @@ Mỗi hàng phân loại một chunk trên một bề mặt, có lý do và phé
 - Đối soát HAR theo nguồn, method, path và status sau khi ZAP xử lý tín hiệu tự kiểm thụ động. Với bộ trùng, ghi số nhận trên số đã gửi. Khi mất một bản ghi trong bộ, các bước của bộ thiếu đối soát. Cảnh báo liên kết rule, operation, nguồn và nhóm bản ghi. Quy nguyên nhân cho một bước hoặc người dùng cần bằng chứng định danh riêng.
 - Khi đổi runner, chạy kiểm với export giả lập thiếu một trao đổi, status sai và mã lỗi sai để xác nhận gate báo MISSING hoặc FAIL tương ứng. Đối chiếu số ô đủ bằng chứng trên tổng ô áp dụng theo từng nguồn. Chỉ cập nhật nghĩa vụ catalog khi có oracle tương ứng.
 
+## Hành trình qua trình duyệt
+
+- Chọn bước từ SCN có tương tác UI và phản hồi Core cần chứng minh. Khai báo bước, operation, trạng thái, status và SCN. Đối chiếu hiển thị với dữ liệu tổng hợp có dấu hiệu riêng mỗi lượt và xác minh cùng phiên ở phản hồi đọc. Với UC-01/02, đi từ đăng nhập tới Hồ sơ, Mục của tôi, cuộn sang trang tiếp và xác nhận đăng xuất.
+- Dùng build web fixture và API client của app trên cùng origin gateway. Kiểm readiness qua HTTPS; trình duyệt tin CA trong profile tạm. Phát hành danh tính tổng hợp từ tiến trình kiểm thử. Browser chỉ nhận ID token ngắn hạn trong bộ nhớ. Giữ khóa ký trong fixture phía runner.
+- Chờ phản hồi trong bước đã phát sinh bằng tương tác UI. Đóng context để hoàn tất HAR, đối chiếu với phản hồi của từng bước và gửi qua cùng AF plan trong lượt phân tích riêng theo nguồn. Chỉ dùng origin fixture. Báo cáo giữ method, path chuẩn hóa, status, nguồn và tham chiếu nhóm. HAR, query, credential và nội dung phản hồi ở vùng tạm riêng và được dọn sau chạy.
+- Chạy hành trình preview làm đối chứng và kiểm gate với một bước UI bị bỏ. Thiếu bằng chứng UI giữ trạng thái MISSING kể cả khi runner đã quan sát cùng operation. Nghĩa vụ kho phiên native, cache ảnh thiết bị và gateway triển khai cần phép kiểm trên tầng tương ứng.
+
 ## Điều tra và bàn giao
 
 Runner kiểm tài liệu đầu vào, ID, liên kết và hợp đồng, chạy ca đã đăng ký, đối soát HTTP với ZAP, lọc quan sát, tổng hợp rồi trả mã thoát. PASS chỉ đại diện phạm vi của hàng đã mô tả. Một chunk có hàng MISSING hoặc REVIEW giữ trạng thái chưa hoàn tất. Mỗi FAIL được ghi kèm ca/assertion, phạm vi thiếu và đúng revision. Dùng REVIEW khi cảnh báo thụ động cần đối chiếu và MISSING khi chưa quan sát được bằng chứng. Ghi căn cứ cụ thể cho N/A.

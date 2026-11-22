@@ -1,6 +1,6 @@
 {
-  "version": 2,
-  "fixtureVersion": 2,
+  "version": 3,
+  "fixtureVersion": 3,
   "inputs": {
     "catalog": {
       "path": "docs/requirements/quality/security-owasp-2025.json",
@@ -60,7 +60,7 @@
     "environments": {
       "path": "docs/operations/environments.md",
       "version": "UC-01/02 fixture",
-      "sha256": "3ac80d57b91c16578971a161680f5a943f6f0f62b285607ec932684a98c80b6f"
+      "sha256": "2127d70402ae0c8b051248570d0aa5266216c073c4895bb46b7b57ed1e5a752e"
     }
   },
   "surfaces": {
@@ -844,6 +844,90 @@
       "obligations": [
         "SEC-A06-01/core",
         "SEC-A06-03/core"
+      ]
+    },
+    {
+      "id": "UC01-02-WEB-E2E",
+      "sourceRefs": [
+        {
+          "input": "uc01",
+          "locator": "SCN-AUTH-03",
+          "version": "v2"
+        },
+        {
+          "input": "uc01",
+          "locator": "SCN-AUTH-04",
+          "version": "v2"
+        },
+        {
+          "input": "uc01",
+          "locator": "SCN-AUTH-16",
+          "version": "v2"
+        },
+        {
+          "input": "uc02",
+          "locator": "SCN-PRF-01",
+          "version": "v2"
+        },
+        {
+          "input": "uc02",
+          "locator": "SCN-PRF-03",
+          "version": "v2"
+        },
+        {
+          "input": "uc02",
+          "locator": "SCN-PRF-07",
+          "version": "v2"
+        }
+      ],
+      "layer": "web E2E",
+      "preconditions": "Readiness qua gateway HTTPS với CA fixture; Firefox có profile CA riêng.",
+      "fixture": "Danh tính tổng hợp và các tiêu đề Lost đánh dấu theo lượt. Preview cung cấp đối chứng UI dùng mock.",
+      "action": "Đăng nhập, chấp thuận điều khoản, mở Hồ sơ, mở Mục của tôi, cuộn lấy trang sau, quay lại và xác nhận đăng xuất.",
+      "expected": "Tên, email, mục của cả hai trang và trạng thái đăng xuất khớp fixture. Từng thao tác có API thực được đối soát qua Browser HAR và ZAP. Preview hoàn thành UI với dữ liệu mẫu và thiếu toàn bộ bằng chứng Core.",
+      "requiredForPilot": true,
+      "source": "ui",
+      "http": [
+        {
+          "step": "sign-in",
+          "operation": "createGoogleSession",
+          "status": 200,
+          "sessionState": "public",
+          "scenario": "SCN-AUTH-04"
+        },
+        {
+          "step": "open-profile",
+          "operation": "getMyProfile",
+          "status": 200,
+          "sessionState": "valid",
+          "scenario": "SCN-PRF-01"
+        },
+        {
+          "step": "open-items",
+          "operation": "listMyItems",
+          "status": 200,
+          "sessionState": "valid",
+          "scenario": "SCN-PRF-03"
+        },
+        {
+          "step": "next-page",
+          "operation": "listMyItems",
+          "status": 200,
+          "sessionState": "valid",
+          "scenario": "SCN-PRF-07"
+        },
+        {
+          "step": "confirm-logout",
+          "operation": "revokeCurrentSession",
+          "status": 204,
+          "sessionState": "valid",
+          "scenario": "SCN-AUTH-16"
+        }
+      ],
+      "obligations": [
+        "SEC-A01-02/db",
+        "SEC-A06-05/core",
+        "SEC-A07-01/core"
       ]
     }
   ],

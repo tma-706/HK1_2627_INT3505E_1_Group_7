@@ -11,6 +11,10 @@
     "check": "npm run check -w @lost-found/core",
     "test:ai-mock": "npm run build && node --test tests/unit/ai-mock.test.mjs",
     "security:validate": "node tests/security/run.mjs --validate && node --test tests/security/report.test.mjs",
+    "security:web:setup": "playwright install firefox",
     "security:test": "node tests/security/run.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.65.1"
   }
 }

@@ -1,6 +1,8 @@
+import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { isDeepStrictEqual } from 'node:util';
 import { ageSession, expectedPages, fixture, fixtureIdentity, seedItems } from './fixture.mjs';
+import { runWebE2E, WebEvidenceMissing } from './web.mjs';
 
 export class AssertionFailure extends Error {
   constructor(assertion) {
@@ -69,7 +71,7 @@ async function verifyRejectedSession(api, check, prefix, token) {
 
 async function verifyItems(tab, { api, check, state }) {
   for (const actor of ['a', 'b', 'd']) {
-    const pages = expectedPages(tab, actor);
+    const pages = expectedPages(tab, actor, state.webTag);
     let cursor;
     for (const [index, expected] of pages.entries()) {
       const step = actor === 'd' ? 'd-empty-page' : `${actor}-page-${index + 1}`;
@@ -91,6 +93,7 @@ export const handlers = {
   },
   'UC01-SESSION': async ({ api, check, state, fixtureDir }) => {
     const sign = await fixtureIdentity(fixtureDir);
+    state.signWebIdentity = (profile) => sign('a', 'android', profile);
     async function enroll(step, actor, deviceType) {
       const data = await sign(actor, deviceType);
       const response = await api(step, { data });
@@ -142,7 +145,7 @@ export const handlers = {
   'UC02-CURSOR': async ({ api, check, state }) => {
     const tab = 'lost';
     const token = state.a.sessionToken;
-    const pages = expectedPages(tab, 'a');
+    const pages = expectedPages(tab, 'a', state.webTag);
     const first = await api('cursor-first', { token, query: { tab } });
     const cursor = verifyPage(check, first.json(), tab, pages[0], true, 'cursor-first');
     const next = await api('cursor-same-tab', { token, query: { tab, cursor } });
@@ -157,6 +160,7 @@ export const handlers = {
     const response = await api('missing-tab', { token: state.a.sessionToken });
     verifyError(check, 'missing-tab', response, 'INVALID_REQUEST');
   },
+  'UC01-02-WEB-E2E': runWebE2E,
   'MOBILE-SESSION-CLEANUP': async ({ check, command, root }) => {
     const result = await command(process.execPath, ['--import', 'tsx', '--test', '--test-reporter=tap',
       'tests/auth-flow.test.ts', 'tests/my-area-flow.test.ts'], { cwd: root + '/apps/mobile', timeout: 30_000 });
@@ -200,9 +204,10 @@ export const handlers = {
 
 export async function executeCases(model, context, onCase = () => {}) {
   const results = new Map();
-  const state = {};
+  const state = { webTag: 'Fixture-' + randomUUID().slice(0, 8) };
   for (const id of ['EDGE-FIXTURE-TLS', 'UC01-SESSION', 'UC01-REVOKE', 'UC01-SESSION-ABSENT', 'UC01-SESSION-EXPIRED',
-    'UC02-LOST', 'UC02-FOUND', 'UC02-CLAIMS', 'UC02-CURSOR', 'UC02-INVALID-TAB', 'CORE-HTTP-PRIVACY', 'MOBILE-SESSION-CLEANUP']) {
+    'UC02-LOST', 'UC02-FOUND', 'UC02-CLAIMS', 'UC02-CURSOR', 'UC02-INVALID-TAB', 'CORE-HTTP-PRIVACY', 'MOBILE-SESSION-CLEANUP',
+    'UC01-02-WEB-E2E']) {
     const definition = model.cases.get(id);
     const assertions = [];
     function check(assertion, ok, counts = {}) {
@@ -215,7 +220,7 @@ export async function executeCases(model, context, onCase = () => {}) {
       if (id !== 'MOBILE-SESSION-CLEANUP' && !context.client) {
         outcome = 'MISSING';
         reason = 'fixture-unavailable';
-      } else if (id.startsWith('UC02-') && !state.seeded) {
+      } else if ((id.startsWith('UC02-') || definition.source === 'ui') && !state.seeded) {
         outcome = 'MISSING';
         reason = 'item-fixture-unavailable';
       } else if (id === 'UC01-REVOKE' && !state.sessionReady) {
@@ -223,12 +228,12 @@ export async function executeCases(model, context, onCase = () => {}) {
         reason = 'session-fixture-unavailable';
       } else {
         const api = apiFor(definition, context.client, check);
-        await handlers[id]({ ...context, model, api, check, state });
+        await handlers[id]({ ...context, definition, model, api, check, state });
       }
     } catch (error) {
       outcome = error instanceof AssertionFailure ? 'FAIL' : 'MISSING';
-      reason = error instanceof AssertionFailure ? error.message : 'case-execution-error';
-      if (!(error instanceof AssertionFailure)) context.toolErrors.add('case-execution-error');
+      reason = error instanceof AssertionFailure || error instanceof WebEvidenceMissing ? error.message : 'case-execution-error';
+      if (!(error instanceof AssertionFailure) && !(error instanceof WebEvidenceMissing)) context.toolErrors.add('case-execution-error');
     }
     results.set(id, { outcome, reason, assertions });
     onCase(id, outcome);

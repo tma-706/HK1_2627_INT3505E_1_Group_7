@@ -16,7 +16,8 @@ compose() (
 
 initialize() {
   umask 077
-  mkdir -p "$fixture_dir/tls"
+  mkdir -p "$fixture_dir/tls" "$fixture_dir/web"
+  chmod 755 "$fixture_dir/web"
   if [ ! -s "$fixture_dir/compose.env" ] || [ ! -s "$fixture_dir/fixture-key.json" ] || [ ! -s "$fixture_dir/google-jwks.mjs" ]; then
     node infra/uc01-local/fixtures.mjs init "$fixture_dir"
     chmod 644 "$fixture_dir/google-jwks.mjs"

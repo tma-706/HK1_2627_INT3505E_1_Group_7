@@ -60,6 +60,11 @@ jobs:
           node-version: 22
       - run: npm ci
       - run: npm run mobile:setup
+      - name: Install browser and fixture CA tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libnss3-tools
+          npm run security:web:setup -- --with-deps
       - run: npm run security:validate
       - run: npm run security:test
       - name: Verify both report files

@@ -43,7 +43,8 @@
       "UC02-LOST",
       "UC02-FOUND",
       "UC02-CLAIMS",
-      "UC02-CURSOR"
+      "UC02-CURSOR",
+      "UC01-02-WEB-E2E"
     ]
   },
   {
@@ -457,7 +458,8 @@
       "UC01-SESSION",
       "UC01-REVOKE",
       "UC02-CURSOR",
-      "UC02-INVALID-TAB"
+      "UC02-INVALID-TAB",
+      "UC01-02-WEB-E2E"
     ]
   },
   {
@@ -508,7 +510,8 @@
       "UC01-SESSION",
       "UC01-REVOKE",
       "UC01-SESSION-ABSENT",
-      "UC01-SESSION-EXPIRED"
+      "UC01-SESSION-EXPIRED",
+      "UC01-02-WEB-E2E"
     ]
   },
   {

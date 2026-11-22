@@ -27,7 +27,7 @@
       {
         "path": "infra/uc01-local/nginx.conf",
         "line": 21,
-        "sha256": "b0b672bdcb9c393699074c0b56451f5f31cd201967b325e90a23398865e01816"
+        "sha256": "976d6fc9f5c15e6a61d4aeebf37a40e26b0917bf6379a1bc3334dfa2357782f4"
       },
       {
         "path": "apps/core/src/modules/my-area/routes.ts",
@@ -50,12 +50,12 @@
       {
         "path": "infra/uc01-local/nginx.conf",
         "line": 2,
-        "sha256": "b0b672bdcb9c393699074c0b56451f5f31cd201967b325e90a23398865e01816"
+        "sha256": "976d6fc9f5c15e6a61d4aeebf37a40e26b0917bf6379a1bc3334dfa2357782f4"
       },
       {
         "path": "infra/uc01-local/nginx.conf",
         "line": 6,
-        "sha256": "b0b672bdcb9c393699074c0b56451f5f31cd201967b325e90a23398865e01816"
+        "sha256": "976d6fc9f5c15e6a61d4aeebf37a40e26b0917bf6379a1bc3334dfa2357782f4"
       }
     ]
   },
@@ -68,12 +68,12 @@
       {
         "path": "infra/uc01-local/nginx.conf",
         "line": 1,
-        "sha256": "b0b672bdcb9c393699074c0b56451f5f31cd201967b325e90a23398865e01816"
+        "sha256": "976d6fc9f5c15e6a61d4aeebf37a40e26b0917bf6379a1bc3334dfa2357782f4"
       },
       {
         "path": "infra/uc01-local/compose.yaml",
         "line": 5,
-        "sha256": "f53879211e8cc082b01b7334cd448d58ff2c5dae9f46aef16c6196755462b377"
+        "sha256": "f710c0ed2064857b439ad70625306d5016afa5635433aa62ad232953db3b8287"
       }
     ]
   },
