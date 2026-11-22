@@ -6,8 +6,44 @@ import { join } from 'node:path';
 export const digest = (content) => createHash('sha256').update(content).digest('hex');
 export const readJSON = (path) => JSON.parse(readFileSync(path, 'utf8'));
 export const obligationKey = ({ chunkId, surface }) => `${chunkId}/${surface}`;
+export const apiPrefix = '/api';
+export const sentinelPath = '/api/_security_tool_selfcheck';
+export const httpSources = ['runner', 'ui'];
+export const sessionStates = ['readiness', 'public', 'valid', 'absent', 'revoked', 'expired-idle', 'expired-absolute',
+  'idle-boundary', 'absolute-boundary', 'invalid-parameter'];
 const httpMethods = ['get', 'post', 'put', 'patch', 'delete', 'options', 'head', 'trace'];
 const unique = (items) => items.length === new Set(items).size;
+
+export function contractOperations(openapi) {
+  const operations = new Map();
+  for (const [path, pathEntry] of Object.entries(openapi.paths)) {
+    for (const [method, op] of Object.entries(pathEntry).filter(([method]) => httpMethods.includes(method))) {
+      assert.ok(op.operationId && !operations.has(op.operationId), `operationId thiếu/trùng: ${method} ${path}`);
+      operations.set(op.operationId, {
+        method: method.toUpperCase(), path: apiPrefix + path, statuses: Object.keys(op.responses).map(Number),
+        security: op.security ?? openapi.security ?? [],
+      });
+    }
+  }
+  return operations;
+}
+
+export function validateScope(operations, scope, plan) {
+  assert.deepEqual(Object.keys(scope).sort(), [...operations.keys()].sort(), 'Đối chiếu phạm vi từng operation với OpenAPI');
+  const paths = new Set([sentinelPath]);
+  for (const [id, operation] of operations) {
+    const selection = scope[id];
+    assert.ok(['business', 'readiness', 'excluded'].includes(selection.kind), id);
+    if (selection.kind === 'excluded') assert.ok(selection.reason?.trim(), `Thiếu lý do ngoài phạm vi: ${id}`);
+    else paths.add(operation.path);
+  }
+  const context = /^      includePaths:\n((?:        - '[^\n]+'\n)+)/mu.exec(plan)?.[1] ?? '';
+  const expected = [...paths].sort().map((path) => {
+    const pattern = path.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+    return `        - '@ORIGIN_REGEX@${pattern}(?:\\?.*)?'\n`;
+  });
+  assert.deepEqual(context.match(/[^\n]+\n/gu)?.sort(), expected.sort(), 'Context ZAP lệch tập route OpenAPI đã chọn');
+}
 
 export function loadModel() {
   const manifest = readJSON('tests/security/manifest.json');
@@ -27,13 +63,8 @@ export function loadModel() {
   assert.equal(openapi.info.version, inputs.get('openapi').version);
   const chunks = new Map(catalog.requirements.map((chunk) => [chunk.sec_id, chunk]));
   assert.equal(chunks.size, catalog.requirements.length, 'ID catalog trùng');
-  const operations = new Map();
-  for (const [path, pathEntry] of Object.entries(openapi.paths)) {
-    for (const [method, op] of Object.entries(pathEntry).filter(([method]) => httpMethods.includes(method))) {
-      assert.ok(op.operationId && !operations.has(op.operationId), `operationId thiếu/trùng: ${method} ${path}`);
-      operations.set(op.operationId, { method: method.toUpperCase(), path: '/api' + path, statuses: Object.keys(op.responses).map(Number) });
-    }
-  }
+  const operations = contractOperations(openapi);
+  validateScope(operations, manifest.scope, readFileSync('tests/security/zap.yaml', 'utf8'));
   const cases = new Map(manifest.cases.map((item) => [item.id, item]));
   const keys = new Set(obligations.map(obligationKey));
   const allScenarios = inputs.get('uc01').text + inputs.get('uc02').text;
@@ -67,13 +98,27 @@ export function loadModel() {
       assert.ok(obligations.find((row) => obligationKey(row) === key)?.caseIds.includes(item.id), `Thiếu liên kết ngược: ${key}`);
     }
     assert.ok(unique(item.http.map(({ step }) => step)), item.id);
-    for (const { step, operation, status } of item.http) {
+    if (item.http.length) assert.ok(httpSources.includes(item.source), `${item.id} thiếu nguồn HTTP`);
+    for (const { step, operation, status, sessionState } of item.http) {
       assert.match(step, /^[a-z0-9-]+$/u);
       assert.ok(operations.get(operation)?.statuses.includes(status), `${item.id}: ${operation} ${status}`);
+      assert.notEqual(manifest.scope[operation].kind, 'excluded', operation);
+      assert.ok(sessionStates.includes(sessionState), `${item.id}: ${step} thiếu trạng thái`);
+      assert.equal(sessionState === 'readiness', manifest.scope[operation].kind === 'readiness', step);
       if (item.requiredForPilot && status >= 200 && status < 300) requiredOperations.add(operation);
     }
   }
-  for (const id of operations.keys()) assert.ok(requiredOperations.has(id), `Chưa có ca bắt buộc với phản hồi thành công: ${id}`);
+  for (const [id, { kind }] of Object.entries(manifest.scope)) {
+    if (kind !== 'excluded') assert.ok(requiredOperations.has(id), `Chưa có ca bắt buộc với phản hồi thành công: ${id}`);
+  }
+  const cellKey = ({ source, operation, sessionState }) => `${source}/${operation}/${sessionState}`;
+  const coveredCells = new Set([...cases.values()].flatMap(({ source, http }) => http.map((step) => cellKey({ source, ...step }))));
+  assert.ok(unique(manifest.unobservedCells.map(cellKey)), 'Ô thiếu bị trùng');
+  for (const cell of manifest.unobservedCells) {
+    const { source, operation, sessionState, reason } = cell;
+    assert.ok(httpSources.includes(source) && sessionStates.includes(sessionState) && reason?.trim(), cellKey(cell));
+    assert.ok(manifest.scope[operation] && manifest.scope[operation].kind !== 'excluded' && !coveredCells.has(cellKey(cell)), cellKey(cell));
+  }
   const openQuestions = manifest.openQuestions.map(({ input, locator, question, evidenceNeeded }) => {
     assert.ok(inputs.get(input)?.text.includes(locator) && question && evidenceNeeded, locator);
     return { sourcePath: inputs.get(input).path, locator, question, evidenceNeeded };

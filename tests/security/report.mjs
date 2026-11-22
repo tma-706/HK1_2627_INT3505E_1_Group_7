@@ -1,5 +1,5 @@
 import { mkdirSync, renameSync, writeFileSync } from 'node:fs';
-import { obligationKey } from './model.mjs';
+import { httpSources, obligationKey } from './model.mjs';
 import { zapIntegration } from './zap.mjs';
 
 const statuses = ['PASS', 'FAIL', 'REVIEW', 'MISSING', 'N/A'];
@@ -21,31 +21,51 @@ function safeAssertions(values) {
   }));
 }
 
-function safeHttp(entries, model) {
-  return entries.flatMap(({ caseId, step, operation, method, path, status }) => {
-    const spec = model.cases.get(caseId)?.http.find((item) => item.step === step);
+function safeHttp(entries, model, fromZap = false) {
+  return entries.flatMap(({ caseId, step, operation, method, path, status, source, sessionState, zapEvidence }) => {
+    const definition = model.cases.get(caseId);
+    const spec = definition?.http.find((item) => item.step === step);
     const route = model.operations.get(operation);
-    if (spec?.operation !== operation || route?.method !== method || route?.path !== path ||
+    if (!spec || spec.operation !== operation || spec.sessionState !== sessionState || definition.source !== source ||
+      route?.method !== method || route?.path !== path || (fromZap && !['single', 'aggregate'].includes(zapEvidence)) ||
       !Number.isInteger(status) || status < 100 || status > 599) return [];
-    return [{ caseId, step, operation, method, path, status }];
+    return [{ caseId, step, operation, method, path, status, source, sessionState, ...(fromZap && { zapEvidence }) }];
   });
 }
 
-function safeFindings(zap, model, http) {
-  return (zap?.findings ?? []).flatMap(({ rule, cwe, risk, operation, method, path }) => {
-    const cases = [...new Set(http.filter((row) => row.operation === operation && row.method === method && row.path === path)
-      .map(({ caseId }) => caseId))];
-    if (!/^\d{1,8}$/u.test(rule) || !cases.length) return [];
+function exchangeKey({ source, operation, status }) {
+  return `${source}/${operation}/${status}`;
+}
+
+function safeEvidence(entries, messages) {
+  const expected = Map.groupBy(messages, exchangeKey);
+  const valid = new Map();
+  for (const entry of entries) {
+    const group = expected.get(exchangeKey(entry));
+    if (!group || entry.expectedCount !== group.length || !Number.isSafeInteger(entry.receivedCount) ||
+      entry.receivedCount < 0 || entry.receivedCount > entry.expectedCount) continue;
+    const { source, operation, method, path, status } = group[0];
+    valid.set(exchangeKey(entry), { source, operation, method, path, status,
+      expectedCount: entry.expectedCount, receivedCount: entry.receivedCount });
+  }
+  return [...valid.values()];
+}
+
+function safeFindings(zap, model, evidence) {
+  return (zap?.findings ?? []).flatMap(({ rule, cwe, risk, operation, method, path, source }) => {
+    const evidenceRefs = evidence.flatMap((row, index) => row.source === source && row.operation === operation &&
+      row.method === method && row.path === path && row.receivedCount > 0 ? [`results.json#/zap/evidence/${index}`] : []);
+    if (!/^\d{1,8}$/u.test(rule) || !evidenceRefs.length) return [];
     const known = model.review.get(rule);
     const reviewed = known && zap.addons?.[known.addon] === known.version ? known : null;
     const chunkIds = [...model.chunks.values()].filter(({ cwe_id }) => cwe === cwe_id).map(({ sec_id }) => sec_id);
     const surface = operation === 'getCoreReadiness' ? 'gateway-tls' : (reviewed?.catalogSurface ?? 'core');
     return [{
       rule, cwe: /^CWE-\d{1,6}$/u.test(cwe) ? cwe : null,
-      risk: ['info', 'low', 'medium', 'high'].includes(risk) ? risk : 'unknown', operation, method, path, caseIds: cases,
+      risk: ['info', 'low', 'medium', 'high'].includes(risk) ? risk : 'unknown', operation, method, path, source,
       chunkIds,
       obligationIds: model.obligations.filter((row) => row.surface === surface && chunkIds.includes(row.chunkId)).map(obligationKey),
-      evidenceRef: 'results.json#/zap/findings', outcome: 'REVIEW',
+      evidenceRefs, attribution: 'source-and-route', outcome: 'REVIEW',
       reason: reviewed?.cause ?? 'Cảnh báo thụ động trên trao đổi fixture. Cần đối chiếu điều khoản và cấu hình tại SHA của build.',
       sourceRefs: reviewed?.refs.map(({ path, line }) => ({ path, line })) ?? [],
     }];
@@ -66,21 +86,56 @@ function caseOutcome(definition, collected, http, received, assertions) {
   return ['PASS', 'assertions-passed'];
 }
 
+function operationCoverage(model, cases, messages, evidence) {
+  const steps = cases.flatMap(({ caseId, outcome, source, expectedHttp, observed, evidenceRef }) =>
+    expectedHttp.map((step) => ({ ...step, caseId, source, evidenceRef, outcome,
+      observed: observed.http.some((item) => item.step === step.step),
+      received: observed.receivedByZap.some((item) => item.step === step.step),
+    })));
+  const cells = [...Map.groupBy(steps, ({ source, operation, sessionState }) => `${source}/${operation}/${sessionState}`).values()]
+    .map((items) => {
+      const { source, operation, sessionState } = items[0];
+      return { source, operation, sessionState, outcome: items.some(({ outcome }) => outcome === 'FAIL') ? 'FAIL' :
+        items.every(({ observed, received, outcome }) => observed && received && outcome === 'PASS') ? 'PASS' : 'MISSING',
+      steps: items.map(({ caseId, step, evidenceRef }) => ({ caseId, step, evidenceRef })) };
+    });
+  cells.push(...model.manifest.unobservedCells.map((cell) => ({ ...cell, outcome: 'MISSING', steps: [] })));
+  return {
+    operations: [...model.operations].map(([operation, contract]) => ({ operation, ...contract, ...model.manifest.scope[operation],
+      sources: Object.fromEntries(httpSources.map((source) => {
+        const groups = evidence.filter((group) => group.operation === operation && group.source === source);
+        return [source, {
+          observed: messages.filter((row) => row.operation === operation && row.source === source).length,
+          received: groups.reduce((sum, row) => sum + row.receivedCount, 0),
+          evidence: groups.filter(({ receivedCount }) => receivedCount > 0).map(({ expectedCount }) => expectedCount > 1 ? 'aggregate' : 'single'),
+        }];
+      })),
+    })),
+    cells,
+    counts: Object.fromEntries(httpSources.map((source) => [source, {
+      applicable: cells.filter((cell) => cell.source === source).length,
+      complete: cells.filter((cell) => cell.source === source && cell.outcome === 'PASS').length,
+    }])),
+  };
+}
+
 export function buildReport(model, run) {
   const { buildSha, caseResults, toolErrors } = run;
   if (!/^[a-f0-9]{40}$/u.test(buildSha)) throw new Error('Invalid build SHA');
   const messages = safeHttp(run.http, model);
-  const received = safeHttp(run.zap?.received ?? [], model);
-  const findings = safeFindings(run.zap, model, received);
+  const evidence = safeEvidence(run.zap?.evidence ?? [], messages);
+  const received = safeHttp(run.zap?.received ?? [], model, true).filter((row) =>
+    evidence.some((group) => exchangeKey(group) === exchangeKey(row) && group.receivedCount === group.expectedCount));
+  const findings = safeFindings(run.zap, model, evidence);
   const cases = [...model.cases.values()].map((definition, index) => {
-    const { id, requiredForPilot, sourceRefs, expected, layer, preconditions, fixture, action } = definition;
+    const { id, requiredForPilot, sourceRefs, expected, layer, preconditions, fixture, action, source } = definition;
     const collected = caseResults.get(id) ?? {};
     const assertions = safeAssertions(collected.assertions);
     const http = messages.filter(({ caseId }) => caseId === id);
     const inZap = received.filter(({ caseId }) => caseId === id);
     const [outcome, reason] = caseOutcome(definition, collected, http, inZap, assertions);
     return {
-      caseId: id, outcome, reason, requiredForPilot, layer, preconditions, fixture, action, sourceRefs,
+      caseId: id, outcome, reason, requiredForPilot, layer, preconditions, fixture, action, sourceRefs, ...(source && { source }),
       expected, expectedHttp: definition.http, observed: { assertions, http, receivedByZap: inZap },
       evidenceRef: `results.json#/cases/${index}/observed`, buildSha,
     };
@@ -117,7 +172,11 @@ export function buildReport(model, run) {
     completedJobs: ['passiveScan-config', 'import', 'passiveScan-wait', 'export', 'report', 'exitStatus']
       .filter((job) => run.zap?.completedJobs?.includes(job)),
     passiveCheck: run.zap?.passiveSelfcheck === true ? 'pass' : 'missing',
-    httpCount: messages.length, receivedCount: received.length,
+    httpCount: messages.length, receivedCount: evidence.reduce((sum, group) => sum + group.receivedCount, 0), evidence,
+    sources: (run.zap?.sources ?? []).filter(({ source }) => httpSources.includes(source)).map((scan) => ({
+      source: scan.source, ok: scan.ok === true, passiveCheck: scan.passiveSelfcheck === true ? 'pass' : 'missing',
+      exitCode: Number.isSafeInteger(scan.exitCode) ? scan.exitCode : null,
+    })),
     findings: findings.map((item) => ({ ...item, buildSha })),
   };
   const fixtureState = { started: run.fixture?.started === true, cleaned: run.fixture?.cleaned === true };
@@ -126,7 +185,8 @@ export function buildReport(model, run) {
   return {
     buildSha, suiteVersion: model.manifest.version, fixtureVersion: model.manifest.fixtureVersion,
     revisions: model.revisions, catalogCount: model.chunks.size, counts, passed, toolErrors: errors,
-    fixture: fixtureState, zap, criteria, obligations, cases, failures, openQuestions: model.openQuestions,
+    fixture: fixtureState, zap, coverage: operationCoverage(model, cases, messages, evidence),
+    criteria, obligations, cases, failures, openQuestions: model.openQuestions,
   };
 }
 
@@ -137,7 +197,22 @@ function renderSummary(report) {
     `- ZAP ${report.zap.version ?? 'chưa có'} · ${report.zap.mode} · đối soát ${report.zap.receivedCount}/${report.zap.httpCount} trao đổi · tín hiệu thụ động ${report.zap.passiveCheck}`,
     `- Add-on ${Object.entries(report.zap.addons).map(([id, version]) => id + ' ' + version).join(', ') || 'chưa có'}`,
     `- ${statuses.map((state) => `${state} **${report.counts[state]}**`).join(' · ')}`,
-    '', '## Ca kiểm', ''];
+    '', '## Độ phủ OpenAPI qua gateway', '',
+    ...Object.entries(report.coverage.counts).map(([source, { complete, applicable }]) => `- ${source} đủ bằng chứng ${complete}/${applicable} ô áp dụng`),
+    '', '| Operation | Contract qua gateway | Runner quan sát | UI quan sát | ZAP nhận (runner / UI) | Bằng chứng |',
+    '| --- | --- | ---: | ---: | ---: | --- |'];
+  for (const row of report.coverage.operations) {
+    const auth = row.security.length ? row.security.map((requirement) => Object.keys(requirement).join(' + ') || 'không yêu cầu').join(' hoặc ') : 'không yêu cầu';
+    const { runner, ui } = row.sources;
+    const types = [...new Set([...runner.evidence, ...ui.evidence])].map((type) => type === 'aggregate' ? 'tổng hợp' : 'đơn lẻ');
+    const qualifier = row.kind === 'readiness' ? ' (readiness)' : '';
+    lines.push(`| \`${row.operation}\`${qualifier} | \`${row.method} ${row.path}\` · ${auth} | ${runner.observed} | ${ui.observed} | ${runner.received} / ${ui.received} | ${row.kind === 'excluded' ? row.reason : types.join(', ') || 'chưa quan sát'} |`);
+  }
+  lines.push('', 'Bằng chứng tổng hợp đối soát số trao đổi cùng nguồn, method, path và status. Cảnh báo liên kết theo nguồn và route.', '');
+  for (const { outcome, operation, sessionState, source, reason } of report.coverage.cells) {
+    if (outcome !== 'PASS') lines.push(`- ${outcome} · ${source} · ${operation} · ${sessionState}${reason ? ' · ' + reason : ''}`);
+  }
+  lines.push('', '## Ca kiểm', '');
   for (const item of report.cases) {
     const status = item.observed.http.map(({ operation, status }) => `${operation} ${status}`).join(', ');
     const sources = item.sourceRefs.map(({ input, locator, version }) => `${locator} (${input} ${version})`).join(', ');
@@ -149,8 +224,9 @@ function renderSummary(report) {
   const findingsByRule = Map.groupBy(report.zap.findings, (item) => item.rule);
   for (const [rule, items] of findingsByRule) {
     const first = items[0];
-    lines.push(`- REVIEW · ZAP ${rule} · ${first.risk} · ${first.cwe ?? 'chưa ánh xạ CWE'} · ${items.length} operation`,
-      `  - ${first.reason}`);
+    const routes = items.map(({ operation, source }) => `${operation} (${source})`).join(', ');
+    lines.push(`- REVIEW · ZAP ${rule} · ${first.risk} · ${first.cwe ?? 'chưa ánh xạ CWE'}`,
+      `  - ${routes}`, `  - ${first.reason}`);
     if (first.sourceRefs.length) lines.push(`  - Nguồn tại build SHA: ${first.sourceRefs.map(({ path, line }) => `\`${path}:${line}\``).join(', ')}`);
   }
   for (const item of report.failures) lines.push(`- FAIL · ${item.caseId} · ${item.assertions.join(', ') || item.reason} · ${item.obligationIds.join(', ')}`);

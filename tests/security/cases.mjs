@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { isDeepStrictEqual } from 'node:util';
-import { expectedPages, fixture, fixtureIdentity, seedItems } from './fixture.mjs';
+import { ageSession, expectedPages, fixture, fixtureIdentity, seedItems } from './fixture.mjs';
 
 export class AssertionFailure extends Error {
   constructor(assertion) {
@@ -40,9 +40,9 @@ function verifyPage(check, body, tab, expected, continued, step) {
 
 function apiFor(definition, client, check) {
   return async (step, options) => {
-    const { operation, status } = definition.http.find((entry) => entry.step === step);
-    const response = await client.send(definition.id, step, operation, options);
-    check(step + '-http-status', response.status === status);
+    const expected = definition.http.find((entry) => entry.step === step);
+    const response = await client.send(definition.id, expected, options);
+    check(step + '-http-status', response.status === expected.status);
     return {
       ...response,
       json() {
@@ -51,6 +51,20 @@ function apiFor(definition, client, check) {
       },
     };
   };
+}
+
+export function verifyError(check, step, response, code) {
+  check(step + '-json-header', /^application\/json(?:;|$)/iu.test(response.headers['content-type'] ?? ''));
+  if (code === 'SESSION_INVALID') check(step + '-bearer', response.headers['www-authenticate'] === 'Bearer');
+  check(step + '-error', isDeepStrictEqual(response.json(), { code }));
+}
+
+async function verifyRejectedSession(api, check, prefix, token) {
+  for (const name of ['validate', 'profile', 'items', 'revoke']) {
+    const step = `${prefix}-${name}`;
+    const response = await api(step, { token, ...(name === 'items' && { query: { tab: 'lost' } }) });
+    verifyError(check, step, response, 'SESSION_INVALID');
+  }
 }
 
 async function verifyItems(tab, { api, check, state }) {
@@ -104,13 +118,23 @@ export const handlers = {
     }
     for (const step of ['validate-a1-denied', 'profile-a1-denied', 'items-a1-denied']) {
       const response = await api(step, { token, ...(step.startsWith('items') && { query: { tab: 'lost' } }) });
-      check(step + '-bearer', response.headers['www-authenticate'] === 'Bearer');
-      check(step + '-error', isDeepStrictEqual(response.json(), { code: 'SESSION_INVALID' }));
+      verifyError(check, step, response, 'SESSION_INVALID');
     }
     const surviving = { token: state.a.sessionToken };
     const validated = (await api('validate-a2', surviving)).json();
     check('surviving-account', sessionShape(validated, false) && validated.accountId === state.a.accountId);
     check('surviving-profile', isDeepStrictEqual((await api('profile-a2', surviving)).json(), profile('a')));
+  },
+  'UC01-SESSION-ABSENT': ({ api, check }) => verifyRejectedSession(api, check, 'absent'),
+  'UC01-SESSION-EXPIRED': async ({ api, check, fixtureDir, seed }) => {
+    const sign = await fixtureIdentity(fixtureDir);
+    for (const state of ['expired-idle', 'expired-absolute']) {
+      const data = await sign('d', 'android');
+      const body = (await api(`create-${state}`, { data })).json();
+      check(`create-${state}-contract`, sessionShape(body, true));
+      await ageSession(data.attemptId, state, seed);
+      await verifyRejectedSession(api, check, state, body.sessionToken);
+    }
   },
   'UC02-LOST': (context) => verifyItems('lost', context),
   'UC02-FOUND': (context) => verifyItems('found', context),
@@ -129,6 +153,10 @@ export const handlers = {
       check(step + '-invalid-cursor', isDeepStrictEqual(response.json(), { code: 'INVALID_CURSOR' }));
     }
   },
+  'UC02-INVALID-TAB': async ({ api, check, state }) => {
+    const response = await api('missing-tab', { token: state.a.sessionToken });
+    verifyError(check, 'missing-tab', response, 'INVALID_REQUEST');
+  },
   'MOBILE-SESSION-CLEANUP': async ({ check, command, root }) => {
     const result = await command(process.execPath, ['--import', 'tsx', '--test', '--test-reporter=tap',
       'tests/auth-flow.test.ts', 'tests/my-area-flow.test.ts'], { cwd: root + '/apps/mobile', timeout: 30_000 });
@@ -144,17 +172,19 @@ export const handlers = {
     }
   },
   'CORE-HTTP-PRIVACY': async ({ check, client, model }) => {
-    const operations = [...model.operations.keys()].filter((name) => name !== 'getCoreReadiness');
+    const operations = [...model.operations.keys()].filter((name) => model.manifest.scope[name].kind === 'business');
     for (const operation of operations) {
       const messages = client.exchanges.filter((item) => item.operation === operation);
       check(operation + '-recorded', messages.length > 0, { observedCount: messages.length });
-      for (const { har } of messages) {
+      for (const { har, sessionState } of messages) {
         const { request, response } = har;
         const queryAllowed = request.queryString.every(({ name }) => operation === 'listMyItems' && ['tab', 'cursor'].includes(name));
         const auth = request.headers.find(({ name }) => name === 'authorization');
         if (operation === 'createGoogleSession') {
           const body = JSON.parse(request.postData?.text ?? '{}');
           check(operation + '-body-only', queryAllowed && !auth && typeof body.idToken === 'string' && !request.url.includes(body.idToken));
+        } else if (sessionState === 'absent') {
+          check(operation + '-no-credential', queryAllowed && !auth && !request.postData);
         } else {
           check(operation + '-bearer-only', queryAllowed && auth?.value.startsWith('Bearer ') &&
             !request.url.includes(auth.value.slice('Bearer '.length)) && !request.postData);
@@ -171,8 +201,8 @@ export const handlers = {
 export async function executeCases(model, context, onCase = () => {}) {
   const results = new Map();
   const state = {};
-  for (const id of ['EDGE-FIXTURE-TLS', 'UC01-SESSION', 'UC01-REVOKE', 'UC02-LOST', 'UC02-FOUND', 'UC02-CLAIMS',
-    'UC02-CURSOR', 'CORE-HTTP-PRIVACY', 'MOBILE-SESSION-CLEANUP']) {
+  for (const id of ['EDGE-FIXTURE-TLS', 'UC01-SESSION', 'UC01-REVOKE', 'UC01-SESSION-ABSENT', 'UC01-SESSION-EXPIRED',
+    'UC02-LOST', 'UC02-FOUND', 'UC02-CLAIMS', 'UC02-CURSOR', 'UC02-INVALID-TAB', 'CORE-HTTP-PRIVACY', 'MOBILE-SESSION-CLEANUP']) {
     const definition = model.cases.get(id);
     const assertions = [];
     function check(assertion, ok, counts = {}) {
