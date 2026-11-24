@@ -842,8 +842,15 @@
         application/json:
           schema:
             $ref: ../components/schemas/ClosePost.yaml
-          example:
-            reason: returnedViaApp
+          examples:
+            returnedViaApp:
+              summary: Khởi tạo xác nhận trao trả
+              value:
+                reason: returnedViaApp
+            noLongerNeeded:
+              summary: Đóng bài vì không còn nhu cầu
+              value:
+                reason: noLongerNeeded
     responses:
       '200':
         description: Thao tác hoàn tất.
@@ -858,11 +865,30 @@
           application/json:
             schema:
               $ref: ../components/schemas/ClosureResult.yaml
-            example:
-              postId: item-123
-              status: closed
-              visibility: visible
-              updatedAt: '2026-11-24T05:00:00Z'
+            examples:
+              returnedViaApp:
+                summary: Chờ bên còn lại xác nhận trao trả
+                value:
+                  postId: item-123
+                  status: pendingReturnConfirmation
+                  visibility: visible
+                  updatedAt: '2026-11-24T05:00:00Z'
+                  returnRequest:
+                    requestId: item-123
+                    postId: item-123
+                    interactionId: item-123
+                    status: pending
+                    startedAt: '2026-11-24T05:00:00Z'
+                    confirmationDueAt: '2026-11-27T05:00:00Z'
+                    needsReviewAt: '2026-12-01T05:00:00Z'
+                    counterpartConfirmed: false
+              noLongerNeeded:
+                summary: Bài đã đóng vì không còn nhu cầu
+                value:
+                  postId: item-123
+                  status: closed
+                  visibility: visible
+                  updatedAt: '2026-11-24T05:00:00Z'
       '400':
         $ref: ../components/responses.yaml#/invalidRequest
       '401':

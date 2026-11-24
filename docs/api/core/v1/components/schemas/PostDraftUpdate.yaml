@@ -1,4 +1,5 @@
 type: object
+description: Chỉ cập nhật các trường được gửi. Trường vắng mặt giữ nguyên giá trị hiện tại.
 additionalProperties: false
 properties:
   title:
@@ -30,6 +31,8 @@ properties:
       - item-123
   photoUploadIds:
     type: array
+    description: >-
+      Thay thế danh sách ảnh được gắn vào bản nháp. Mảng rỗng gỡ toàn bộ ảnh khỏi bản nháp khi trạng thái cho phép sửa.
     items:
       type: string
       minLength: 1
@@ -42,6 +45,7 @@ properties:
       - heldByFinder
       - handedToAuthorities
   privateNote:
+    description: Gửi null để xóa ghi chú riêng nếu người gọi được phép sửa ghi chú.
     anyOf:
       - type: string
         maxLength: 1000

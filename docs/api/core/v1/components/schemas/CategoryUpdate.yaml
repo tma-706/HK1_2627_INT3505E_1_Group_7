@@ -1,4 +1,5 @@
 type: object
+description: Chỉ cập nhật các trường được gửi. Trường vắng mặt giữ nguyên giá trị hiện tại.
 additionalProperties: false
 properties:
   name:
@@ -12,6 +13,7 @@ properties:
       - active
       - retired
   replacementCategoryId:
+    description: Gửi null để bỏ danh mục thay thế đang được thiết lập.
     anyOf:
       - type: string
         minLength: 1
