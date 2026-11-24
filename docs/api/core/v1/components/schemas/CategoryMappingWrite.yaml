@@ -1,0 +1,13 @@
+type: object
+additionalProperties: false
+required:
+  - replacementCategoryId
+  - sameMeaningConfirmed
+properties:
+  replacementCategoryId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  sameMeaningConfirmed:
+    const: true

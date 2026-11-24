@@ -1,0 +1,35 @@
+type: object
+additionalProperties: false
+required:
+  - messageId
+  - conversationId
+  - senderId
+  - text
+  - sentAt
+properties:
+  messageId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  conversationId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  senderId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  text:
+    type: string
+    minLength: 1
+    maxLength: 2000
+    examples:
+      - Chào bạn, mình có thể hẹn tại thư viện.
+  sentAt:
+    type: string
+    format: date-time
+    examples:
+      - '2026-11-24T05:00:00Z'

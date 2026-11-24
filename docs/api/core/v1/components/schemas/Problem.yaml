@@ -1,0 +1,49 @@
+type: object
+additionalProperties: false
+required:
+  - type
+  - title
+  - status
+  - code
+properties:
+  type:
+    type: string
+    format: uri-reference
+    examples:
+      - urn:campus-lost-found:problem:invalid-request
+  title:
+    type: string
+    minLength: 1
+  status:
+    type: integer
+    minimum: 400
+    maximum: 599
+  code:
+    type: string
+    pattern: ^[A-Z][A-Z0-9_]*$
+    examples:
+      - INVALID_REQUEST
+  detail:
+    type: string
+    minLength: 1
+  traceId:
+    type: string
+    minLength: 1
+  errors:
+    type: array
+    items:
+      type: object
+      additionalProperties: false
+      required:
+        - field
+        - code
+      properties:
+        field:
+          type: string
+          minLength: 1
+        code:
+          type: string
+          minLength: 1
+        message:
+          type: string
+          minLength: 1

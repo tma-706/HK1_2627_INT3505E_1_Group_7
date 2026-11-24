@@ -1,0 +1,60 @@
+oneOf:
+  - type: object
+    additionalProperties: false
+    required:
+      - outcome
+      - reason
+    properties:
+      outcome:
+        type: string
+        enum:
+          - uphold
+          - overturn
+      reason:
+        type: string
+        minLength: 1
+        examples:
+          - Lý do đã được kiểm tra.
+  - type: object
+    additionalProperties: false
+    required:
+      - outcome
+      - reason
+      - adjustment
+    properties:
+      outcome:
+        type: string
+        const: adjust
+      reason:
+        type: string
+        minLength: 1
+        examples:
+          - Lý do đã được kiểm tra.
+      adjustment:
+        oneOf:
+          - type: object
+            additionalProperties: false
+            required:
+              - kind
+              - visibility
+            properties:
+              kind:
+                type: string
+                const: postVisibility
+              visibility:
+                $ref: ./PostVisibility.yaml
+          - type: object
+            additionalProperties: false
+            required:
+              - kind
+              - duration
+            properties:
+              kind:
+                type: string
+                const: accountLock
+              duration:
+                type: string
+                enum:
+                  - 7days
+                  - 30days
+                  - permanent

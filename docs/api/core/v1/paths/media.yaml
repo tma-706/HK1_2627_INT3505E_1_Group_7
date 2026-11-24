@@ -1,0 +1,628 @@
+/post-drafts/{draftId}/uploads:
+  parameters:
+    - name: draftId
+      in: path
+      required: true
+      description: ID tài nguyên draftId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  post:
+    tags:
+      - Ảnh và upload
+    summary: Cấp quyền upload trực tiếp
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ tác giả. Một quyền POST ghi ngắn hạn cho đúng một object tạm. Tối đa 5 ảnh bài đăng, JPG/PNG/WEBP và
+      10 MB mỗi ảnh. Bản sửa phải còn quyền thay ảnh. Client gửi toàn bộ formFields qua HTTPS đến uploadUrl,
+      thêm tệp và giữ version nhận được. Khóa idempotency được ràng buộc với chủ thể, đích, mục đích và nội
+      dung.
+    operationId: createDraftPhotoUpload
+    x-use-cases:
+      - UC05
+      - UC06
+      - UC24
+    x-access: member
+    security:
+      - CoreSession: []
+    parameters:
+      - $ref: ../components/parameters/IdempotencyKey.yaml
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/PostPhotoUploadRequest.yaml
+          example:
+            contentType: image/jpeg
+            sizeBytes: 321900
+            sha256: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    responses:
+      '201':
+        description: Tài nguyên đã được tạo.
+        headers:
+          Location:
+            description: 'URI tham chiếu của tài nguyên. Mẫu: /api/v1/uploads/{uploadId}'
+            schema:
+              type: string
+              format: uri-reference
+            required: true
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/UploadGrant.yaml
+            example:
+              uploadId: item-123
+              method: POST
+              uploadUrl: https://example.test/resource
+              formFields:
+                key: demo-object
+                policy: demo-policy
+              uploadExpiresAt: '2026-11-24T05:00:00Z'
+              confirmationExpiresAt: '2026-11-24T05:00:00Z'
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '409':
+        description: Trạng thái hoặc dữ liệu hiện hành xung đột với thao tác.
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/Problem.yaml
+            example:
+              type: urn:campus-lost-found:problem:upload-grant-conflict
+              title: Trạng thái hoặc dữ liệu hiện hành xung đột với thao tác.
+              status: 409
+              code: UPLOAD_GRANT_CONFLICT
+        headers:
+          Cache-Control:
+            description: Phản hồi có thể thay đổi theo phiên, quyền hoặc trạng thái tài nguyên.
+            schema:
+              type: string
+              const: no-store
+            required: true
+      '422':
+        $ref: ../components/responses.yaml#/unprocessable
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/me/posts/{postId}/uploads:
+  parameters:
+    - name: postId
+      in: path
+      required: true
+      description: ID tài nguyên postId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  post:
+    tags:
+      - Ảnh và upload
+    summary: Cấp quyền upload trực tiếp
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ tác giả. Một quyền POST ghi ngắn hạn cho đúng một object tạm. Tối đa 5 ảnh bài đăng, JPG/PNG/WEBP và
+      10 MB mỗi ảnh. Bản sửa phải còn quyền thay ảnh. Client gửi toàn bộ formFields qua HTTPS đến uploadUrl,
+      thêm tệp và giữ version nhận được. Khóa idempotency được ràng buộc với chủ thể, đích, mục đích và nội
+      dung.
+    operationId: createPostPhotoUpload
+    x-use-cases:
+      - UC09
+      - UC24
+    x-access: member
+    security:
+      - CoreSession: []
+    parameters:
+      - $ref: ../components/parameters/IdempotencyKey.yaml
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/PostPhotoUploadRequest.yaml
+          example:
+            contentType: image/jpeg
+            sizeBytes: 321900
+            sha256: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    responses:
+      '201':
+        description: Tài nguyên đã được tạo.
+        headers:
+          Location:
+            description: 'URI tham chiếu của tài nguyên. Mẫu: /api/v1/uploads/{uploadId}'
+            schema:
+              type: string
+              format: uri-reference
+            required: true
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/UploadGrant.yaml
+            example:
+              uploadId: item-123
+              method: POST
+              uploadUrl: https://example.test/resource
+              formFields:
+                key: demo-object
+                policy: demo-policy
+              uploadExpiresAt: '2026-11-24T05:00:00Z'
+              confirmationExpiresAt: '2026-11-24T05:00:00Z'
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '409':
+        description: Trạng thái hoặc dữ liệu hiện hành xung đột với thao tác.
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/Problem.yaml
+            example:
+              type: urn:campus-lost-found:problem:upload-grant-conflict
+              title: Trạng thái hoặc dữ liệu hiện hành xung đột với thao tác.
+              status: 409
+              code: UPLOAD_GRANT_CONFLICT
+        headers:
+          Cache-Control:
+            description: Phản hồi có thể thay đổi theo phiên, quyền hoặc trạng thái tài nguyên.
+            schema:
+              type: string
+              const: no-store
+            required: true
+      '422':
+        $ref: ../components/responses.yaml#/unprocessable
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/me/uploads:
+  post:
+    tags:
+      - Ảnh và upload
+    summary: Cấp quyền upload trực tiếp
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Cấp upload gắn với mục đích và chủ thể. Với phản hồi kiểm bài Lost đủ điều kiện. Với bằng chứng kiểm quyết
+      định của chủ thể. Giới hạn kích thước và media type của mục đích phụ còn mở. Client gửi toàn bộ formFields
+      qua HTTPS đến uploadUrl, thêm tệp và giữ version nhận được. Khóa idempotency được ràng buộc với chủ thể,
+      đích, mục đích và nội dung.
+    operationId: createAuxiliaryUpload
+    x-use-cases:
+      - UC04
+      - UC17
+      - UC29
+    x-access: member
+    security:
+      - CoreSession: []
+    parameters:
+      - $ref: ../components/parameters/IdempotencyKey.yaml
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/AuxiliaryUploadRequest.yaml
+          example:
+            purpose: avatar
+            contentType: image/jpeg
+            sizeBytes: 1
+            sha256: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    responses:
+      '201':
+        description: Tài nguyên đã được tạo.
+        headers:
+          Location:
+            description: 'URI tham chiếu của tài nguyên. Mẫu: /api/v1/uploads/{uploadId}'
+            schema:
+              type: string
+              format: uri-reference
+            required: true
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/UploadGrant.yaml
+            example:
+              uploadId: item-123
+              method: POST
+              uploadUrl: https://example.test/resource
+              formFields:
+                key: demo-object
+                policy: demo-policy
+              uploadExpiresAt: '2026-11-24T05:00:00Z'
+              confirmationExpiresAt: '2026-11-24T05:00:00Z'
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '409':
+        description: Trạng thái hoặc dữ liệu hiện hành xung đột với thao tác.
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/Problem.yaml
+            example:
+              type: urn:campus-lost-found:problem:upload-grant-conflict
+              title: Trạng thái hoặc dữ liệu hiện hành xung đột với thao tác.
+              status: 409
+              code: UPLOAD_GRANT_CONFLICT
+        headers:
+          Cache-Control:
+            description: Phản hồi có thể thay đổi theo phiên, quyền hoặc trạng thái tài nguyên.
+            schema:
+              type: string
+              const: no-store
+            required: true
+      '422':
+        $ref: ../components/responses.yaml#/unprocessable
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/me/moderation-appeals/uploads:
+  post:
+    tags:
+      - Ảnh và upload
+    summary: Cấp quyền upload trực tiếp
+    description: >-
+      Phiên Bearer của người bị ảnh hưởng hoặc Bearer giới hạn cho khiếu nại do Core cấp sau xác minh. Quyền chỉ
+      áp dụng cho quyết định của chính chủ thể. Cấp URL tải bằng chứng chỉ cho quyết định thuộc phạm vi quyền
+      khiếu nại. Chính sách định dạng và dung lượng còn mở. Client gửi toàn bộ formFields qua HTTPS đến
+      uploadUrl, thêm tệp và giữ version nhận được. Khóa idempotency được ràng buộc với chủ thể, đích, mục đích
+      và nội dung.
+    operationId: createAppealEvidenceUpload
+    x-use-cases:
+      - UC29
+    x-access: appeal
+    security:
+      - CoreSession: []
+      - AppealSession: []
+    parameters:
+      - $ref: ../components/parameters/IdempotencyKey.yaml
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/AppealEvidenceUploadRequest.yaml
+          example:
+            purpose: appealEvidence
+            decisionId: item-123
+            contentType: image/jpeg
+            sizeBytes: 1
+            sha256: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    responses:
+      '201':
+        description: Tài nguyên đã được tạo.
+        headers:
+          Location:
+            description: 'URI tham chiếu của tài nguyên. Mẫu: /api/v1/uploads/{uploadId}'
+            schema:
+              type: string
+              format: uri-reference
+            required: true
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/UploadGrant.yaml
+            example:
+              uploadId: item-123
+              method: POST
+              uploadUrl: https://example.test/resource
+              formFields:
+                key: demo-object
+                policy: demo-policy
+              uploadExpiresAt: '2026-11-24T05:00:00Z'
+              confirmationExpiresAt: '2026-11-24T05:00:00Z'
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '409':
+        description: Trạng thái hoặc dữ liệu hiện hành xung đột với thao tác.
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/Problem.yaml
+            example:
+              type: urn:campus-lost-found:problem:upload-grant-conflict
+              title: Trạng thái hoặc dữ liệu hiện hành xung đột với thao tác.
+              status: 409
+              code: UPLOAD_GRANT_CONFLICT
+        headers:
+          Cache-Control:
+            description: Phản hồi có thể thay đổi theo phiên, quyền hoặc trạng thái tài nguyên.
+            schema:
+              type: string
+              const: no-store
+            required: true
+      '422':
+        $ref: ../components/responses.yaml#/unprocessable
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/uploads/{uploadId}/confirmations:
+  parameters:
+    - name: uploadId
+      in: path
+      required: true
+      description: ID tài nguyên uploadId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  post:
+    tags:
+      - Ảnh và upload
+    summary: Xác nhận upload
+    description: >-
+      Phiên Bearer của người bị ảnh hưởng hoặc Bearer giới hạn cho khiếu nại do Core cấp sau xác minh. Quyền chỉ
+      áp dụng cho quyết định của chính chủ thể. Chỉ chủ thể sở hữu lượt upload. Với Bearer giới hạn khiếu nại,
+      chỉ xử lý lượt đúng quyết định khiếu nại của chủ thể. Core chốt đúng phiên bản object, kiểm metadata và
+      tạo một job trong cùng giao dịch. Gửi lại xác nhận trả trạng thái hiện hành. Worker xác minh kích thước,
+      định dạng, checksum và xử lý ảnh, chỉ đưa bản đã che hợp lệ vào tài nguyên công khai.
+    operationId: confirmUpload
+    x-use-cases:
+      - UC04
+      - UC05
+      - UC06
+      - UC09
+      - UC17
+      - UC24
+      - UC29
+    x-access: appeal
+    security:
+      - CoreSession: []
+      - AppealSession: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/UploadConfirmation.yaml
+          example: {}
+    responses:
+      '200':
+        description: Đã xác nhận ở lượt trước. Trả trạng thái hiện hành.
+        headers:
+          Cache-Control:
+            description: Trạng thái upload riêng tư.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/UploadStatus.yaml
+            example:
+              uploadId: item-123
+              status: processing
+              updatedAt: '2026-11-24T05:00:00Z'
+              redactionMode: null
+              failureCode: null
+              previewUrl: null
+      '202':
+        description: Yêu cầu đã được tiếp nhận. Theo dõi tài nguyên được nêu trong Location.
+        headers:
+          Location:
+            description: 'URI tham chiếu của tài nguyên. Mẫu: /api/v1/uploads/{uploadId}'
+            schema:
+              type: string
+              format: uri-reference
+            required: true
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/UploadStatus.yaml
+            example:
+              uploadId: item-123
+              status: processing
+              updatedAt: '2026-11-24T05:00:00Z'
+              redactionMode: null
+              failureCode: null
+              previewUrl: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '409':
+        $ref: ../components/responses.yaml#/conflict
+      '422':
+        $ref: ../components/responses.yaml#/unprocessable
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+    x-operation-notes: Sau khi đã tiếp nhận, gửi lại có thể trả 200 với trạng thái hiện hành, và không thêm job.
+/uploads/{uploadId}:
+  parameters:
+    - name: uploadId
+      in: path
+      required: true
+      description: ID tài nguyên uploadId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  get:
+    tags:
+      - Ảnh và upload
+    summary: Xem trạng thái upload
+    description: >-
+      Phiên Bearer của người bị ảnh hưởng hoặc Bearer giới hạn cho khiếu nại do Core cấp sau xác minh. Quyền chỉ
+      áp dụng cho quyết định của chính chủ thể. Chỉ chủ thể sở hữu lượt upload. Với Bearer giới hạn khiếu nại,
+      chỉ xử lý lượt đúng quyết định khiếu nại của chủ thể. Preview ngắn hạn thuộc bản đã xử lý hoặc bản xem
+      trước do tác giả được xem. Ảnh gốc và metadata không thuộc hình công khai.
+    operationId: getUploadStatus
+    x-use-cases:
+      - UC04
+      - UC05
+      - UC06
+      - UC09
+      - UC17
+      - UC24
+      - UC29
+    x-access: appeal
+    security:
+      - CoreSession: []
+      - AppealSession: []
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/UploadStatus.yaml
+            example:
+              uploadId: item-123
+              status: processing
+              updatedAt: '2026-11-24T05:00:00Z'
+              redactionMode: null
+              failureCode: null
+              previewUrl: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/uploads/{uploadId}/redaction-regions:
+  parameters:
+    - name: uploadId
+      in: path
+      required: true
+      description: ID tài nguyên uploadId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  put:
+    tags:
+      - Ảnh và upload
+    summary: Điều chỉnh vùng che ảnh
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ tác giả của bản nháp hoặc bài đang chỉnh. Tọa độ chuẩn hóa theo ảnh định hướng đúng, gốc góc trên
+      trái. Core kiểm x + width và y + height không vượt 1. Có thể điều chỉnh đề xuất hoặc che thủ công nếu AI
+      lỗi. Bản công khai chỉ đi qua trạng thái ready khi che đủ thông tin rủi ro cao, loại EXIF/GPS và làm phẳng
+      vùng che.
+    operationId: setPhotoRedactionRegions
+    x-use-cases:
+      - UC24
+    x-access: member
+    security:
+      - CoreSession: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/RedactionRegionWrite.yaml
+          example:
+            regions:
+              - x: 0.2
+                y: 0.2
+                width: 0.2
+                height: 0.2
+    responses:
+      '202':
+        description: Yêu cầu đã được tiếp nhận. Theo dõi tài nguyên được nêu trong Location.
+        headers:
+          Location:
+            description: 'URI tham chiếu của tài nguyên. Mẫu: /api/v1/uploads/{uploadId}'
+            schema:
+              type: string
+              format: uri-reference
+            required: true
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/UploadStatus.yaml
+            example:
+              uploadId: item-123
+              status: processing
+              updatedAt: '2026-11-24T05:00:00Z'
+              redactionMode: null
+              failureCode: null
+              previewUrl: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '409':
+        $ref: ../components/responses.yaml#/conflict
+      '422':
+        $ref: ../components/responses.yaml#/unprocessable
+      '503':
+        $ref: ../components/responses.yaml#/unavailable

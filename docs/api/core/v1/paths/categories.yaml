@@ -1,0 +1,277 @@
+/categories:
+  get:
+    tags:
+      - Danh mục
+    summary: Xem danh mục đồ vật
+    description: >-
+      Guest và người dùng đã đăng nhập. Thao tác này sử dụng dữ liệu công khai hoặc dữ liệu xác thực ở đầu vào.
+      Trả danh mục đang dùng hoặc lịch sử tùy mục đích. Tạo bài chỉ dùng danh mục đang hoạt động, lọc tìm kiếm
+      dùng được danh mục lịch sử. Sắp theo tên hiển thị và ID tăng dần.
+    operationId: listCategories
+    x-use-cases:
+      - UC05
+      - UC06
+      - UC12
+      - UC28
+    x-access: guest
+    security: []
+    parameters:
+      - $ref: ../components/parameters/Cursor.yaml
+      - $ref: ../components/parameters/Limit.yaml
+      - in: query
+        name: usage
+        schema:
+          type: string
+          enum:
+            - creation
+            - search
+        description: creation chỉ trả active; search gồm danh mục lịch sử. Mặc định search.
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/CategoryPage.yaml
+            example:
+              items:
+                - categoryId: item-123
+                  name: Ví và túi
+                  status: active
+                  replacementCategoryId: null
+              nextCursor: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/admin/categories:
+  post:
+    tags:
+      - Danh mục
+    summary: Tạo danh mục
+    description: >-
+      Phiên hiệu lực và quyền quản trị tương ứng với thao tác. Core kiểm lại quyền mỗi lần gọi. Yêu cầu quyền
+      quản lý danh mục. Danh mục mới ở trạng thái active.
+    operationId: createCategory
+    x-use-cases:
+      - UC28
+    x-access: admin
+    security:
+      - CoreSession: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/CategoryCreate.yaml
+          example:
+            name: Ví và túi
+    responses:
+      '201':
+        description: Tài nguyên đã được tạo.
+        headers:
+          Location:
+            description: 'URI tham chiếu của tài nguyên. Mẫu: /api/v1/admin/categories/{categoryId}'
+            schema:
+              type: string
+              format: uri-reference
+            required: true
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/Category.yaml
+            example:
+              categoryId: item-123
+              name: Ví và túi
+              status: active
+              replacementCategoryId: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '409':
+        $ref: ../components/responses.yaml#/conflict
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/admin/categories/{categoryId}:
+  parameters:
+    - name: categoryId
+      in: path
+      required: true
+      description: ID tài nguyên categoryId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  get:
+    tags:
+      - Danh mục
+    summary: Xem danh mục để quản lý
+    description: >-
+      Phiên hiệu lực và quyền quản trị tương ứng với thao tác. Core kiểm lại quyền mỗi lần gọi. Yêu cầu quyền
+      đọc danh mục quản trị. Trả cả danh mục lịch sử.
+    operationId: getAdminCategory
+    x-use-cases:
+      - UC28
+    x-access: admin
+    security:
+      - CoreSession: []
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/Category.yaml
+            example:
+              categoryId: item-123
+              name: Ví và túi
+              status: active
+              replacementCategoryId: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+  patch:
+    tags:
+      - Danh mục
+    summary: Sửa hoặc ngừng dùng danh mục
+    description: >-
+      Phiên hiệu lực và quyền quản trị tương ứng với thao tác. Core kiểm lại quyền mỗi lần gọi. Có thể thiết lập
+      danh mục thay thế. Bài cũ giữ danh mục và tên lịch sử cho đến khi có ánh xạ được xác nhận. Ngừng dùng loại
+      danh mục khỏi chọn cho bài mới.
+    operationId: updateCategory
+    x-use-cases:
+      - UC28
+    x-access: admin
+    security:
+      - CoreSession: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/CategoryUpdate.yaml
+          example:
+            name: Ví và túi
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/Category.yaml
+            example:
+              categoryId: item-123
+              name: Ví và túi
+              status: active
+              replacementCategoryId: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '409':
+        $ref: ../components/responses.yaml#/conflict
+      '422':
+        $ref: ../components/responses.yaml#/unprocessable
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/admin/categories/{categoryId}/historical-mapping:
+  parameters:
+    - name: categoryId
+      in: path
+      required: true
+      description: ID tài nguyên categoryId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  put:
+    tags:
+      - Danh mục
+    summary: Xác nhận ánh xạ danh mục lịch sử
+    description: >-
+      Phiên hiệu lực và quyền quản trị tương ứng với thao tác. Core kiểm lại quyền mỗi lần gọi. Chỉ ánh xạ sau
+      khi Admin xác nhận danh mục thay thế có cùng ý nghĩa. Lặp xác nhận cùng cặp giữ nguyên hiệu lực. Nếu đích
+      thay đổi, cần xác minh lại trước khi chuyển dữ liệu.
+    operationId: confirmCategoryMapping
+    x-use-cases:
+      - UC28
+    x-access: admin
+    security:
+      - CoreSession: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/CategoryMappingWrite.yaml
+          example:
+            replacementCategoryId: item-123
+            sameMeaningConfirmed: true
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/CategoryMapping.yaml
+            example:
+              sourceCategoryId: item-123
+              replacementCategoryId: item-123
+              confirmedAt: '2026-11-24T05:00:00Z'
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '409':
+        $ref: ../components/responses.yaml#/conflict
+      '422':
+        $ref: ../components/responses.yaml#/unprocessable
+      '503':
+        $ref: ../components/responses.yaml#/unavailable

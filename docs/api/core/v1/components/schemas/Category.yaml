@@ -1,0 +1,30 @@
+type: object
+additionalProperties: false
+required:
+  - categoryId
+  - name
+  - status
+  - replacementCategoryId
+properties:
+  categoryId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  name:
+    type: string
+    minLength: 1
+    examples:
+      - Ví và túi
+  status:
+    type: string
+    enum:
+      - active
+      - retired
+  replacementCategoryId:
+    anyOf:
+      - type: string
+        minLength: 1
+        examples:
+          - item-123
+      - type: 'null'

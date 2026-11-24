@@ -1,0 +1,20 @@
+type: object
+additionalProperties: false
+required:
+  - requestId
+  - status
+  - receivedAt
+properties:
+  requestId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  status:
+    type: string
+    const: received
+  receivedAt:
+    type: string
+    format: date-time
+    examples:
+      - '2026-11-24T05:00:00Z'

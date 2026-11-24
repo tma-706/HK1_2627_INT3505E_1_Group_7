@@ -1,0 +1,16 @@
+type: object
+additionalProperties: false
+required:
+  - reportId
+  - createdAt
+properties:
+  reportId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  createdAt:
+    type: string
+    format: date-time
+    examples:
+      - '2026-11-24T05:00:00Z'

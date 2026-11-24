@@ -1,0 +1,37 @@
+type: object
+additionalProperties: false
+required:
+  - suggestionId
+  - candidatePostId
+  - score
+  - explanation
+  - feedback
+properties:
+  suggestionId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  candidatePostId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  score:
+    type: number
+    minimum: 65
+    maximum: 100
+    examples:
+      - 78
+  explanation:
+    type: string
+    minLength: 1
+    examples:
+      - Cùng danh mục và gần khu vực được báo.
+  feedback:
+    anyOf:
+      - type: string
+        enum:
+          - correct
+          - incorrect
+      - type: 'null'

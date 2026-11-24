@@ -1,0 +1,11 @@
+type: object
+additionalProperties: false
+required:
+  - token
+properties:
+  token:
+    type: string
+    minLength: 1
+    examples:
+      - fictional-secret-123
+    writeOnly: true

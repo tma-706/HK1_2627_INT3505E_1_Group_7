@@ -1,0 +1,38 @@
+type: object
+additionalProperties: false
+required:
+  - claimId
+  - postId
+  - status
+  - updatedAt
+  - createdAt
+properties:
+  claimId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  postId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  status:
+    type: string
+    enum:
+      - pending
+      - approved
+      - rejected
+      - withdrawn
+      - expired
+      - superseded
+  updatedAt:
+    type: string
+    format: date-time
+    examples:
+      - '2026-11-24T05:00:00Z'
+  createdAt:
+    type: string
+    format: date-time
+    examples:
+      - '2026-11-24T05:00:00Z'

@@ -1,0 +1,38 @@
+type: object
+additionalProperties: false
+required:
+  - caseId
+  - postId
+  - status
+  - reportCount
+  - openedAt
+  - updatedAt
+properties:
+  caseId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  postId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  status:
+    type: string
+    enum:
+      - open
+      - resolved
+  reportCount:
+    type: integer
+    minimum: 0
+  openedAt:
+    type: string
+    format: date-time
+    examples:
+      - '2026-11-24T05:00:00Z'
+  updatedAt:
+    type: string
+    format: date-time
+    examples:
+      - '2026-11-24T05:00:00Z'

@@ -1,0 +1,108 @@
+type: object
+additionalProperties: false
+required:
+  - postId
+  - type
+  - title
+  - description
+  - categoryId
+  - occurredAt
+  - areaId
+  - status
+  - visibility
+  - publishedAt
+  - photos
+  - author
+  - shareUrl
+properties:
+  postId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  type:
+    $ref: ./PostType.yaml
+  title:
+    type: string
+    minLength: 5
+    maxLength: 100
+    examples:
+      - Ví vải màu xanh
+  description:
+    type: string
+    minLength: 20
+    maxLength: 2000
+    examples:
+      - Ví vải màu xanh được tìm thấy gần thư viện.
+  categoryId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  occurredAt:
+    type: string
+    format: date-time
+    examples:
+      - '2026-11-24T05:00:00Z'
+  areaId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  status:
+    type: string
+    const: open
+  visibility:
+    type: string
+    const: visible
+  publishedAt:
+    type: string
+    format: date-time
+    examples:
+      - '2026-11-24T05:00:00Z'
+    description: Thời điểm bài được công khai.
+  photos:
+    type: array
+    items:
+      $ref: ./PublicPhoto.yaml
+    maxItems: 5
+  author:
+    type: object
+    additionalProperties: false
+    required:
+      - displayName
+    properties:
+      displayName:
+        type: string
+        minLength: 1
+        maxLength: 100
+        examples:
+          - Lan
+  shareUrl:
+    type: string
+    format: uri
+    examples:
+      - https://example.test/resource
+  custody:
+    type: string
+    enum:
+      - heldByFinder
+      - handedToAuthorities
+allOf:
+  - if:
+      required:
+        - type
+      properties:
+        type:
+          const: found
+    then:
+      properties:
+        custody: {}
+      required:
+        - custody
+    else:
+      not:
+        properties:
+          custody: {}
+        required:
+          - custody

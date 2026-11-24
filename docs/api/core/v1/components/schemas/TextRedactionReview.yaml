@@ -1,0 +1,40 @@
+type: object
+additionalProperties: false
+required:
+  - reviewId
+  - titlePreview
+  - descriptionPreview
+  - mode
+  - publishable
+  - reviewedAt
+properties:
+  reviewId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  titlePreview:
+    type: string
+    minLength: 1
+    maxLength: 100
+    examples:
+      - Ví vải màu xanh
+  descriptionPreview:
+    type: string
+    minLength: 1
+    maxLength: 2000
+    examples:
+      - Ví vải màu xanh được tìm thấy gần thư viện.
+  mode:
+    type: string
+    enum:
+      - assisted
+      - manualRequired
+      - manual
+  publishable:
+    type: boolean
+  reviewedAt:
+    type: string
+    format: date-time
+    examples:
+      - '2026-11-24T05:00:00Z'

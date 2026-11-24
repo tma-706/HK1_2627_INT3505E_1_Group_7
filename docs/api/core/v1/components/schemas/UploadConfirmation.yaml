@@ -1,0 +1,8 @@
+type: object
+additionalProperties: false
+properties:
+  objectVersion:
+    type: string
+    minLength: 1
+    examples:
+      - demo-storage-version

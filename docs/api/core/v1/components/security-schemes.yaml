@@ -1,0 +1,10 @@
+CoreSession:
+  description: >-
+    Phiên Core v1 truyền trong Authorization. Core kiểm xác thực email, trạng thái khóa, quyền theo đối tượng và
+    quyền quản trị.
+  type: http
+  scheme: bearer
+AppealSession:
+  type: http
+  scheme: bearer
+  description: Bearer giới hạn của chủ thể bị khóa, chỉ cho quyết định đã xác minh và bằng chứng liên quan.

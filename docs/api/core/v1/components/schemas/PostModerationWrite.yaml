@@ -1,0 +1,25 @@
+type: object
+additionalProperties: false
+required:
+  - decision
+  - reason
+properties:
+  decision:
+    type: string
+    enum:
+      - dismiss
+      - hide
+      - remove
+      - restore
+  reason:
+    type: string
+    minLength: 1
+    examples:
+      - Lý do đã được kiểm tra.
+  evidenceReportIds:
+    type: array
+    items:
+      type: string
+      minLength: 1
+      examples:
+        - item-123

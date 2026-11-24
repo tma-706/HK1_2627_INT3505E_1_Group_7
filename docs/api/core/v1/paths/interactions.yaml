@@ -1,0 +1,1063 @@
+/posts/{postId}/claim-questions:
+  parameters:
+    - name: postId
+      in: path
+      required: true
+      description: ID tài nguyên postId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  get:
+    tags:
+      - Yêu cầu và phản hồi
+    summary: Xem câu hỏi để gửi claim
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ người đủ điều kiện gửi claim cho bài Found Open và Visible. Finder quản lý bộ câu hỏi qua nghiệp vụ
+      bài của mình. Câu hỏi bị giữ riêng khỏi API công khai.
+    operationId: getClaimQuestions
+    x-use-cases:
+      - UC07
+      - UC15
+    x-access: member
+    security:
+      - CoreSession: []
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/VerificationQuestions.yaml
+            example:
+              questions:
+                - questionId: item-123
+                  text: Khóa kéo của chiếc ví có đặc điểm gì?
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '409':
+        $ref: ../components/responses.yaml#/conflict
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/posts/{postId}/claims:
+  parameters:
+    - name: postId
+      in: path
+      required: true
+      description: ID tài nguyên postId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  post:
+    tags:
+      - Yêu cầu và phản hồi
+    summary: Gửi claim nhận đồ
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ Found Open và Visible còn nhận claim. Mỗi tài khoản chỉ có một claim hoạt động trên bài. Trả lời mỗi
+      câu hiện hành đúng một lần. Tối đa 3 lượt gửi hoặc gửi lại trong 30 ngày trượt, kể cả khi claim đã rút,
+      hết hạn hoặc bị bác. Core kiểm điều kiện và tính lượt trong cùng giao dịch.
+    operationId: submitClaim
+    x-use-cases:
+      - UC15
+    x-access: member
+    security:
+      - CoreSession: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/ClaimAnswerSubmission.yaml
+          example:
+            answers:
+              - questionId: item-123
+                answer: Khóa kéo có móc bằng vải tối màu.
+    responses:
+      '201':
+        description: Tài nguyên đã được tạo.
+        headers:
+          Location:
+            description: 'URI tham chiếu của tài nguyên. Mẫu: /api/v1/posts/{postId}/claims/{claimId}'
+            schema:
+              type: string
+              format: uri-reference
+            required: true
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/Claim.yaml
+            example:
+              claimId: item-123
+              postId: item-123
+              status: pending
+              updatedAt: '2026-11-24T05:00:00Z'
+              createdAt: '2026-11-24T05:00:00Z'
+              answers:
+                - questionId: item-123
+                  answer: Khóa kéo có móc bằng vải tối màu.
+              conversationId: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '409':
+        description: Trạng thái hoặc dữ liệu hiện hành xung đột với thao tác.
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/Problem.yaml
+            example:
+              type: urn:campus-lost-found:problem:active-claim-or-post-unavailable
+              title: Trạng thái hoặc dữ liệu hiện hành xung đột với thao tác.
+              status: 409
+              code: ACTIVE_CLAIM_OR_POST_UNAVAILABLE
+        headers:
+          Cache-Control:
+            description: Phản hồi có thể thay đổi theo phiên, quyền hoặc trạng thái tài nguyên.
+            schema:
+              type: string
+              const: no-store
+            required: true
+      '422':
+        $ref: ../components/responses.yaml#/unprocessable
+      '429':
+        description: Đã đạt hạn mức. Retry-After cho biết số giây trước thời điểm có thể thử lại.
+        headers:
+          Retry-After:
+            description: Số giây đến mốc thử lại.
+            schema:
+              type: integer
+              minimum: 1
+              example: 900
+            required: true
+          Cache-Control:
+            description: Phản hồi có thể thay đổi theo phiên, quyền hoặc trạng thái tài nguyên.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/Problem.yaml
+            example:
+              type: urn:campus-lost-found:problem:claim-attempt-limit
+              title: Đã đạt hạn mức. Retry-After cho biết số giây trước thời điểm có thể thử lại.
+              status: 429
+              code: CLAIM_ATTEMPT_LIMIT
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+  get:
+    tags:
+      - Yêu cầu và phản hồi
+    summary: Liệt kê claim trên bài Found
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ Finder tạo bài. Sắp xếp thời điểm tạo và ID giảm dần. Đọc câu trả lời qua chi tiết claim.
+    operationId: listPostClaims
+    x-use-cases:
+      - UC16
+    x-access: member
+    security:
+      - CoreSession: []
+    parameters:
+      - $ref: ../components/parameters/Cursor.yaml
+      - $ref: ../components/parameters/Limit.yaml
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/ClaimPage.yaml
+            example:
+              items:
+                - claimId: item-123
+                  postId: item-123
+                  status: pending
+                  updatedAt: '2026-11-24T05:00:00Z'
+                  createdAt: '2026-11-24T05:00:00Z'
+              nextCursor: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/me/claims:
+  get:
+    tags:
+      - Yêu cầu và phản hồi
+    summary: Xem claim của tôi
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Danh sách theo vai trò người gửi hoặc tác giả nhận claim, quyền được kiểm lại ở từng trang. Sắp xếp thời
+      điểm tạo và ID giảm dần.
+    operationId: listMyClaims
+    x-use-cases:
+      - UC15
+      - UC16
+    x-access: member
+    security:
+      - CoreSession: []
+    parameters:
+      - $ref: ../components/parameters/Cursor.yaml
+      - $ref: ../components/parameters/Limit.yaml
+      - in: query
+        name: role
+        schema:
+          type: string
+          enum:
+            - sent
+            - received
+        description: Vai trò trong claim.
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/MyClaimPage.yaml
+            example:
+              items:
+                - claimId: item-123
+                  postId: item-123
+                  status: pending
+                  updatedAt: '2026-11-24T05:00:00Z'
+                  createdAt: '2026-11-24T05:00:00Z'
+                  role: sent
+              nextCursor: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/posts/{postId}/claims/{claimId}:
+  parameters:
+    - name: postId
+      in: path
+      required: true
+      description: ID tài nguyên postId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+    - name: claimId
+      in: path
+      required: true
+      description: ID tài nguyên claimId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  get:
+    tags:
+      - Yêu cầu và phản hồi
+    summary: Xem chi tiết claim
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ tài khoản gửi claim hoặc Finder tạo bài. Trả câu trả lời gửi trong claim và ID hội thoại khi người gọi
+      là bên tham gia được chấp nhận.
+    operationId: getClaim
+    x-use-cases:
+      - UC15
+      - UC16
+    x-access: member
+    security:
+      - CoreSession: []
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/Claim.yaml
+            example:
+              claimId: item-123
+              postId: item-123
+              status: pending
+              updatedAt: '2026-11-24T05:00:00Z'
+              createdAt: '2026-11-24T05:00:00Z'
+              answers:
+                - questionId: item-123
+                  answer: Khóa kéo có móc bằng vải tối màu.
+              conversationId: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+  delete:
+    tags:
+      - Yêu cầu và phản hồi
+    summary: Rút claim
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ người gửi rút claim đang chờ. Chuyển trạng thái sang withdrawn và giữ lịch sử cùng lượt quota đã dùng.
+    operationId: withdrawClaim
+    x-use-cases:
+      - UC15
+    x-access: member
+    security:
+      - CoreSession: []
+    responses:
+      '204':
+        description: Thao tác hoàn tất, phản hồi rỗng.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '409':
+        $ref: ../components/responses.yaml#/conflict
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/posts/{postId}/claims/{claimId}/submissions:
+  parameters:
+    - name: postId
+      in: path
+      required: true
+      description: ID tài nguyên postId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+    - name: claimId
+      in: path
+      required: true
+      description: ID tài nguyên claimId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  post:
+    tags:
+      - Yêu cầu và phản hồi
+    summary: Gửi lại câu trả lời claim
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ người gửi, khi trạng thái còn cho phép và bài còn nhận claim. Cùng quota trượt với gửi lần đầu. Claim
+      kết thúc cần một claim mới nếu còn lượt và bài đủ điều kiện. Điều kiện chi tiết theo vòng đời cần xác
+      nhận.
+    operationId: resubmitClaimAnswers
+    x-use-cases:
+      - UC15
+    x-access: member
+    security:
+      - CoreSession: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/ClaimAnswerSubmission.yaml
+          example:
+            answers:
+              - questionId: item-123
+                answer: Khóa kéo có móc bằng vải tối màu.
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/Claim.yaml
+            example:
+              claimId: item-123
+              postId: item-123
+              status: pending
+              updatedAt: '2026-11-24T05:00:00Z'
+              createdAt: '2026-11-24T05:00:00Z'
+              answers:
+                - questionId: item-123
+                  answer: Khóa kéo có móc bằng vải tối màu.
+              conversationId: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '409':
+        $ref: ../components/responses.yaml#/conflict
+      '422':
+        $ref: ../components/responses.yaml#/unprocessable
+      '429':
+        description: Đã đạt hạn mức. Retry-After cho biết số giây trước thời điểm có thể thử lại.
+        headers:
+          Retry-After:
+            description: Số giây đến mốc thử lại.
+            schema:
+              type: integer
+              minimum: 1
+              example: 900
+            required: true
+          Cache-Control:
+            description: Phản hồi có thể thay đổi theo phiên, quyền hoặc trạng thái tài nguyên.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/Problem.yaml
+            example:
+              type: urn:campus-lost-found:problem:claim-attempt-limit
+              title: Đã đạt hạn mức. Retry-After cho biết số giây trước thời điểm có thể thử lại.
+              status: 429
+              code: CLAIM_ATTEMPT_LIMIT
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/posts/{postId}/claims/{claimId}/decisions:
+  parameters:
+    - name: postId
+      in: path
+      required: true
+      description: ID tài nguyên postId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+    - name: claimId
+      in: path
+      required: true
+      description: ID tài nguyên claimId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  post:
+    tags:
+      - Yêu cầu và phản hồi
+    summary: Duyệt hoặc từ chối claim
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ Finder tạo bài. Duyệt/từ chối claim đang chờ. Approve đồng thời khóa nhận claim mới và chuyển claim
+      đang chờ khác sang Superseded. Chỉ một claim được approve. Core ghi quyết định và quyền mở chat nguyên tử,
+      phát thông báo qua tác vụ nền.
+    operationId: decideClaim
+    x-use-cases:
+      - UC16
+      - UC19
+      - UC20
+    x-access: member
+    security:
+      - CoreSession: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/ClaimDecision.yaml
+          example:
+            decision: approve
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/Claim.yaml
+            example:
+              claimId: item-123
+              postId: item-123
+              status: pending
+              updatedAt: '2026-11-24T05:00:00Z'
+              createdAt: '2026-11-24T05:00:00Z'
+              answers:
+                - questionId: item-123
+                  answer: Khóa kéo có móc bằng vải tối màu.
+              conversationId: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '409':
+        description: Trạng thái hoặc dữ liệu hiện hành xung đột với thao tác.
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/Problem.yaml
+            example:
+              type: urn:campus-lost-found:problem:claim-decision-conflict
+              title: Trạng thái hoặc dữ liệu hiện hành xung đột với thao tác.
+              status: 409
+              code: CLAIM_DECISION_CONFLICT
+        headers:
+          Cache-Control:
+            description: Phản hồi có thể thay đổi theo phiên, quyền hoặc trạng thái tài nguyên.
+            schema:
+              type: string
+              const: no-store
+            required: true
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/posts/{postId}/finder-responses:
+  parameters:
+    - name: postId
+      in: path
+      required: true
+      description: ID tài nguyên postId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  post:
+    tags:
+      - Yêu cầu và phản hồi
+    summary: Gửi phản hồi đã nhặt được đồ
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ bài Lost Open và Visible còn nhận phản hồi. Một phản hồi hoạt động mỗi Finder và bài, tối đa 5 phản
+      hồi mới mỗi tài khoản mỗi ngày. Tối đa 3 ảnh đã xử lý gắn đúng tài khoản và bài. Ngày quota dùng quy ước
+      đề xuất trong ghi chú.
+    operationId: submitFinderResponse
+    x-use-cases:
+      - UC17
+    x-access: member
+    security:
+      - CoreSession: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/FinderResponseWrite.yaml
+          example:
+            description: Mình đang giữ món đồ tìm được ở thư viện.
+    responses:
+      '201':
+        description: Tài nguyên đã được tạo.
+        headers:
+          Location:
+            description: 'URI tham chiếu của tài nguyên. Mẫu: /api/v1/posts/{postId}/finder-responses/{responseId}'
+            schema:
+              type: string
+              format: uri-reference
+            required: true
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/FinderResponse.yaml
+            example:
+              responseId: item-123
+              postId: item-123
+              status: pending
+              description: Mình đang giữ món đồ tìm được ở thư viện.
+              photos:
+                - imageId: item-123
+                  url: https://example.test/resource
+              createdAt: '2026-11-24T05:00:00Z'
+              updatedAt: '2026-11-24T05:00:00Z'
+              conversationId: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '409':
+        $ref: ../components/responses.yaml#/conflict
+      '422':
+        $ref: ../components/responses.yaml#/unprocessable
+      '429':
+        description: Đã đạt hạn mức. Retry-After cho biết số giây trước thời điểm có thể thử lại.
+        headers:
+          Retry-After:
+            description: Số giây đến mốc thử lại.
+            schema:
+              type: integer
+              minimum: 1
+              example: 900
+            required: true
+          Cache-Control:
+            description: Phản hồi có thể thay đổi theo phiên, quyền hoặc trạng thái tài nguyên.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/Problem.yaml
+            example:
+              type: urn:campus-lost-found:problem:finder-response-daily-limit
+              title: Đã đạt hạn mức. Retry-After cho biết số giây trước thời điểm có thể thử lại.
+              status: 429
+              code: FINDER_RESPONSE_DAILY_LIMIT
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+  get:
+    tags:
+      - Yêu cầu và phản hồi
+    summary: Xem phản hồi trên bài Lost của tôi
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ Owner tạo bài được xem các phản hồi. Sắp xếp thời điểm tạo và ID giảm dần.
+    operationId: listFinderResponses
+    x-use-cases:
+      - UC18
+    x-access: member
+    security:
+      - CoreSession: []
+    parameters:
+      - $ref: ../components/parameters/Cursor.yaml
+      - $ref: ../components/parameters/Limit.yaml
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/FinderResponsePage.yaml
+            example:
+              items:
+                - responseId: item-123
+                  postId: item-123
+                  status: pending
+                  description: Mình đang giữ món đồ tìm được ở thư viện.
+                  photos:
+                    - imageId: item-123
+                      url: https://example.test/resource
+                  createdAt: '2026-11-24T05:00:00Z'
+                  updatedAt: '2026-11-24T05:00:00Z'
+                  conversationId: null
+              nextCursor: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/me/finder-responses:
+  get:
+    tags:
+      - Yêu cầu và phản hồi
+    summary: Xem phản hồi do tôi gửi
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Mỗi tài khoản chỉ xem phản hồi do mình gửi. Sắp xếp thời điểm tạo và ID giảm dần.
+    operationId: listMyFinderResponses
+    x-use-cases:
+      - UC17
+    x-access: member
+    security:
+      - CoreSession: []
+    parameters:
+      - $ref: ../components/parameters/Cursor.yaml
+      - $ref: ../components/parameters/Limit.yaml
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/FinderResponsePage.yaml
+            example:
+              items:
+                - responseId: item-123
+                  postId: item-123
+                  status: pending
+                  description: Mình đang giữ món đồ tìm được ở thư viện.
+                  photos:
+                    - imageId: item-123
+                      url: https://example.test/resource
+                  createdAt: '2026-11-24T05:00:00Z'
+                  updatedAt: '2026-11-24T05:00:00Z'
+                  conversationId: null
+              nextCursor: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/posts/{postId}/finder-responses/{responseId}:
+  parameters:
+    - name: postId
+      in: path
+      required: true
+      description: ID tài nguyên postId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+    - name: responseId
+      in: path
+      required: true
+      description: ID tài nguyên responseId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  get:
+    tags:
+      - Yêu cầu và phản hồi
+    summary: Xem chi tiết một phản hồi
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ Owner tạo bài và Finder gửi chính phản hồi này. Nội dung riêng cho hai chủ thể có quyền.
+    operationId: getFinderResponse
+    x-use-cases:
+      - UC17
+      - UC18
+    x-access: member
+    security:
+      - CoreSession: []
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/FinderResponse.yaml
+            example:
+              responseId: item-123
+              postId: item-123
+              status: pending
+              description: Mình đang giữ món đồ tìm được ở thư viện.
+              photos:
+                - imageId: item-123
+                  url: https://example.test/resource
+              createdAt: '2026-11-24T05:00:00Z'
+              updatedAt: '2026-11-24T05:00:00Z'
+              conversationId: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+  patch:
+    tags:
+      - Yêu cầu và phản hồi
+    summary: Chỉnh phản hồi đã gửi
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ Finder gửi trước khi có quyết định. Gửi attachmentUploadIds thay thế danh sách ảnh; danh sách rỗng bỏ
+      ảnh của phản hồi.
+    operationId: updateFinderResponse
+    x-use-cases:
+      - UC17
+    x-access: member
+    security:
+      - CoreSession: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/FinderResponseUpdate.yaml
+          example:
+            description: Mình đang giữ món đồ tìm được ở thư viện.
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/FinderResponse.yaml
+            example:
+              responseId: item-123
+              postId: item-123
+              status: pending
+              description: Mình đang giữ món đồ tìm được ở thư viện.
+              photos:
+                - imageId: item-123
+                  url: https://example.test/resource
+              createdAt: '2026-11-24T05:00:00Z'
+              updatedAt: '2026-11-24T05:00:00Z'
+              conversationId: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '409':
+        $ref: ../components/responses.yaml#/conflict
+      '422':
+        $ref: ../components/responses.yaml#/unprocessable
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+  delete:
+    tags:
+      - Yêu cầu và phản hồi
+    summary: Rút phản hồi
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ Finder gửi trước khi Owner quyết định. Giữ lịch sử quota cho lượt tạo phản hồi.
+    operationId: withdrawFinderResponse
+    x-use-cases:
+      - UC17
+    x-access: member
+    security:
+      - CoreSession: []
+    responses:
+      '204':
+        description: Thao tác hoàn tất, phản hồi rỗng.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '409':
+        $ref: ../components/responses.yaml#/conflict
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/posts/{postId}/finder-responses/{responseId}/decisions:
+  parameters:
+    - name: postId
+      in: path
+      required: true
+      description: ID tài nguyên postId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+    - name: responseId
+      in: path
+      required: true
+      description: ID tài nguyên responseId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  post:
+    tags:
+      - Yêu cầu và phản hồi
+    summary: Chấp nhận hoặc từ chối phản hồi
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ Owner tạo bài. Accept tối đa một phản hồi. Quyết định, chuyển các phản hồi chờ khác sang Superseded và
+      mở quyền chat được ghi nguyên tử. Tạo thông báo cho các bên liên quan.
+    operationId: decideFinderResponse
+    x-use-cases:
+      - UC18
+      - UC19
+      - UC20
+    x-access: member
+    security:
+      - CoreSession: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/FinderResponseDecision.yaml
+          example:
+            decision: accept
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/FinderResponse.yaml
+            example:
+              responseId: item-123
+              postId: item-123
+              status: pending
+              description: Mình đang giữ món đồ tìm được ở thư viện.
+              photos:
+                - imageId: item-123
+                  url: https://example.test/resource
+              createdAt: '2026-11-24T05:00:00Z'
+              updatedAt: '2026-11-24T05:00:00Z'
+              conversationId: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '409':
+        description: Trạng thái hoặc dữ liệu hiện hành xung đột với thao tác.
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/Problem.yaml
+            example:
+              type: urn:campus-lost-found:problem:finder-response-decision-conflict
+              title: Trạng thái hoặc dữ liệu hiện hành xung đột với thao tác.
+              status: 409
+              code: FINDER_RESPONSE_DECISION_CONFLICT
+        headers:
+          Cache-Control:
+            description: Phản hồi có thể thay đổi theo phiên, quyền hoặc trạng thái tài nguyên.
+            schema:
+              type: string
+              const: no-store
+            required: true
+      '503':
+        $ref: ../components/responses.yaml#/unavailable

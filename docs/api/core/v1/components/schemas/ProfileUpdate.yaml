@@ -1,0 +1,17 @@
+type: object
+additionalProperties: false
+properties:
+  displayName:
+    type: string
+    minLength: 1
+    maxLength: 100
+    examples:
+      - Lan
+  avatarUploadId:
+    anyOf:
+      - type: string
+        minLength: 1
+        examples:
+          - item-123
+      - type: 'null'
+minProperties: 1

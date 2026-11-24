@@ -1,0 +1,19 @@
+type: object
+additionalProperties: false
+required:
+  - description
+properties:
+  description:
+    type: string
+    minLength: 20
+    maxLength: 1000
+    examples:
+      - Mình đang giữ món đồ tìm được ở thư viện.
+  attachmentUploadIds:
+    type: array
+    items:
+      type: string
+      minLength: 1
+      examples:
+        - item-123
+    maxItems: 3

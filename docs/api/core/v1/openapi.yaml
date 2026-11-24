@@ -1,0 +1,435 @@
+openapi: 3.1.0
+info:
+  title: Campus Lost & Found Core API
+  version: 1.0.0
+  description: >-
+    Hợp đồng REST thiết kế cho UC01–UC30 ngày 24/11/2026. URL nghiệp vụ qua gateway dùng /api/v1. Hợp đồng thực
+    nghiệm 0.3.0 và readiness nằm trong openapi.json.
+servers:
+  - url: /api/v1
+    description: Tiền tố API nghiệp vụ tại gateway HTTPS.
+security:
+  - CoreSession: []
+tags:
+  - name: Tài khoản và phiên
+    description: Đăng ký, xác minh email, quản lý thông tin xác thực, phiên và hồ sơ cá nhân.
+  - name: Bài đăng
+    description: Xem và tìm bài công khai, quản lý bản nháp và bài của tôi, xác nhận trao trả.
+  - name: Yêu cầu và phản hồi
+    description: Gửi và xét duyệt yêu cầu nhận đồ, phản hồi bài báo mất và xem tương tác của tôi.
+  - name: Chat và thông báo
+    description: Hội thoại giữa hai bên, báo cáo tin nhắn và quản lý thông báo cá nhân.
+  - name: AI và dữ liệu đã che
+    description: Đối sánh bài đăng, xem trước và che văn bản, gợi ý câu hỏi xác minh.
+  - name: Ảnh và upload
+    description: Cấp quyền tải tệp trực tiếp, xác nhận upload, theo dõi xử lý và chỉnh vùng che ảnh.
+  - name: Kiểm duyệt
+    description: Xử lý báo cáo, tài khoản vi phạm, trao trả cần xem xét và khiếu nại.
+  - name: Danh mục
+    description: Tra cứu, quản lý và ánh xạ danh mục đồ vật.
+paths:
+  /accounts:
+    $ref: ./paths/accounts.yaml#/~1accounts
+  /email-verifications:
+    $ref: ./paths/accounts.yaml#/~1email-verifications
+  /email-verification-requests:
+    $ref: ./paths/accounts.yaml#/~1email-verification-requests
+  /auth/sessions:
+    $ref: ./paths/accounts.yaml#/~1auth~1sessions
+  /auth/sessions/current:
+    $ref: ./paths/accounts.yaml#/~1auth~1sessions~1current
+  /password-reset-requests:
+    $ref: ./paths/accounts.yaml#/~1password-reset-requests
+  /email-request-status/{requestId}:
+    $ref: ./paths/accounts.yaml#/~1email-request-status~1{requestId}
+  /password-resets:
+    $ref: ./paths/accounts.yaml#/~1password-resets
+  /me/profile:
+    $ref: ./paths/accounts.yaml#/~1me~1profile
+  /me/password:
+    $ref: ./paths/accounts.yaml#/~1me~1password
+  /post-drafts:
+    $ref: ./paths/posts.yaml#/~1post-drafts
+  /post-drafts/{draftId}:
+    $ref: ./paths/posts.yaml#/~1post-drafts~1{draftId}
+  /post-drafts/{draftId}/publications:
+    $ref: ./paths/posts.yaml#/~1post-drafts~1{draftId}~1publications
+  /post-drafts/{draftId}/verification-questions:
+    $ref: ./paths/posts.yaml#/~1post-drafts~1{draftId}~1verification-questions
+  /posts/{postId}/verification-questions:
+    $ref: ./paths/posts.yaml#/~1posts~1{postId}~1verification-questions
+  /me/posts:
+    $ref: ./paths/posts.yaml#/~1me~1posts
+  /me/posts/{postId}:
+    $ref: ./paths/posts.yaml#/~1me~1posts~1{postId}
+  /me/posts/{postId}/interaction-history:
+    $ref: ./paths/posts.yaml#/~1me~1posts~1{postId}~1interaction-history
+  /posts/{postId}:
+    $ref: ./paths/posts.yaml#/~1posts~1{postId}
+  /posts/{postId}/closures:
+    $ref: ./paths/posts.yaml#/~1posts~1{postId}~1closures
+  /posts/{postId}/reopenings:
+    $ref: ./paths/posts.yaml#/~1posts~1{postId}~1reopenings
+  /posts/{postId}/return-requests/{requestId}:
+    $ref: ./paths/posts.yaml#/~1posts~1{postId}~1return-requests~1{requestId}
+  /posts/{postId}/return-confirmations:
+    $ref: ./paths/posts.yaml#/~1posts~1{postId}~1return-confirmations
+  /posts/{postId}/return-requests/{requestId}/my-cancellation:
+    $ref: ./paths/posts.yaml#/~1posts~1{postId}~1return-requests~1{requestId}~1my-cancellation
+  /posts:
+    $ref: ./paths/posts.yaml#/~1posts
+  /posts/{postId}/claim-questions:
+    $ref: ./paths/interactions.yaml#/~1posts~1{postId}~1claim-questions
+  /posts/{postId}/claims:
+    $ref: ./paths/interactions.yaml#/~1posts~1{postId}~1claims
+  /me/claims:
+    $ref: ./paths/interactions.yaml#/~1me~1claims
+  /posts/{postId}/claims/{claimId}:
+    $ref: ./paths/interactions.yaml#/~1posts~1{postId}~1claims~1{claimId}
+  /posts/{postId}/claims/{claimId}/submissions:
+    $ref: ./paths/interactions.yaml#/~1posts~1{postId}~1claims~1{claimId}~1submissions
+  /posts/{postId}/claims/{claimId}/decisions:
+    $ref: ./paths/interactions.yaml#/~1posts~1{postId}~1claims~1{claimId}~1decisions
+  /posts/{postId}/finder-responses:
+    $ref: ./paths/interactions.yaml#/~1posts~1{postId}~1finder-responses
+  /me/finder-responses:
+    $ref: ./paths/interactions.yaml#/~1me~1finder-responses
+  /posts/{postId}/finder-responses/{responseId}:
+    $ref: ./paths/interactions.yaml#/~1posts~1{postId}~1finder-responses~1{responseId}
+  /posts/{postId}/finder-responses/{responseId}/decisions:
+    $ref: ./paths/interactions.yaml#/~1posts~1{postId}~1finder-responses~1{responseId}~1decisions
+  /conversations:
+    $ref: ./paths/communication.yaml#/~1conversations
+  /conversations/{conversationId}:
+    $ref: ./paths/communication.yaml#/~1conversations~1{conversationId}
+  /conversations/{conversationId}/messages:
+    $ref: ./paths/communication.yaml#/~1conversations~1{conversationId}~1messages
+  /conversations/{conversationId}/messages/{messageId}:
+    $ref: ./paths/communication.yaml#/~1conversations~1{conversationId}~1messages~1{messageId}
+  /conversations/{conversationId}/messages/{messageId}/reports:
+    $ref: ./paths/communication.yaml#/~1conversations~1{conversationId}~1messages~1{messageId}~1reports
+  /me/notifications:
+    $ref: ./paths/communication.yaml#/~1me~1notifications
+  /me/notifications/{notificationId}/read-state:
+    $ref: ./paths/communication.yaml#/~1me~1notifications~1{notificationId}~1read-state
+  /me/notification-preferences:
+    $ref: ./paths/communication.yaml#/~1me~1notification-preferences
+  /me/posts/{postId}/match-suggestions:
+    $ref: ./paths/ai.yaml#/~1me~1posts~1{postId}~1match-suggestions
+  /me/posts/{postId}/match-suggestions/{suggestionId}/feedback:
+    $ref: ./paths/ai.yaml#/~1me~1posts~1{postId}~1match-suggestions~1{suggestionId}~1feedback
+  /post-drafts/{draftId}/text-redaction-reviews:
+    $ref: ./paths/ai.yaml#/~1post-drafts~1{draftId}~1text-redaction-reviews
+  /post-drafts/{draftId}/text-redaction-reviews/{reviewId}:
+    $ref: ./paths/ai.yaml#/~1post-drafts~1{draftId}~1text-redaction-reviews~1{reviewId}
+  /post-drafts/{draftId}/text-redaction-reviews/{reviewId}/manual-redaction:
+    $ref: ./paths/ai.yaml#/~1post-drafts~1{draftId}~1text-redaction-reviews~1{reviewId}~1manual-redaction
+  /post-drafts/{draftId}/text-redaction-reviews/{reviewId}/original-text:
+    $ref: ./paths/ai.yaml#/~1post-drafts~1{draftId}~1text-redaction-reviews~1{reviewId}~1original-text
+  /me/posts/{postId}/text-redaction-reviews:
+    $ref: ./paths/ai.yaml#/~1me~1posts~1{postId}~1text-redaction-reviews
+  /me/posts/{postId}/text-redaction-reviews/{reviewId}:
+    $ref: ./paths/ai.yaml#/~1me~1posts~1{postId}~1text-redaction-reviews~1{reviewId}
+  /me/posts/{postId}/text-redaction-reviews/{reviewId}/manual-redaction:
+    $ref: ./paths/ai.yaml#/~1me~1posts~1{postId}~1text-redaction-reviews~1{reviewId}~1manual-redaction
+  /me/posts/{postId}/text-redaction-reviews/{reviewId}/original-text:
+    $ref: ./paths/ai.yaml#/~1me~1posts~1{postId}~1text-redaction-reviews~1{reviewId}~1original-text
+  /post-drafts/{draftId}/verification-question-suggestions:
+    $ref: ./paths/ai.yaml#/~1post-drafts~1{draftId}~1verification-question-suggestions
+  /post-drafts/{draftId}/uploads:
+    $ref: ./paths/media.yaml#/~1post-drafts~1{draftId}~1uploads
+  /me/posts/{postId}/uploads:
+    $ref: ./paths/media.yaml#/~1me~1posts~1{postId}~1uploads
+  /me/uploads:
+    $ref: ./paths/media.yaml#/~1me~1uploads
+  /me/moderation-appeals/uploads:
+    $ref: ./paths/media.yaml#/~1me~1moderation-appeals~1uploads
+  /uploads/{uploadId}/confirmations:
+    $ref: ./paths/media.yaml#/~1uploads~1{uploadId}~1confirmations
+  /uploads/{uploadId}:
+    $ref: ./paths/media.yaml#/~1uploads~1{uploadId}
+  /uploads/{uploadId}/redaction-regions:
+    $ref: ./paths/media.yaml#/~1uploads~1{uploadId}~1redaction-regions
+  /posts/{postId}/reports:
+    $ref: ./paths/moderation.yaml#/~1posts~1{postId}~1reports
+  /me/reports/{reportId}:
+    $ref: ./paths/moderation.yaml#/~1me~1reports~1{reportId}
+  /admin/reported-posts:
+    $ref: ./paths/moderation.yaml#/~1admin~1reported-posts
+  /admin/reported-posts/{caseId}:
+    $ref: ./paths/moderation.yaml#/~1admin~1reported-posts~1{caseId}
+  /admin/reported-posts/{caseId}/decisions:
+    $ref: ./paths/moderation.yaml#/~1admin~1reported-posts~1{caseId}~1decisions
+  /admin/reported-posts/{caseId}/decisions/{decisionId}:
+    $ref: ./paths/moderation.yaml#/~1admin~1reported-posts~1{caseId}~1decisions~1{decisionId}
+  /admin/return-reviews:
+    $ref: ./paths/moderation.yaml#/~1admin~1return-reviews
+  /admin/accounts:
+    $ref: ./paths/moderation.yaml#/~1admin~1accounts
+  /admin/accounts/{accountId}/violations:
+    $ref: ./paths/moderation.yaml#/~1admin~1accounts~1{accountId}~1violations
+  /admin/accounts/{accountId}/moderation-actions:
+    $ref: ./paths/moderation.yaml#/~1admin~1accounts~1{accountId}~1moderation-actions
+  /admin/accounts/{accountId}/moderation-actions/{decisionId}:
+    $ref: ./paths/moderation.yaml#/~1admin~1accounts~1{accountId}~1moderation-actions~1{decisionId}
+  /categories:
+    $ref: ./paths/categories.yaml#/~1categories
+  /admin/categories:
+    $ref: ./paths/categories.yaml#/~1admin~1categories
+  /admin/categories/{categoryId}:
+    $ref: ./paths/categories.yaml#/~1admin~1categories~1{categoryId}
+  /admin/categories/{categoryId}/historical-mapping:
+    $ref: ./paths/categories.yaml#/~1admin~1categories~1{categoryId}~1historical-mapping
+  /auth/appeal-sessions:
+    $ref: ./paths/accounts.yaml#/~1auth~1appeal-sessions
+  /me/moderation-appeals:
+    $ref: ./paths/moderation.yaml#/~1me~1moderation-appeals
+  /me/moderation-appeals/{appealId}:
+    $ref: ./paths/moderation.yaml#/~1me~1moderation-appeals~1{appealId}
+  /admin/moderation-appeals:
+    $ref: ./paths/moderation.yaml#/~1admin~1moderation-appeals
+  /admin/moderation-appeals/{appealId}:
+    $ref: ./paths/moderation.yaml#/~1admin~1moderation-appeals~1{appealId}
+  /admin/moderation-appeals/{appealId}/decisions:
+    $ref: ./paths/moderation.yaml#/~1admin~1moderation-appeals~1{appealId}~1decisions
+  /admin/moderation-appeals/{appealId}/decisions/{decisionId}:
+    $ref: ./paths/moderation.yaml#/~1admin~1moderation-appeals~1{appealId}~1decisions~1{decisionId}
+components:
+  securitySchemes:
+    CoreSession:
+      $ref: ./components/security-schemes.yaml#/CoreSession
+    AppealSession:
+      $ref: ./components/security-schemes.yaml#/AppealSession
+  parameters:
+    Cursor:
+      $ref: ./components/parameters/Cursor.yaml
+    Limit:
+      $ref: ./components/parameters/Limit.yaml
+    IdempotencyKey:
+      $ref: ./components/parameters/IdempotencyKey.yaml
+  responses:
+    invalidRequest:
+      $ref: ./components/responses.yaml#/invalidRequest
+    unauthorized:
+      $ref: ./components/responses.yaml#/unauthorized
+    forbidden:
+      $ref: ./components/responses.yaml#/forbidden
+    concealed:
+      $ref: ./components/responses.yaml#/concealed
+    conflict:
+      $ref: ./components/responses.yaml#/conflict
+    gone:
+      $ref: ./components/responses.yaml#/gone
+    unprocessable:
+      $ref: ./components/responses.yaml#/unprocessable
+    quota:
+      $ref: ./components/responses.yaml#/quota
+    unavailable:
+      $ref: ./components/responses.yaml#/unavailable
+    invalidCredentials:
+      $ref: ./components/responses.yaml#/invalidCredentials
+  schemas:
+    Problem:
+      $ref: ./components/schemas/Problem.yaml
+    EmailAndPassword:
+      $ref: ./components/schemas/EmailAndPassword.yaml
+    EmailRequest:
+      $ref: ./components/schemas/EmailRequest.yaml
+    EmailToken:
+      $ref: ./components/schemas/EmailToken.yaml
+    EmailRequestStatus:
+      $ref: ./components/schemas/EmailRequestStatus.yaml
+    SessionView:
+      $ref: ./components/schemas/SessionView.yaml
+    Session:
+      $ref: ./components/schemas/Session.yaml
+    MyProfile:
+      $ref: ./components/schemas/MyProfile.yaml
+    ProfileUpdate:
+      $ref: ./components/schemas/ProfileUpdate.yaml
+    PasswordChange:
+      $ref: ./components/schemas/PasswordChange.yaml
+    PasswordReset:
+      $ref: ./components/schemas/PasswordReset.yaml
+    PostType:
+      $ref: ./components/schemas/PostType.yaml
+    PostStatus:
+      $ref: ./components/schemas/PostStatus.yaml
+    PostVisibility:
+      $ref: ./components/schemas/PostVisibility.yaml
+    PublicPhoto:
+      $ref: ./components/schemas/PublicPhoto.yaml
+    PostDraftCreate:
+      $ref: ./components/schemas/PostDraftCreate.yaml
+    VerificationQuestion:
+      $ref: ./components/schemas/VerificationQuestion.yaml
+    VerificationQuestions:
+      $ref: ./components/schemas/VerificationQuestions.yaml
+    VerificationQuestionWrite:
+      $ref: ./components/schemas/VerificationQuestionWrite.yaml
+    PostDraft:
+      $ref: ./components/schemas/PostDraft.yaml
+    PostDraftUpdate:
+      $ref: ./components/schemas/PostDraftUpdate.yaml
+    PublicPost:
+      $ref: ./components/schemas/PublicPost.yaml
+    MyPost:
+      $ref: ./components/schemas/MyPost.yaml
+    MyPostInteractionEvent:
+      $ref: ./components/schemas/MyPostInteractionEvent.yaml
+    PostUpdate:
+      $ref: ./components/schemas/PostUpdate.yaml
+    PostLifecycle:
+      $ref: ./components/schemas/PostLifecycle.yaml
+    PublicPostPage:
+      $ref: ./components/schemas/PublicPostPage.yaml
+    MyPostPage:
+      $ref: ./components/schemas/MyPostPage.yaml
+    PublishPost:
+      $ref: ./components/schemas/PublishPost.yaml
+    MyPostInteractionHistory:
+      $ref: ./components/schemas/MyPostInteractionHistory.yaml
+    ReturnRequest:
+      $ref: ./components/schemas/ReturnRequest.yaml
+    ClosureResult:
+      $ref: ./components/schemas/ClosureResult.yaml
+    ClosePost:
+      $ref: ./components/schemas/ClosePost.yaml
+    ReturnConfirmation:
+      $ref: ./components/schemas/ReturnConfirmation.yaml
+    ReturnCancellation:
+      $ref: ./components/schemas/ReturnCancellation.yaml
+    ClaimAnswer:
+      $ref: ./components/schemas/ClaimAnswer.yaml
+    ClaimAnswerSubmission:
+      $ref: ./components/schemas/ClaimAnswerSubmission.yaml
+    ClaimSummary:
+      $ref: ./components/schemas/ClaimSummary.yaml
+    Claim:
+      $ref: ./components/schemas/Claim.yaml
+    ClaimPage:
+      $ref: ./components/schemas/ClaimPage.yaml
+    FinderResponseWrite:
+      $ref: ./components/schemas/FinderResponseWrite.yaml
+    FinderResponse:
+      $ref: ./components/schemas/FinderResponse.yaml
+    MyClaim:
+      $ref: ./components/schemas/MyClaim.yaml
+    MyClaimPage:
+      $ref: ./components/schemas/MyClaimPage.yaml
+    ClaimDecision:
+      $ref: ./components/schemas/ClaimDecision.yaml
+    FinderResponsePage:
+      $ref: ./components/schemas/FinderResponsePage.yaml
+    FinderResponseUpdate:
+      $ref: ./components/schemas/FinderResponseUpdate.yaml
+    FinderResponseDecision:
+      $ref: ./components/schemas/FinderResponseDecision.yaml
+    Conversation:
+      $ref: ./components/schemas/Conversation.yaml
+    Message:
+      $ref: ./components/schemas/Message.yaml
+    MessageWrite:
+      $ref: ./components/schemas/MessageWrite.yaml
+    ConversationPage:
+      $ref: ./components/schemas/ConversationPage.yaml
+    MessagePage:
+      $ref: ./components/schemas/MessagePage.yaml
+    ReportWrite:
+      $ref: ./components/schemas/ReportWrite.yaml
+    ReportReceipt:
+      $ref: ./components/schemas/ReportReceipt.yaml
+    Notification:
+      $ref: ./components/schemas/Notification.yaml
+    NotificationPage:
+      $ref: ./components/schemas/NotificationPage.yaml
+    NotificationReadState:
+      $ref: ./components/schemas/NotificationReadState.yaml
+    NotificationPreferences:
+      $ref: ./components/schemas/NotificationPreferences.yaml
+    NotificationPreferencesUpdate:
+      $ref: ./components/schemas/NotificationPreferencesUpdate.yaml
+    MatchSuggestion:
+      $ref: ./components/schemas/MatchSuggestion.yaml
+    MatchSuggestions:
+      $ref: ./components/schemas/MatchSuggestions.yaml
+    MatchFeedback:
+      $ref: ./components/schemas/MatchFeedback.yaml
+    TextRedactionReview:
+      $ref: ./components/schemas/TextRedactionReview.yaml
+    OriginalPostText:
+      $ref: ./components/schemas/OriginalPostText.yaml
+    RedactedTextWrite:
+      $ref: ./components/schemas/RedactedTextWrite.yaml
+    QuestionSuggestionResult:
+      $ref: ./components/schemas/QuestionSuggestionResult.yaml
+    PostPhotoUploadRequest:
+      $ref: ./components/schemas/PostPhotoUploadRequest.yaml
+    AuxiliaryUploadRequest:
+      $ref: ./components/schemas/AuxiliaryUploadRequest.yaml
+    UploadGrant:
+      $ref: ./components/schemas/UploadGrant.yaml
+    UploadStatus:
+      $ref: ./components/schemas/UploadStatus.yaml
+    AppealEvidenceUploadRequest:
+      $ref: ./components/schemas/AppealEvidenceUploadRequest.yaml
+    UploadConfirmation:
+      $ref: ./components/schemas/UploadConfirmation.yaml
+    RedactionRegion:
+      $ref: ./components/schemas/RedactionRegion.yaml
+    RedactionRegionWrite:
+      $ref: ./components/schemas/RedactionRegionWrite.yaml
+    ReportedPostSummary:
+      $ref: ./components/schemas/ReportedPostSummary.yaml
+    ModerationReport:
+      $ref: ./components/schemas/ModerationReport.yaml
+    ModerationPost:
+      $ref: ./components/schemas/ModerationPost.yaml
+    PostModerationDecision:
+      $ref: ./components/schemas/PostModerationDecision.yaml
+    ReportedPostCase:
+      $ref: ./components/schemas/ReportedPostCase.yaml
+    ReportedPostPage:
+      $ref: ./components/schemas/ReportedPostPage.yaml
+    PostModerationWrite:
+      $ref: ./components/schemas/PostModerationWrite.yaml
+    ReturnReviewPage:
+      $ref: ./components/schemas/ReturnReviewPage.yaml
+    AdminAccount:
+      $ref: ./components/schemas/AdminAccount.yaml
+    AccountModerationWrite:
+      $ref: ./components/schemas/AccountModerationWrite.yaml
+    AccountModerationAction:
+      $ref: ./components/schemas/AccountModerationAction.yaml
+    AdminAccountPage:
+      $ref: ./components/schemas/AdminAccountPage.yaml
+    AccountModerationHistory:
+      $ref: ./components/schemas/AccountModerationHistory.yaml
+    Category:
+      $ref: ./components/schemas/Category.yaml
+    CategoryPage:
+      $ref: ./components/schemas/CategoryPage.yaml
+    CategoryCreate:
+      $ref: ./components/schemas/CategoryCreate.yaml
+    CategoryUpdate:
+      $ref: ./components/schemas/CategoryUpdate.yaml
+    CategoryMapping:
+      $ref: ./components/schemas/CategoryMapping.yaml
+    CategoryMappingWrite:
+      $ref: ./components/schemas/CategoryMappingWrite.yaml
+    AppealSession:
+      $ref: ./components/schemas/AppealSession.yaml
+    MyAppeal:
+      $ref: ./components/schemas/MyAppeal.yaml
+    AppealWrite:
+      $ref: ./components/schemas/AppealWrite.yaml
+    AdminAppealSummary:
+      $ref: ./components/schemas/AdminAppealSummary.yaml
+    AdminAppeal:
+      $ref: ./components/schemas/AdminAppeal.yaml
+    AdminAppealPage:
+      $ref: ./components/schemas/AdminAppealPage.yaml
+    AppealDecisionWrite:
+      $ref: ./components/schemas/AppealDecisionWrite.yaml
+    AppealDecision:
+      $ref: ./components/schemas/AppealDecision.yaml

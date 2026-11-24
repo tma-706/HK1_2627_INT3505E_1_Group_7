@@ -1,0 +1,50 @@
+oneOf:
+  - type: object
+    additionalProperties: false
+    required:
+      - postId
+      - status
+      - visibility
+      - updatedAt
+    properties:
+      postId:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+      status:
+        type: string
+        const: closed
+      visibility:
+        $ref: ./PostVisibility.yaml
+      updatedAt:
+        type: string
+        format: date-time
+        examples:
+          - '2026-11-24T05:00:00Z'
+  - type: object
+    additionalProperties: false
+    required:
+      - postId
+      - status
+      - visibility
+      - updatedAt
+      - returnRequest
+    properties:
+      postId:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+      status:
+        type: string
+        const: pendingReturnConfirmation
+      visibility:
+        $ref: ./PostVisibility.yaml
+      updatedAt:
+        type: string
+        format: date-time
+        examples:
+          - '2026-11-24T05:00:00Z'
+      returnRequest:
+        $ref: ./ReturnRequest.yaml

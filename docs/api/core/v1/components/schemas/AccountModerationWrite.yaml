@@ -1,0 +1,66 @@
+oneOf:
+  - type: object
+    additionalProperties: false
+    required:
+      - action
+      - reason
+    properties:
+      action:
+        type: string
+        const: warn
+      reason:
+        type: string
+        minLength: 1
+        examples:
+          - Lý do đã được kiểm tra.
+      sourceCaseId:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  - type: object
+    additionalProperties: false
+    required:
+      - action
+      - reason
+      - duration
+    properties:
+      action:
+        type: string
+        const: lock
+      reason:
+        type: string
+        minLength: 1
+        examples:
+          - Lý do đã được kiểm tra.
+      duration:
+        type: string
+        enum:
+          - 7days
+          - 30days
+          - permanent
+      sourceCaseId:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  - type: object
+    additionalProperties: false
+    required:
+      - action
+      - reason
+      - lockType
+    properties:
+      action:
+        type: string
+        const: unlock
+      reason:
+        type: string
+        minLength: 1
+        examples:
+          - Lý do đã được kiểm tra.
+      lockType:
+        type: string
+        enum:
+          - temporaryLogin
+          - moderation

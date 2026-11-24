@@ -1,0 +1,47 @@
+type: object
+additionalProperties: false
+required:
+  - decisionId
+  - reviewerId
+  - reason
+  - decidedAt
+  - outcome
+  - originalDecisionId
+  - appealId
+properties:
+  decisionId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  reviewerId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  reason:
+    type: string
+    minLength: 1
+    examples:
+      - Lý do đã được kiểm tra.
+  decidedAt:
+    type: string
+    format: date-time
+    examples:
+      - '2026-11-24T05:00:00Z'
+  outcome:
+    type: string
+    enum:
+      - uphold
+      - overturn
+      - adjust
+  originalDecisionId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  appealId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123

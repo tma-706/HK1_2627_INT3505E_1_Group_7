@@ -1,0 +1,7 @@
+type: object
+additionalProperties: false
+required:
+  - activityEmailEnabled
+properties:
+  activityEmailEnabled:
+    type: boolean

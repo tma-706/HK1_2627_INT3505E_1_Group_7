@@ -1,0 +1,40 @@
+type: object
+additionalProperties: false
+required:
+  - conversationId
+  - postId
+  - interactionId
+  - interactionType
+  - mode
+  - updatedAt
+properties:
+  conversationId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  postId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  interactionId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  interactionType:
+    type: string
+    enum:
+      - claim
+      - finderResponse
+  mode:
+    type: string
+    enum:
+      - readWrite
+      - readOnly
+  updatedAt:
+    type: string
+    format: date-time
+    examples:
+      - '2026-11-24T05:00:00Z'

@@ -1,0 +1,756 @@
+/me/posts/{postId}/match-suggestions:
+  parameters:
+    - name: postId
+      in: path
+      required: true
+      description: ID tài nguyên postId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  get:
+    tags:
+      - AI và dữ liệu đã che
+    summary: Xem gợi ý đối sánh
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ tác giả. Hai bài phải Open và Visible. Matching chạy khi xuất bản, khi sửa hợp lệ và rà định kỳ 24
+      giờ; ưu tiên danh mục cùng hoặc liên quan. Trọng số ảnh/mô tả/khu vực/thời gian là 35/30/20/15. Trả tối đa
+      5 gợi ý không trùng, điểm tối thiểu 65/100, giảm dần theo điểm rồi ID. Dữ liệu dùng giải thích phải được
+      phép công khai hoặc đã xử lý. AI không quyết định sở hữu hay tự gửi claim.
+    operationId: listMatchSuggestions
+    x-use-cases:
+      - UC21
+    x-access: member
+    security:
+      - CoreSession: []
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/MatchSuggestions.yaml
+            example:
+              items:
+                - suggestionId: item-123
+                  candidatePostId: item-123
+                  score: 78
+                  explanation: Cùng danh mục và gần khu vực được báo.
+                  feedback: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/me/posts/{postId}/match-suggestions/{suggestionId}/feedback:
+  parameters:
+    - name: postId
+      in: path
+      required: true
+      description: ID tài nguyên postId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+    - name: suggestionId
+      in: path
+      required: true
+      description: ID tài nguyên suggestionId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  put:
+    tags:
+      - AI và dữ liệu đã che
+    summary: Đánh giá gợi ý đối sánh
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ tác giả cập nhật đánh giá của mình cho gợi ý thuộc bài. Lặp lại cùng giá trị giữ nguyên đánh giá.
+    operationId: setMatchFeedback
+    x-use-cases:
+      - UC21
+    x-access: member
+    security:
+      - CoreSession: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/MatchFeedback.yaml
+          example:
+            feedback: correct
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/MatchSuggestion.yaml
+            example:
+              suggestionId: item-123
+              candidatePostId: item-123
+              score: 78
+              explanation: Cùng danh mục và gần khu vực được báo.
+              feedback: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '409':
+        $ref: ../components/responses.yaml#/conflict
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/post-drafts/{draftId}/text-redaction-reviews:
+  parameters:
+    - name: draftId
+      in: path
+      required: true
+      description: ID tài nguyên draftId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  post:
+    tags:
+      - AI và dữ liệu đã che
+    summary: Tạo bản xem trước che văn bản
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ tác giả. Tìm và đề xuất che số điện thoại, email, số giấy tờ, số thẻ, liên kết mạng xã hội, địa chỉ cụ
+      thể và thông tin nhận dạng. Rủi ro cao bắt buộc được che. AI lỗi trả bản manualRequired; công khai vẫn bị
+      chặn. Bản gốc được lưu riêng và mã hóa, không gửi bản gốc hoặc ghi chú riêng cho AI bên thứ ba.
+    operationId: createDraftTextRedactionReview
+    x-use-cases:
+      - UC05
+      - UC06
+      - UC23
+    x-access: member
+    security:
+      - CoreSession: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/OriginalPostText.yaml
+          example:
+            title: Ví vải màu xanh
+            description: Ví vải màu xanh được tìm thấy gần thư viện.
+    responses:
+      '201':
+        description: Tài nguyên đã được tạo.
+        headers:
+          Location:
+            description: >-
+              URI tham chiếu của tài nguyên. Mẫu:
+              /api/v1/post-drafts/{draftId}/text-redaction-reviews/{reviewId}
+            schema:
+              type: string
+              format: uri-reference
+            required: true
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/TextRedactionReview.yaml
+            example:
+              reviewId: item-123
+              titlePreview: Ví vải màu xanh
+              descriptionPreview: Ví vải màu xanh được tìm thấy gần thư viện.
+              mode: assisted
+              publishable: true
+              reviewedAt: '2026-11-24T05:00:00Z'
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '409':
+        $ref: ../components/responses.yaml#/conflict
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/post-drafts/{draftId}/text-redaction-reviews/{reviewId}:
+  parameters:
+    - name: draftId
+      in: path
+      required: true
+      description: ID tài nguyên draftId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+    - name: reviewId
+      in: path
+      required: true
+      description: ID tài nguyên reviewId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  get:
+    tags:
+      - AI và dữ liệu đã che
+    summary: Đọc bản xem trước đã xử lý
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ tác giả. Bản xem trước luôn được gắn với đúng dữ liệu đầu vào.
+    operationId: getDraftTextRedactionReview
+    x-use-cases:
+      - UC05
+      - UC06
+      - UC23
+    x-access: member
+    security:
+      - CoreSession: []
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/TextRedactionReview.yaml
+            example:
+              reviewId: item-123
+              titlePreview: Ví vải màu xanh
+              descriptionPreview: Ví vải màu xanh được tìm thấy gần thư viện.
+              mode: assisted
+              publishable: true
+              reviewedAt: '2026-11-24T05:00:00Z'
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/post-drafts/{draftId}/text-redaction-reviews/{reviewId}/manual-redaction:
+  parameters:
+    - name: draftId
+      in: path
+      required: true
+      description: ID tài nguyên draftId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+    - name: reviewId
+      in: path
+      required: true
+      description: ID tài nguyên reviewId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  put:
+    tags:
+      - AI và dữ liệu đã che
+    summary: Ghi bản che văn bản thủ công
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ tác giả. Core kiểm lại vùng nhạy cảm bắt buộc trước khi đánh dấu publishable. Xem trước thay đổi không
+      tự đổi nội dung công khai.
+    operationId: setDraftManualRedaction
+    x-use-cases:
+      - UC05
+      - UC06
+      - UC23
+    x-access: member
+    security:
+      - CoreSession: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/RedactedTextWrite.yaml
+          example:
+            titlePreview: Ví vải màu xanh
+            descriptionPreview: Ví vải màu xanh được tìm thấy gần thư viện.
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/TextRedactionReview.yaml
+            example:
+              reviewId: item-123
+              titlePreview: Ví vải màu xanh
+              descriptionPreview: Ví vải màu xanh được tìm thấy gần thư viện.
+              mode: assisted
+              publishable: true
+              reviewedAt: '2026-11-24T05:00:00Z'
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '409':
+        $ref: ../components/responses.yaml#/conflict
+      '422':
+        $ref: ../components/responses.yaml#/unprocessable
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/post-drafts/{draftId}/text-redaction-reviews/{reviewId}/original-text:
+  parameters:
+    - name: draftId
+      in: path
+      required: true
+      description: ID tài nguyên draftId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+    - name: reviewId
+      in: path
+      required: true
+      description: ID tài nguyên reviewId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  get:
+    tags:
+      - AI và dữ liệu đã che
+    summary: Xem văn bản gốc của tôi
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ tác giả. Quyền Admin ngoại lệ và cơ chế cấp quyền được xem xét riêng và phải có audit.
+    operationId: getDraftOriginalText
+    x-use-cases:
+      - UC05
+      - UC06
+      - UC23
+    x-access: member
+    security:
+      - CoreSession: []
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/OriginalPostText.yaml
+            example:
+              title: Ví vải màu xanh
+              description: Ví vải màu xanh được tìm thấy gần thư viện.
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/me/posts/{postId}/text-redaction-reviews:
+  parameters:
+    - name: postId
+      in: path
+      required: true
+      description: ID tài nguyên postId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  post:
+    tags:
+      - AI và dữ liệu đã che
+    summary: Tạo bản xem trước che văn bản
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ tác giả. Tìm và đề xuất che số điện thoại, email, số giấy tờ, số thẻ, liên kết mạng xã hội, địa chỉ cụ
+      thể và thông tin nhận dạng. Rủi ro cao bắt buộc được che. AI lỗi trả bản manualRequired; công khai vẫn bị
+      chặn. Bản gốc được lưu riêng và mã hóa, không gửi bản gốc hoặc ghi chú riêng cho AI bên thứ ba.
+    operationId: createPostTextRedactionReview
+    x-use-cases:
+      - UC09
+      - UC23
+    x-access: member
+    security:
+      - CoreSession: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/OriginalPostText.yaml
+          example:
+            title: Ví vải màu xanh
+            description: Ví vải màu xanh được tìm thấy gần thư viện.
+    responses:
+      '201':
+        description: Tài nguyên đã được tạo.
+        headers:
+          Location:
+            description: 'URI tham chiếu của tài nguyên. Mẫu: /api/v1/me/posts/{postId}/text-redaction-reviews/{reviewId}'
+            schema:
+              type: string
+              format: uri-reference
+            required: true
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/TextRedactionReview.yaml
+            example:
+              reviewId: item-123
+              titlePreview: Ví vải màu xanh
+              descriptionPreview: Ví vải màu xanh được tìm thấy gần thư viện.
+              mode: assisted
+              publishable: true
+              reviewedAt: '2026-11-24T05:00:00Z'
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '409':
+        $ref: ../components/responses.yaml#/conflict
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/me/posts/{postId}/text-redaction-reviews/{reviewId}:
+  parameters:
+    - name: postId
+      in: path
+      required: true
+      description: ID tài nguyên postId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+    - name: reviewId
+      in: path
+      required: true
+      description: ID tài nguyên reviewId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  get:
+    tags:
+      - AI và dữ liệu đã che
+    summary: Đọc bản xem trước đã xử lý
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ tác giả. Bản xem trước luôn được gắn với đúng dữ liệu đầu vào.
+    operationId: getPostTextRedactionReview
+    x-use-cases:
+      - UC09
+      - UC23
+    x-access: member
+    security:
+      - CoreSession: []
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/TextRedactionReview.yaml
+            example:
+              reviewId: item-123
+              titlePreview: Ví vải màu xanh
+              descriptionPreview: Ví vải màu xanh được tìm thấy gần thư viện.
+              mode: assisted
+              publishable: true
+              reviewedAt: '2026-11-24T05:00:00Z'
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/me/posts/{postId}/text-redaction-reviews/{reviewId}/manual-redaction:
+  parameters:
+    - name: postId
+      in: path
+      required: true
+      description: ID tài nguyên postId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+    - name: reviewId
+      in: path
+      required: true
+      description: ID tài nguyên reviewId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  put:
+    tags:
+      - AI và dữ liệu đã che
+    summary: Ghi bản che văn bản thủ công
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ tác giả. Core kiểm lại vùng nhạy cảm bắt buộc trước khi đánh dấu publishable. Xem trước thay đổi không
+      tự đổi nội dung công khai.
+    operationId: setPostManualRedaction
+    x-use-cases:
+      - UC09
+      - UC23
+    x-access: member
+    security:
+      - CoreSession: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/RedactedTextWrite.yaml
+          example:
+            titlePreview: Ví vải màu xanh
+            descriptionPreview: Ví vải màu xanh được tìm thấy gần thư viện.
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/TextRedactionReview.yaml
+            example:
+              reviewId: item-123
+              titlePreview: Ví vải màu xanh
+              descriptionPreview: Ví vải màu xanh được tìm thấy gần thư viện.
+              mode: assisted
+              publishable: true
+              reviewedAt: '2026-11-24T05:00:00Z'
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '409':
+        $ref: ../components/responses.yaml#/conflict
+      '422':
+        $ref: ../components/responses.yaml#/unprocessable
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/me/posts/{postId}/text-redaction-reviews/{reviewId}/original-text:
+  parameters:
+    - name: postId
+      in: path
+      required: true
+      description: ID tài nguyên postId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+    - name: reviewId
+      in: path
+      required: true
+      description: ID tài nguyên reviewId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  get:
+    tags:
+      - AI và dữ liệu đã che
+    summary: Xem văn bản gốc của tôi
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ tác giả. Quyền Admin ngoại lệ và cơ chế cấp quyền được xem xét riêng và phải có audit.
+    operationId: getPostOriginalText
+    x-use-cases:
+      - UC09
+      - UC23
+    x-access: member
+    security:
+      - CoreSession: []
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/OriginalPostText.yaml
+            example:
+              title: Ví vải màu xanh
+              description: Ví vải màu xanh được tìm thấy gần thư viện.
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/post-drafts/{draftId}/verification-question-suggestions:
+  parameters:
+    - name: draftId
+      in: path
+      required: true
+      description: ID tài nguyên draftId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  post:
+    tags:
+      - AI và dữ liệu đã che
+    summary: Gợi ý câu hỏi xác minh
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ Finder của bản nháp Found chủ động yêu cầu. Đầu vào AI là danh mục, mô tả công khai đã xử lý và ảnh đã
+      che. Khi AI không khả dụng dùng câu mẫu theo danh mục. Câu hỏi mở, có thể kiểm chứng trực tiếp, không lặp
+      lại thông tin công khai, không yêu cầu đủ số giấy tờ và không tạo đáp án.
+    operationId: suggestVerificationQuestions
+    x-use-cases:
+      - UC07
+      - UC25
+    x-access: member
+    security:
+      - CoreSession: []
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/QuestionSuggestionResult.yaml
+            example:
+              source: ai
+              questions:
+                - Khóa kéo của chiếc ví có đặc điểm gì?
+                - Bên trong ví có hình thêu ở vị trí nào?
+                - Đường chỉ ở góc ví có dấu hiệu gì dễ nhận ra?
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '409':
+        $ref: ../components/responses.yaml#/conflict
+      '503':
+        $ref: ../components/responses.yaml#/unavailable

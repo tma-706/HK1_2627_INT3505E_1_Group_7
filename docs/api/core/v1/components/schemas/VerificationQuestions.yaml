@@ -1,0 +1,11 @@
+type: object
+additionalProperties: false
+required:
+  - questions
+properties:
+  questions:
+    type: array
+    items:
+      $ref: ./VerificationQuestion.yaml
+    maxItems: 3
+    minItems: 1

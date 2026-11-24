@@ -1,0 +1,87 @@
+oneOf:
+  - type: object
+    additionalProperties: false
+    required:
+      - purpose
+      - contentType
+      - sizeBytes
+      - sha256
+    properties:
+      purpose:
+        type: string
+        const: avatar
+      contentType:
+        type: string
+        enum:
+          - image/jpeg
+          - image/png
+          - image/webp
+      sizeBytes:
+        type: integer
+        minimum: 1
+      sha256:
+        type: string
+        pattern: ^[A-Fa-f0-9]{64}$
+        examples:
+          - aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  - type: object
+    additionalProperties: false
+    required:
+      - purpose
+      - postId
+      - contentType
+      - sizeBytes
+      - sha256
+    properties:
+      purpose:
+        type: string
+        const: finderResponsePhoto
+      postId:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+      contentType:
+        type: string
+        enum:
+          - image/jpeg
+          - image/png
+          - image/webp
+      sizeBytes:
+        type: integer
+        minimum: 1
+      sha256:
+        type: string
+        pattern: ^[A-Fa-f0-9]{64}$
+        examples:
+          - aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  - type: object
+    additionalProperties: false
+    required:
+      - purpose
+      - decisionId
+      - contentType
+      - sizeBytes
+      - sha256
+    properties:
+      purpose:
+        type: string
+        const: appealEvidence
+      decisionId:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+      contentType:
+        type: string
+        minLength: 1
+        examples:
+          - image/jpeg
+      sizeBytes:
+        type: integer
+        minimum: 1
+      sha256:
+        type: string
+        pattern: ^[A-Fa-f0-9]{64}$
+        examples:
+          - aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa

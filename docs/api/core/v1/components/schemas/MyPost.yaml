@@ -1,0 +1,113 @@
+type: object
+additionalProperties: false
+required:
+  - postId
+  - type
+  - title
+  - description
+  - categoryId
+  - occurredAt
+  - areaId
+  - status
+  - visibility
+  - publishedAt
+  - photos
+  - newClaimCount
+  - newResponseCount
+  - acceptedInteractionId
+properties:
+  postId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  type:
+    $ref: ./PostType.yaml
+  title:
+    type: string
+    minLength: 5
+    maxLength: 100
+    examples:
+      - Ví vải màu xanh
+  description:
+    type: string
+    minLength: 20
+    maxLength: 2000
+    examples:
+      - Ví vải màu xanh được tìm thấy gần thư viện.
+  categoryId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  occurredAt:
+    type: string
+    format: date-time
+    examples:
+      - '2026-11-24T05:00:00Z'
+  areaId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  status:
+    $ref: ./PostStatus.yaml
+  visibility:
+    $ref: ./PostVisibility.yaml
+  publishedAt:
+    type: string
+    format: date-time
+    examples:
+      - '2026-11-24T05:00:00Z'
+    description: Thời điểm bài được công khai.
+  photos:
+    type: array
+    items:
+      $ref: ./PublicPhoto.yaml
+    maxItems: 5
+  newClaimCount:
+    type: integer
+    minimum: 0
+  newResponseCount:
+    type: integer
+    minimum: 0
+  acceptedInteractionId:
+    anyOf:
+      - type: string
+        minLength: 1
+        examples:
+          - item-123
+      - type: 'null'
+  custody:
+    type: string
+    enum:
+      - heldByFinder
+      - handedToAuthorities
+  privateNote:
+    type: string
+    maxLength: 1000
+    examples:
+      - Ghi chú riêng của tác giả
+allOf:
+  - if:
+      required:
+        - type
+      properties:
+        type:
+          const: found
+    then:
+      properties:
+        custody: {}
+      required:
+        - custody
+    else:
+      not:
+        anyOf:
+          - properties:
+              custody: {}
+            required:
+              - custody
+          - properties:
+              privateNote: {}
+            required:
+              - privateNote

@@ -1,0 +1,1161 @@
+/posts/{postId}/reports:
+  parameters:
+    - name: postId
+      in: path
+      required: true
+      description: ID tài nguyên postId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  post:
+    tags:
+      - Kiểm duyệt
+    summary: Báo cáo bài đăng
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Tài khoản đã xác thực email báo cáo một lần trên mỗi bài. Khi có 5 báo cáo hợp lệ từ 5 tài khoản khác nhau
+      trong 24 giờ, Core ẩn bài và đưa vào hàng đợi kiểm duyệt. Rút/xử lý report không tự khôi phục bài.
+    operationId: reportPost
+    x-use-cases:
+      - UC22
+      - UC26
+    x-access: member
+    security:
+      - CoreSession: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/ReportWrite.yaml
+          example:
+            reason: spam
+    responses:
+      '201':
+        description: Tài nguyên đã được tạo.
+        headers:
+          Location:
+            description: 'URI tham chiếu của tài nguyên. Mẫu: /api/v1/me/reports/{reportId}'
+            schema:
+              type: string
+              format: uri-reference
+            required: true
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/ReportReceipt.yaml
+            example:
+              reportId: item-123
+              createdAt: '2026-11-24T05:00:00Z'
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '409':
+        description: Trạng thái hoặc dữ liệu hiện hành xung đột với thao tác.
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/Problem.yaml
+            example:
+              type: urn:campus-lost-found:problem:post-already-reported
+              title: Trạng thái hoặc dữ liệu hiện hành xung đột với thao tác.
+              status: 409
+              code: POST_ALREADY_REPORTED
+        headers:
+          Cache-Control:
+            description: Phản hồi có thể thay đổi theo phiên, quyền hoặc trạng thái tài nguyên.
+            schema:
+              type: string
+              const: no-store
+            required: true
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/me/reports/{reportId}:
+  parameters:
+    - name: reportId
+      in: path
+      required: true
+      description: ID tài nguyên reportId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  get:
+    tags:
+      - Kiểm duyệt
+    summary: Xem biên nhận báo cáo của tôi
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ người gửi report. Payload giới hạn ở biên nhận.
+    operationId: getMyReportReceipt
+    x-use-cases:
+      - UC19
+      - UC22
+    x-access: member
+    security:
+      - CoreSession: []
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/ReportReceipt.yaml
+            example:
+              reportId: item-123
+              createdAt: '2026-11-24T05:00:00Z'
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/admin/reported-posts:
+  get:
+    tags:
+      - Kiểm duyệt
+    summary: Xem hàng đợi bài bị báo cáo
+    description: >-
+      Phiên hiệu lực và quyền quản trị tương ứng với thao tác. Core kiểm lại quyền mỗi lần gọi. Yêu cầu quyền
+      đọc hàng đợi báo cáo bài. Sắp xếp cập nhật và ID giảm dần.
+    operationId: listReportedPosts
+    x-use-cases:
+      - UC26
+    x-access: admin
+    security:
+      - CoreSession: []
+    parameters:
+      - $ref: ../components/parameters/Cursor.yaml
+      - $ref: ../components/parameters/Limit.yaml
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+            - open
+            - resolved
+        description: Lọc trạng thái vụ việc.
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/ReportedPostPage.yaml
+            example:
+              items:
+                - caseId: item-123
+                  postId: item-123
+                  status: open
+                  reportCount: 0
+                  openedAt: '2026-11-24T05:00:00Z'
+                  updatedAt: '2026-11-24T05:00:00Z'
+              nextCursor: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/admin/reported-posts/{caseId}:
+  parameters:
+    - name: caseId
+      in: path
+      required: true
+      description: ID tài nguyên caseId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  get:
+    tags:
+      - Kiểm duyệt
+    summary: Xem vụ việc kiểm duyệt bài
+    description: >-
+      Phiên hiệu lực và quyền quản trị tương ứng với thao tác. Core kiểm lại quyền mỗi lần gọi. Yêu cầu quyền
+      đọc vụ việc. Trả nội dung bài và báo cáo được phép phục vụ xử lý, chỉ trong bản quản trị. Ghi lý do truy
+      cập ngoại lệ theo chính sách nếu sau này có truy cập dữ liệu gốc.
+    operationId: getReportedPostCase
+    x-use-cases:
+      - UC26
+    x-access: admin
+    security:
+      - CoreSession: []
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/ReportedPostCase.yaml
+            example:
+              caseId: item-123
+              postId: item-123
+              status: open
+              reportCount: 0
+              openedAt: '2026-11-24T05:00:00Z'
+              updatedAt: '2026-11-24T05:00:00Z'
+              post:
+                postId: item-123
+                authorId: item-123
+                type: lost
+                title: Ví vải màu xanh
+                description: Ví vải màu xanh được tìm thấy gần thư viện.
+                status: open
+                visibility: visible
+                photos:
+                  - imageId: item-123
+                    url: https://example.test/resource
+              reports:
+                - reportId: item-123
+                  reporterId: item-123
+                  reason: spam
+                  createdAt: '2026-11-24T05:00:00Z'
+              lastDecision: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/admin/reported-posts/{caseId}/decisions:
+  parameters:
+    - name: caseId
+      in: path
+      required: true
+      description: ID tài nguyên caseId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  post:
+    tags:
+      - Kiểm duyệt
+    summary: Ra quyết định kiểm duyệt bài
+    description: >-
+      Phiên hiệu lực và quyền quản trị tương ứng với thao tác. Core kiểm lại quyền mỗi lần gọi. Yêu cầu quyền
+      quyết định bài. Hide là ẩn tạm thời, Remove gỡ công khai, Restore dành cho Hidden/Removed có lý do.
+      Dismiss kết thúc xử lý báo cáo, không tự đưa bài đã ẩn trở lại công khai. Ghi người xử lý, thời gian, bằng
+      chứng và quyết định. Báo kết quả cho tác giả và người báo cáo. Warn/Lock tài khoản đi qua UC27.
+    operationId: decideReportedPost
+    x-use-cases:
+      - UC22
+      - UC26
+    x-access: admin
+    security:
+      - CoreSession: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/PostModerationWrite.yaml
+          example:
+            decision: dismiss
+            reason: Lý do đã được kiểm tra.
+    responses:
+      '201':
+        description: Tài nguyên đã được tạo.
+        headers:
+          Location:
+            description: 'URI tham chiếu của tài nguyên. Mẫu: /api/v1/admin/reported-posts/{caseId}/decisions/{decisionId}'
+            schema:
+              type: string
+              format: uri-reference
+            required: true
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/PostModerationDecision.yaml
+            example:
+              decisionId: item-123
+              reviewerId: item-123
+              reason: Lý do đã được kiểm tra.
+              decidedAt: '2026-11-24T05:00:00Z'
+              decision: dismiss
+              newVisibility: visible
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '409':
+        $ref: ../components/responses.yaml#/conflict
+      '422':
+        $ref: ../components/responses.yaml#/unprocessable
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/admin/reported-posts/{caseId}/decisions/{decisionId}:
+  parameters:
+    - name: caseId
+      in: path
+      required: true
+      description: ID tài nguyên caseId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+    - name: decisionId
+      in: path
+      required: true
+      description: ID tài nguyên decisionId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  get:
+    tags:
+      - Kiểm duyệt
+    summary: Đọc quyết định kiểm duyệt bài
+    description: >-
+      Phiên hiệu lực và quyền quản trị tương ứng với thao tác. Core kiểm lại quyền mỗi lần gọi. Yêu cầu quyền
+      đọc hồ sơ quyết định. Đối chiếu quyết định của đúng vụ việc.
+    operationId: getReportedPostDecision
+    x-use-cases:
+      - UC26
+      - UC30
+    x-access: admin
+    security:
+      - CoreSession: []
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/PostModerationDecision.yaml
+            example:
+              decisionId: item-123
+              reviewerId: item-123
+              reason: Lý do đã được kiểm tra.
+              decidedAt: '2026-11-24T05:00:00Z'
+              decision: dismiss
+              newVisibility: visible
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/admin/return-reviews:
+  get:
+    tags:
+      - Kiểm duyệt
+    summary: Xem trao trả cần xử lý
+    description: >-
+      Phiên hiệu lực và quyền quản trị tương ứng với thao tác. Core kiểm lại quyền mỗi lần gọi. Yêu cầu quyền
+      xem tranh chấp và hồ sơ cần xử lý. Trả yêu cầu vẫn chờ sau 7 ngày hoặc trường hợp tranh chấp đã được
+      chuyển đến quản trị. Sắp xếp theo thời điểm chuyển xem xét và ID tăng dần để ưu tiên mục cũ. Quy trình mở
+      tranh chấp và thao tác giải quyết còn mở.
+    operationId: listPendingReturnReviews
+    x-use-cases:
+      - UC10
+    x-access: admin
+    security:
+      - CoreSession: []
+    parameters:
+      - $ref: ../components/parameters/Cursor.yaml
+      - $ref: ../components/parameters/Limit.yaml
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/ReturnReviewPage.yaml
+            example:
+              items:
+                - requestId: item-123
+                  postId: item-123
+                  interactionId: item-123
+                  status: pending
+                  startedAt: '2026-11-24T05:00:00Z'
+                  confirmationDueAt: '2026-11-24T05:00:00Z'
+                  needsReviewAt: '2026-11-24T05:00:00Z'
+                  counterpartConfirmed: true
+              nextCursor: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/admin/accounts:
+  get:
+    tags:
+      - Kiểm duyệt
+    summary: Tìm kiếm tài khoản
+    description: >-
+      Phiên hiệu lực và quyền quản trị tương ứng với thao tác. Core kiểm lại quyền mỗi lần gọi. Yêu cầu quyền
+      tra cứu tài khoản. Dùng q để tìm email hoặc tên cho phép hiển thị, lọc trạng thái, sắp xếp theo thời điểm
+      tạo và ID giảm dần.
+    operationId: listAdminAccounts
+    x-use-cases:
+      - UC27
+    x-access: admin
+    security:
+      - CoreSession: []
+    parameters:
+      - $ref: ../components/parameters/Cursor.yaml
+      - $ref: ../components/parameters/Limit.yaml
+      - in: query
+        name: q
+        schema:
+          type: string
+          minLength: 1
+          examples:
+            - lan@example.test
+        description: Từ khóa tra cứu trong phạm vi quản trị.
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+            - active
+            - unverified
+            - temporarilyLoginLocked
+            - moderationLocked
+        description: Trạng thái tài khoản.
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/AdminAccountPage.yaml
+            example:
+              items:
+                - accountId: item-123
+                  email: lan@example.test
+                  role: member
+                  displayName: Lan
+                  status: active
+              nextCursor: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/admin/accounts/{accountId}/violations:
+  parameters:
+    - name: accountId
+      in: path
+      required: true
+      description: ID tài nguyên accountId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  get:
+    tags:
+      - Kiểm duyệt
+    summary: Xem lịch sử vi phạm của tài khoản
+    description: >-
+      Phiên hiệu lực và quyền quản trị tương ứng với thao tác. Core kiểm lại quyền mỗi lần gọi. Yêu cầu quyền
+      đọc lịch sử quản trị. Sắp xếp thời điểm quyết định và ID giảm dần. Không xóa quyết định hiện hữu khi mở
+      khóa hay khiếu nại.
+    operationId: listAccountViolations
+    x-use-cases:
+      - UC27
+      - UC30
+    x-access: admin
+    security:
+      - CoreSession: []
+    parameters:
+      - $ref: ../components/parameters/Cursor.yaml
+      - $ref: ../components/parameters/Limit.yaml
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/AccountModerationHistory.yaml
+            example:
+              items:
+                - decisionId: item-123
+                  reviewerId: item-123
+                  reason: Lý do đã được kiểm tra.
+                  decidedAt: '2026-11-24T05:00:00Z'
+                  accountId: item-123
+                  action: warn
+                  scope: warning
+                  effectiveUntil: null
+              nextCursor: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/admin/accounts/{accountId}/moderation-actions:
+  parameters:
+    - name: accountId
+      in: path
+      required: true
+      description: ID tài nguyên accountId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  post:
+    tags:
+      - Kiểm duyệt
+    summary: Cảnh báo, khóa hoặc mở khóa tài khoản
+    description: >-
+      Phiên hiệu lực và quyền quản trị tương ứng với thao tác. Core kiểm lại quyền mỗi lần gọi. Yêu cầu quyền
+      ghi phù hợp. Vi phạm lặp lại/trung bình khóa 7 ngày, nghiêm trọng 30 ngày, đặc biệt nghiêm trọng có thể
+      khóa vĩnh viễn theo thẩm quyền. Mở khóa chỉ đúng loại theo quyền. Lưu lý do, người thao tác, thời gian và
+      phạm vi. Tài khoản bị khóa quản trị không tạo tương tác mới.
+    operationId: moderateAccount
+    x-use-cases:
+      - UC02
+      - UC26
+      - UC27
+    x-access: admin
+    security:
+      - CoreSession: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/AccountModerationWrite.yaml
+          example:
+            action: warn
+            reason: Lý do đã được kiểm tra.
+    responses:
+      '201':
+        description: Tài nguyên đã được tạo.
+        headers:
+          Location:
+            description: >-
+              URI tham chiếu của tài nguyên. Mẫu:
+              /api/v1/admin/accounts/{accountId}/moderation-actions/{decisionId}
+            schema:
+              type: string
+              format: uri-reference
+            required: true
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/AccountModerationAction.yaml
+            example:
+              decisionId: item-123
+              reviewerId: item-123
+              reason: Lý do đã được kiểm tra.
+              decidedAt: '2026-11-24T05:00:00Z'
+              accountId: item-123
+              action: warn
+              scope: warning
+              effectiveUntil: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '409':
+        $ref: ../components/responses.yaml#/conflict
+      '422':
+        $ref: ../components/responses.yaml#/unprocessable
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/admin/accounts/{accountId}/moderation-actions/{decisionId}:
+  parameters:
+    - name: accountId
+      in: path
+      required: true
+      description: ID tài nguyên accountId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+    - name: decisionId
+      in: path
+      required: true
+      description: ID tài nguyên decisionId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  get:
+    tags:
+      - Kiểm duyệt
+    summary: Xem một quyết định khóa hoặc cảnh báo
+    description: >-
+      Phiên hiệu lực và quyền quản trị tương ứng với thao tác. Core kiểm lại quyền mỗi lần gọi. Yêu cầu quyền
+      đọc hồ sơ quản trị tài khoản.
+    operationId: getAccountModerationAction
+    x-use-cases:
+      - UC27
+      - UC30
+    x-access: admin
+    security:
+      - CoreSession: []
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/AccountModerationAction.yaml
+            example:
+              decisionId: item-123
+              reviewerId: item-123
+              reason: Lý do đã được kiểm tra.
+              decidedAt: '2026-11-24T05:00:00Z'
+              accountId: item-123
+              action: warn
+              scope: warning
+              effectiveUntil: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/me/moderation-appeals:
+  post:
+    tags:
+      - Kiểm duyệt
+    summary: Gửi khiếu nại kiểm duyệt
+    description: >-
+      Phiên Bearer của người bị ảnh hưởng hoặc Bearer giới hạn cho khiếu nại do Core cấp sau xác minh. Quyền chỉ
+      áp dụng cho quyết định của chính chủ thể. Chỉ người chịu quyết định Hide, Remove hoặc Lock, trong 7 ngày
+      kể từ nhận thông báo. Có thể kèm ID bằng chứng đã xử lý và đúng quyết định. Khiếu nại vào hàng đợi, biện
+      pháp cũ giữ hiệu lực cho đến quyết định mới.
+    operationId: submitModerationAppeal
+    x-use-cases:
+      - UC29
+      - UC30
+    x-access: appeal
+    security:
+      - CoreSession: []
+      - AppealSession: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/AppealWrite.yaml
+          example:
+            decisionId: decision-123
+            reason: Lý do đã được kiểm tra.
+    responses:
+      '201':
+        description: Tài nguyên đã được tạo.
+        headers:
+          Location:
+            description: 'URI tham chiếu của tài nguyên. Mẫu: /api/v1/me/moderation-appeals/{appealId}'
+            schema:
+              type: string
+              format: uri-reference
+            required: true
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/MyAppeal.yaml
+            example:
+              appealId: item-123
+              decisionId: item-123
+              reason: Lý do đã được kiểm tra.
+              status: submitted
+              submittedAt: '2026-11-24T05:00:00Z'
+              outcome: null
+              resolvedAt: null
+              outcomeReason: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '409':
+        description: Trạng thái hoặc dữ liệu hiện hành xung đột với thao tác.
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/Problem.yaml
+            example:
+              type: urn:campus-lost-found:problem:appeal-window-or-state-conflict
+              title: Trạng thái hoặc dữ liệu hiện hành xung đột với thao tác.
+              status: 409
+              code: APPEAL_WINDOW_OR_STATE_CONFLICT
+        headers:
+          Cache-Control:
+            description: Phản hồi có thể thay đổi theo phiên, quyền hoặc trạng thái tài nguyên.
+            schema:
+              type: string
+              const: no-store
+            required: true
+      '422':
+        $ref: ../components/responses.yaml#/unprocessable
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/me/moderation-appeals/{appealId}:
+  parameters:
+    - name: appealId
+      in: path
+      required: true
+      description: ID tài nguyên appealId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  get:
+    tags:
+      - Kiểm duyệt
+    summary: Xem khiếu nại của tôi
+    description: >-
+      Phiên Bearer của người bị ảnh hưởng hoặc Bearer giới hạn cho khiếu nại do Core cấp sau xác minh. Quyền chỉ
+      áp dụng cho quyết định của chính chủ thể. Chỉ chủ thể bị ảnh hưởng. Bearer giới hạn chỉ đọc khiếu nại gắn
+      với đúng quyết định.
+    operationId: getMyModerationAppeal
+    x-use-cases:
+      - UC29
+      - UC30
+    x-access: appeal
+    security:
+      - CoreSession: []
+      - AppealSession: []
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/MyAppeal.yaml
+            example:
+              appealId: item-123
+              decisionId: item-123
+              reason: Lý do đã được kiểm tra.
+              status: submitted
+              submittedAt: '2026-11-24T05:00:00Z'
+              outcome: null
+              resolvedAt: null
+              outcomeReason: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/admin/moderation-appeals:
+  get:
+    tags:
+      - Kiểm duyệt
+    summary: Xem hàng đợi khiếu nại
+    description: >-
+      Phiên hiệu lực và quyền quản trị tương ứng với thao tác. Core kiểm lại quyền mỗi lần gọi. Yêu cầu quyền xử
+      lý khiếu nại. Sắp xếp thời điểm nhận và ID tăng dần. Mục tiêu phản hồi trong 5 ngày làm việc kể từ khi
+      nhận.
+    operationId: listModerationAppeals
+    x-use-cases:
+      - UC30
+    x-access: admin
+    security:
+      - CoreSession: []
+    parameters:
+      - $ref: ../components/parameters/Cursor.yaml
+      - $ref: ../components/parameters/Limit.yaml
+      - in: query
+        name: status
+        schema:
+          type: string
+          enum:
+            - submitted
+            - inReview
+            - decided
+        description: Lọc theo trạng thái xử lý.
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/AdminAppealPage.yaml
+            example:
+              items:
+                - appealId: item-123
+                  decisionId: item-123
+                  reason: Lý do đã được kiểm tra.
+                  status: submitted
+                  submittedAt: '2026-11-24T05:00:00Z'
+                  outcome: null
+                  resolvedAt: null
+                  appellantId: item-123
+              nextCursor: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/admin/moderation-appeals/{appealId}:
+  parameters:
+    - name: appealId
+      in: path
+      required: true
+      description: ID tài nguyên appealId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  get:
+    tags:
+      - Kiểm duyệt
+    summary: Xem hồ sơ khiếu nại để xét duyệt
+    description: >-
+      Phiên hiệu lực và quyền quản trị tương ứng với thao tác. Core kiểm lại quyền mỗi lần gọi. Yêu cầu quyền
+      phù hợp. Xem quyết định gốc, bằng chứng, lý do và lịch sử xem xét theo quyền.
+    operationId: getModerationAppeal
+    x-use-cases:
+      - UC30
+    x-access: admin
+    security:
+      - CoreSession: []
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/AdminAppeal.yaml
+            example:
+              appealId: item-123
+              decisionId: item-123
+              reason: Lý do đã được kiểm tra.
+              status: submitted
+              submittedAt: '2026-11-24T05:00:00Z'
+              outcome: null
+              resolvedAt: null
+              appellantId: item-123
+              evidence:
+                - uploadId: item-123
+                  downloadUrl: https://example.test/resource
+              originalDecision:
+                kind: reportedPost
+                decisionId: item-123
+                decidedAt: '2026-11-24T05:00:00Z'
+                reason: Lý do đã được kiểm tra.
+              reviewHistory:
+                - decisionId: item-123
+                  reviewerId: item-123
+                  reason: Lý do đã được kiểm tra.
+                  decidedAt: '2026-11-24T05:00:00Z'
+                  outcome: uphold
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/admin/moderation-appeals/{appealId}/decisions:
+  parameters:
+    - name: appealId
+      in: path
+      required: true
+      description: ID tài nguyên appealId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  post:
+    tags:
+      - Kiểm duyệt
+    summary: Ra quyết định khiếu nại
+    description: >-
+      Phiên hiệu lực và quyền quản trị tương ứng với thao tác. Core kiểm lại quyền mỗi lần gọi. Yêu cầu quyền
+      ghi khiếu nại đúng loại. Giữ nguyên, hủy bỏ hoặc điều chỉnh biện pháp. Ghi người xử lý, căn cứ, thời điểm
+      và kết quả; giữ lịch sử gốc và thông báo cho người khiếu nại. Ghi quyết định và thay đổi biện pháp nhất
+      quán.
+    operationId: decideModerationAppeal
+    x-use-cases:
+      - UC30
+      - UC20
+    x-access: admin
+    security:
+      - CoreSession: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/AppealDecisionWrite.yaml
+          example:
+            outcome: uphold
+            reason: Lý do đã được kiểm tra.
+    responses:
+      '201':
+        description: Tài nguyên đã được tạo.
+        headers:
+          Location:
+            description: >-
+              URI tham chiếu của tài nguyên. Mẫu:
+              /api/v1/admin/moderation-appeals/{appealId}/decisions/{decisionId}
+            schema:
+              type: string
+              format: uri-reference
+            required: true
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/AppealDecision.yaml
+            example:
+              decisionId: item-123
+              reviewerId: item-123
+              reason: Lý do đã được kiểm tra.
+              decidedAt: '2026-11-24T05:00:00Z'
+              outcome: uphold
+              originalDecisionId: item-123
+              appealId: item-123
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '409':
+        $ref: ../components/responses.yaml#/conflict
+      '422':
+        $ref: ../components/responses.yaml#/unprocessable
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/admin/moderation-appeals/{appealId}/decisions/{decisionId}:
+  parameters:
+    - name: appealId
+      in: path
+      required: true
+      description: ID tài nguyên appealId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+    - name: decisionId
+      in: path
+      required: true
+      description: ID tài nguyên decisionId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  get:
+    tags:
+      - Kiểm duyệt
+    summary: Xem quyết định giải quyết khiếu nại
+    description: >-
+      Phiên hiệu lực và quyền quản trị tương ứng với thao tác. Core kiểm lại quyền mỗi lần gọi. Yêu cầu quyền
+      đọc hồ sơ khiếu nại tương ứng.
+    operationId: getModerationAppealDecision
+    x-use-cases:
+      - UC30
+    x-access: admin
+    security:
+      - CoreSession: []
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/AppealDecision.yaml
+            example:
+              decisionId: item-123
+              reviewerId: item-123
+              reason: Lý do đã được kiểm tra.
+              decidedAt: '2026-11-24T05:00:00Z'
+              outcome: uphold
+              originalDecisionId: item-123
+              appealId: item-123
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '503':
+        $ref: ../components/responses.yaml#/unavailable

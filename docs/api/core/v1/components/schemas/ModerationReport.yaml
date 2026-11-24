@@ -1,0 +1,35 @@
+type: object
+additionalProperties: false
+required:
+  - reportId
+  - reporterId
+  - reason
+  - createdAt
+properties:
+  reportId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  reporterId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  reason:
+    type: string
+    enum:
+      - spam
+      - fraud
+      - harmfulContent
+      - other
+  note:
+    type: string
+    minLength: 1
+    examples:
+      - Báo cáo nội dung cần xem xét.
+  createdAt:
+    type: string
+    format: date-time
+    examples:
+      - '2026-11-24T05:00:00Z'

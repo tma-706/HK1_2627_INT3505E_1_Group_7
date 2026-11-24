@@ -1,0 +1,193 @@
+invalidRequest:
+  description: Tham số hoặc dữ liệu gửi lên không hợp lệ.
+  content:
+    application/problem+json:
+      schema:
+        $ref: ./schemas/Problem.yaml
+      example:
+        type: urn:campus-lost-found:problem:invalid-request
+        title: Tham số hoặc dữ liệu gửi lên không hợp lệ.
+        status: 400
+        code: INVALID_REQUEST
+  headers:
+    Cache-Control:
+      description: Phản hồi có thể thay đổi theo phiên, quyền hoặc trạng thái tài nguyên.
+      schema:
+        type: string
+        const: no-store
+      required: true
+unauthorized:
+  description: Phiên Bearer bị thiếu, hết hạn, đã thu hồi hoặc không hợp lệ đối với thao tác này.
+  headers:
+    WWW-Authenticate:
+      description: Yêu cầu xác thực phiên Bearer.
+      schema:
+        type: string
+        example: Bearer
+      required: true
+    Cache-Control:
+      description: Phản hồi có thể thay đổi theo phiên, quyền hoặc trạng thái tài nguyên.
+      schema:
+        type: string
+        const: no-store
+      required: true
+  content:
+    application/problem+json:
+      schema:
+        $ref: ./schemas/Problem.yaml
+      example:
+        type: urn:campus-lost-found:problem:session-invalid
+        title: Phiên Bearer bị thiếu, hết hạn, đã thu hồi hoặc không hợp lệ đối với thao tác này.
+        status: 401
+        code: SESSION_INVALID
+forbidden:
+  description: Phiên có hiệu lực nhưng thiếu quyền thực hiện thao tác.
+  content:
+    application/problem+json:
+      schema:
+        $ref: ./schemas/Problem.yaml
+      example:
+        type: urn:campus-lost-found:problem:forbidden
+        title: Phiên có hiệu lực nhưng thiếu quyền thực hiện thao tác.
+        status: 403
+        code: FORBIDDEN
+  headers:
+    Cache-Control:
+      description: Phản hồi có thể thay đổi theo phiên, quyền hoặc trạng thái tài nguyên.
+      schema:
+        type: string
+        const: no-store
+      required: true
+concealed:
+  description: Tài nguyên không tồn tại hoặc nằm ngoài phạm vi người gọi được xem.
+  content:
+    application/problem+json:
+      schema:
+        $ref: ./schemas/Problem.yaml
+      example:
+        type: urn:campus-lost-found:problem:resource-not-found
+        title: Tài nguyên không tồn tại hoặc nằm ngoài phạm vi người gọi được xem.
+        status: 404
+        code: RESOURCE_NOT_FOUND
+  headers:
+    Cache-Control:
+      description: Phản hồi có thể thay đổi theo phiên, quyền hoặc trạng thái tài nguyên.
+      schema:
+        type: string
+        const: no-store
+      required: true
+conflict:
+  description: Trạng thái hoặc dữ liệu hiện hành xung đột với thao tác.
+  content:
+    application/problem+json:
+      schema:
+        $ref: ./schemas/Problem.yaml
+      example:
+        type: urn:campus-lost-found:problem:state-conflict
+        title: Trạng thái hoặc dữ liệu hiện hành xung đột với thao tác.
+        status: 409
+        code: STATE_CONFLICT
+  headers:
+    Cache-Control:
+      description: Phản hồi có thể thay đổi theo phiên, quyền hoặc trạng thái tài nguyên.
+      schema:
+        type: string
+        const: no-store
+      required: true
+gone:
+  description: Liên kết đã hết hạn hoặc đã được dùng. Hãy yêu cầu liên kết mới.
+  content:
+    application/problem+json:
+      schema:
+        $ref: ./schemas/Problem.yaml
+      example:
+        type: urn:campus-lost-found:problem:link-no-longer-valid
+        title: Liên kết đã hết hạn hoặc đã được dùng. Hãy yêu cầu liên kết mới.
+        status: 410
+        code: LINK_NO_LONGER_VALID
+  headers:
+    Cache-Control:
+      description: Phản hồi có thể thay đổi theo phiên, quyền hoặc trạng thái tài nguyên.
+      schema:
+        type: string
+        const: no-store
+      required: true
+unprocessable:
+  description: Dữ liệu hợp lệ về cấu trúc nhưng không đạt điều kiện nghiệp vụ của thao tác.
+  content:
+    application/problem+json:
+      schema:
+        $ref: ./schemas/Problem.yaml
+      example:
+        type: urn:campus-lost-found:problem:business-rule-violation
+        title: Dữ liệu hợp lệ về cấu trúc nhưng không đạt điều kiện nghiệp vụ của thao tác.
+        status: 422
+        code: BUSINESS_RULE_VIOLATION
+  headers:
+    Cache-Control:
+      description: Phản hồi có thể thay đổi theo phiên, quyền hoặc trạng thái tài nguyên.
+      schema:
+        type: string
+        const: no-store
+      required: true
+quota:
+  description: Đã đạt hạn mức. Retry-After cho biết số giây trước thời điểm có thể thử lại.
+  headers:
+    Retry-After:
+      description: Số giây đến mốc thử lại.
+      schema:
+        type: integer
+        minimum: 1
+        example: 900
+      required: true
+    Cache-Control:
+      description: Phản hồi có thể thay đổi theo phiên, quyền hoặc trạng thái tài nguyên.
+      schema:
+        type: string
+        const: no-store
+      required: true
+  content:
+    application/problem+json:
+      schema:
+        $ref: ./schemas/Problem.yaml
+      example:
+        type: urn:campus-lost-found:problem:limit-reached
+        title: Đã đạt hạn mức. Retry-After cho biết số giây trước thời điểm có thể thử lại.
+        status: 429
+        code: LIMIT_REACHED
+unavailable:
+  description: Dịch vụ hoặc phụ thuộc tạm thời không khả dụng.
+  content:
+    application/problem+json:
+      schema:
+        $ref: ./schemas/Problem.yaml
+      example:
+        type: urn:campus-lost-found:problem:service-unavailable
+        title: Dịch vụ hoặc phụ thuộc tạm thời không khả dụng.
+        status: 503
+        code: SERVICE_UNAVAILABLE
+  headers:
+    Cache-Control:
+      description: Phản hồi có thể thay đổi theo phiên, quyền hoặc trạng thái tài nguyên.
+      schema:
+        type: string
+        const: no-store
+      required: true
+invalidCredentials:
+  description: Thông tin đăng nhập không hợp lệ.
+  content:
+    application/problem+json:
+      schema:
+        $ref: ./schemas/Problem.yaml
+      example:
+        type: urn:campus-lost-found:problem:invalid-credentials
+        title: Thông tin đăng nhập không hợp lệ.
+        status: 401
+        code: INVALID_CREDENTIALS
+  headers:
+    Cache-Control:
+      description: Phản hồi có thể thay đổi theo phiên, quyền hoặc trạng thái tài nguyên.
+      schema:
+        type: string
+        const: no-store
+      required: true

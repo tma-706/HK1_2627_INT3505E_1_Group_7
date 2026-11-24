@@ -1,0 +1,41 @@
+type: object
+additionalProperties: false
+required:
+  - uploadId
+  - method
+  - uploadUrl
+  - formFields
+  - uploadExpiresAt
+  - confirmationExpiresAt
+properties:
+  uploadId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  method:
+    type: string
+    const: POST
+  uploadUrl:
+    type: string
+    format: uri
+    examples:
+      - https://example.test/resource
+  formFields:
+    type: object
+    additionalProperties:
+      type: string
+    minProperties: 1
+    examples:
+      - key: demo-object
+        policy: demo-policy
+  uploadExpiresAt:
+    type: string
+    format: date-time
+    examples:
+      - '2026-11-24T05:00:00Z'
+  confirmationExpiresAt:
+    type: string
+    format: date-time
+    examples:
+      - '2026-11-24T05:00:00Z'

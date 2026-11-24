@@ -1,0 +1,53 @@
+type: object
+additionalProperties: false
+required:
+  - uploadId
+  - status
+  - updatedAt
+  - redactionMode
+  - failureCode
+  - previewUrl
+properties:
+  uploadId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  status:
+    type: string
+    enum:
+      - pendingUpload
+      - processing
+      - awaitingRedaction
+      - ready
+      - rejected
+      - expired
+      - failed
+  updatedAt:
+    type: string
+    format: date-time
+    examples:
+      - '2026-11-24T05:00:00Z'
+  redactionMode:
+    anyOf:
+      - type: string
+        enum:
+          - assisted
+          - manualRequired
+          - manual
+      - type: 'null'
+  failureCode:
+    anyOf:
+      - type: string
+        minLength: 1
+        examples:
+          - CONTENT_REJECTED
+      - type: 'null'
+  previewUrl:
+    anyOf:
+      - type: string
+        format: uri
+        examples:
+          - https://example.test/resource
+      - type: 'null'
+    description: URL xem trước có thời hạn, chỉ cấp sau khi kiểm quyền. Có thể null trước khi tạo bản xem trước.

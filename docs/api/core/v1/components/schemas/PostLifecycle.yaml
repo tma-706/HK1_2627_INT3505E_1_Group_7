@@ -1,0 +1,30 @@
+type: object
+additionalProperties: false
+required:
+  - postId
+  - status
+  - visibility
+  - updatedAt
+  - activeReturnRequestId
+properties:
+  postId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  status:
+    $ref: ./PostStatus.yaml
+  visibility:
+    $ref: ./PostVisibility.yaml
+  updatedAt:
+    type: string
+    format: date-time
+    examples:
+      - '2026-11-24T05:00:00Z'
+  activeReturnRequestId:
+    anyOf:
+      - type: string
+        minLength: 1
+        examples:
+          - item-123
+      - type: 'null'

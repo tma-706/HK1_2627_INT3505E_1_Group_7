@@ -1,0 +1,31 @@
+type: object
+additionalProperties: false
+required:
+  - eventId
+  - interactionId
+  - type
+  - occurredAt
+properties:
+  eventId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  interactionId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  type:
+    type: string
+    enum:
+      - claimSubmitted
+      - claimReviewed
+      - responseSubmitted
+      - responseReviewed
+      - returnUpdated
+  occurredAt:
+    type: string
+    format: date-time
+    examples:
+      - '2026-11-24T05:00:00Z'

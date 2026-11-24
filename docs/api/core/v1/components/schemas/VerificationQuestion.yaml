@@ -1,0 +1,17 @@
+type: object
+additionalProperties: false
+required:
+  - questionId
+  - text
+properties:
+  questionId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  text:
+    type: string
+    minLength: 10
+    maxLength: 200
+    examples:
+      - Khóa kéo của chiếc ví có đặc điểm gì?

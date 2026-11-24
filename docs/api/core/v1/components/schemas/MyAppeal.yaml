@@ -1,0 +1,60 @@
+type: object
+additionalProperties: false
+required:
+  - appealId
+  - decisionId
+  - reason
+  - status
+  - submittedAt
+  - outcome
+  - resolvedAt
+  - outcomeReason
+properties:
+  appealId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  decisionId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  reason:
+    type: string
+    minLength: 1
+    examples:
+      - Lý do đã được kiểm tra.
+  status:
+    type: string
+    enum:
+      - submitted
+      - inReview
+      - decided
+  submittedAt:
+    type: string
+    format: date-time
+    examples:
+      - '2026-11-24T05:00:00Z'
+  outcome:
+    anyOf:
+      - type: string
+        enum:
+          - uphold
+          - overturn
+          - adjust
+      - type: 'null'
+  resolvedAt:
+    anyOf:
+      - type: string
+        format: date-time
+        examples:
+          - '2026-11-24T05:00:00Z'
+      - type: 'null'
+  outcomeReason:
+    anyOf:
+      - type: string
+        minLength: 1
+        examples:
+          - Lý do đã được kiểm tra.
+      - type: 'null'

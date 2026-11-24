@@ -1,0 +1,564 @@
+/conversations:
+  get:
+    tags:
+      - Chat và thông báo
+    summary: Liệt kê hội thoại của tôi
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ hội thoại có một trong hai bên của tương tác đã chấp nhận. Sắp xếp theo cập nhật và ID giảm dần.
+    operationId: listConversations
+    x-use-cases:
+      - UC19
+    x-access: member
+    security:
+      - CoreSession: []
+    parameters:
+      - $ref: ../components/parameters/Cursor.yaml
+      - $ref: ../components/parameters/Limit.yaml
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/ConversationPage.yaml
+            example:
+              items:
+                - conversationId: item-123
+                  postId: item-123
+                  interactionId: item-123
+                  interactionType: claim
+                  mode: readWrite
+                  updatedAt: '2026-11-24T05:00:00Z'
+              nextCursor: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/conversations/{conversationId}:
+  parameters:
+    - name: conversationId
+      in: path
+      required: true
+      description: ID tài nguyên conversationId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  get:
+    tags:
+      - Chat và thông báo
+    summary: Xem thông tin hội thoại
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ hai bên của tương tác được chấp nhận. Chat chuyển sang chỉ đọc khi bài Closed hoặc Returned.
+    operationId: getConversation
+    x-use-cases:
+      - UC19
+    x-access: member
+    security:
+      - CoreSession: []
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/Conversation.yaml
+            example:
+              conversationId: item-123
+              postId: item-123
+              interactionId: item-123
+              interactionType: claim
+              mode: readWrite
+              updatedAt: '2026-11-24T05:00:00Z'
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/conversations/{conversationId}/messages:
+  parameters:
+    - name: conversationId
+      in: path
+      required: true
+      description: ID tài nguyên conversationId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  get:
+    tags:
+      - Chat và thông báo
+    summary: Xem tin nhắn hội thoại
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ hai bên. Lấy trang mới nhất trước, theo thời điểm gửi và ID giảm dần. Lịch sử được lưu tối đa 12 tháng
+      sau khi bài đóng.
+    operationId: listMessages
+    x-use-cases:
+      - UC19
+    x-access: member
+    security:
+      - CoreSession: []
+    parameters:
+      - $ref: ../components/parameters/Cursor.yaml
+      - $ref: ../components/parameters/Limit.yaml
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/MessagePage.yaml
+            example:
+              items:
+                - messageId: item-123
+                  conversationId: item-123
+                  senderId: item-123
+                  text: Chào bạn, mình có thể hẹn tại thư viện.
+                  sentAt: '2026-11-24T05:00:00Z'
+              nextCursor: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+  post:
+    tags:
+      - Chat và thông báo
+    summary: Gửi tin nhắn văn bản
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ hai bên của tương tác đã chấp nhận khi chat còn cho ghi. Tài khoản bị khóa không gửi được. MVP chỉ có
+      văn bản, tin đã gửi giữ nguyên và có thể báo cáo.
+    operationId: sendMessage
+    x-use-cases:
+      - UC19
+      - UC20
+    x-access: member
+    security:
+      - CoreSession: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/MessageWrite.yaml
+          example:
+            text: Chào bạn, mình có thể hẹn tại thư viện.
+    responses:
+      '201':
+        description: Tài nguyên đã được tạo.
+        headers:
+          Location:
+            description: 'URI tham chiếu của tài nguyên. Mẫu: /api/v1/conversations/{conversationId}/messages/{messageId}'
+            schema:
+              type: string
+              format: uri-reference
+            required: true
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/Message.yaml
+            example:
+              messageId: item-123
+              conversationId: item-123
+              senderId: item-123
+              text: Chào bạn, mình có thể hẹn tại thư viện.
+              sentAt: '2026-11-24T05:00:00Z'
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '409':
+        $ref: ../components/responses.yaml#/conflict
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/conversations/{conversationId}/messages/{messageId}:
+  parameters:
+    - name: conversationId
+      in: path
+      required: true
+      description: ID tài nguyên conversationId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+    - name: messageId
+      in: path
+      required: true
+      description: ID tài nguyên messageId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  get:
+    tags:
+      - Chat và thông báo
+    summary: Đọc một tin nhắn
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ hai bên tham gia hội thoại. Kiểm quyền với cả hội thoại và tin nhắn.
+    operationId: getMessage
+    x-use-cases:
+      - UC19
+    x-access: member
+    security:
+      - CoreSession: []
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/Message.yaml
+            example:
+              messageId: item-123
+              conversationId: item-123
+              senderId: item-123
+              text: Chào bạn, mình có thể hẹn tại thư viện.
+              sentAt: '2026-11-24T05:00:00Z'
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/conversations/{conversationId}/messages/{messageId}/reports:
+  parameters:
+    - name: conversationId
+      in: path
+      required: true
+      description: ID tài nguyên conversationId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+    - name: messageId
+      in: path
+      required: true
+      description: ID tài nguyên messageId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  post:
+    tags:
+      - Chat và thông báo
+    summary: Báo cáo tin nhắn
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ bên tham gia hội thoại có quyền đọc tin. Hệ thống ghi nhận báo cáo. Hàng đợi và quy trình giải quyết
+      report tin nhắn chờ xác nhận.
+    operationId: reportMessage
+    x-use-cases:
+      - UC19
+    x-access: member
+    security:
+      - CoreSession: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/ReportWrite.yaml
+          example:
+            reason: spam
+    responses:
+      '201':
+        description: Tài nguyên đã được tạo.
+        headers:
+          Location:
+            description: 'URI tham chiếu của tài nguyên. Mẫu: /api/v1/me/reports/{reportId}'
+            schema:
+              type: string
+              format: uri-reference
+            required: true
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/ReportReceipt.yaml
+            example:
+              reportId: item-123
+              createdAt: '2026-11-24T05:00:00Z'
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/me/notifications:
+  get:
+    tags:
+      - Chat và thông báo
+    summary: Xem thông báo
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ thông báo của tài khoản hiện tại, mới nhất trước rồi ID giảm dần. Trạng thái email và gửi lại thuộc
+      Worker.
+    operationId: listMyNotifications
+    x-use-cases:
+      - UC20
+      - UC10
+      - UC21
+      - UC22
+      - UC26
+      - UC30
+    x-access: member
+    security:
+      - CoreSession: []
+    parameters:
+      - $ref: ../components/parameters/Cursor.yaml
+      - $ref: ../components/parameters/Limit.yaml
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/NotificationPage.yaml
+            example:
+              items:
+                - notificationId: item-123
+                  event: newClaim
+                  resourceId: item-123
+                  createdAt: '2026-11-24T05:00:00Z'
+                  read: true
+              nextCursor: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/me/notifications/{notificationId}/read-state:
+  parameters:
+    - name: notificationId
+      in: path
+      required: true
+      description: ID tài nguyên notificationId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  put:
+    tags:
+      - Chat và thông báo
+    summary: Cập nhật trạng thái đã đọc
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ chủ thể nhận thông báo. Lặp lại cùng giá trị giữ nguyên trạng thái.
+    operationId: setNotificationReadState
+    x-use-cases:
+      - UC20
+    x-access: member
+    security:
+      - CoreSession: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/NotificationReadState.yaml
+          example:
+            read: true
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/Notification.yaml
+            example:
+              notificationId: item-123
+              event: newClaim
+              resourceId: item-123
+              createdAt: '2026-11-24T05:00:00Z'
+              read: true
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/me/notification-preferences:
+  get:
+    tags:
+      - Chat và thông báo
+    summary: Xem tùy chọn thông báo
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Email hoạt động có thể cấu hình. Email xác thực và bảo mật luôn bật.
+    operationId: getNotificationPreferences
+    x-use-cases:
+      - UC20
+    x-access: member
+    security:
+      - CoreSession: []
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/NotificationPreferences.yaml
+            example:
+              activityEmailEnabled: true
+              verificationEmailEnabled: true
+              securityEmailEnabled: true
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+  patch:
+    tags:
+      - Chat và thông báo
+    summary: Đổi tùy chọn email hoạt động
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ ghi activityEmailEnabled. Claim/phản hồi, kết quả kiểm duyệt và sự kiện bảo mật dùng email theo chính
+      sách. Tin nhắn có thể vào bản tổng hợp, gợi ý AI chỉ trong ứng dụng. Email loại số điện thoại, địa chỉ cụ
+      thể, dữ liệu xác minh và ghi chú riêng. Worker thử lại tối đa 3 lần sau lỗi gửi.
+    operationId: updateNotificationPreferences
+    x-use-cases:
+      - UC20
+    x-access: member
+    security:
+      - CoreSession: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/NotificationPreferencesUpdate.yaml
+          example:
+            activityEmailEnabled: true
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/NotificationPreferences.yaml
+            example:
+              activityEmailEnabled: true
+              verificationEmailEnabled: true
+              securityEmailEnabled: true
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '503':
+        $ref: ../components/responses.yaml#/unavailable

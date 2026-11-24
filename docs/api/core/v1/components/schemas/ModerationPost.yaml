@@ -1,0 +1,45 @@
+type: object
+additionalProperties: false
+required:
+  - postId
+  - authorId
+  - type
+  - title
+  - description
+  - status
+  - visibility
+  - photos
+properties:
+  postId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  authorId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  type:
+    $ref: ./PostType.yaml
+  title:
+    type: string
+    minLength: 5
+    maxLength: 100
+    examples:
+      - Ví vải màu xanh
+  description:
+    type: string
+    minLength: 20
+    maxLength: 2000
+    examples:
+      - Ví vải màu xanh được tìm thấy gần thư viện.
+  status:
+    $ref: ./PostStatus.yaml
+  visibility:
+    $ref: ./PostVisibility.yaml
+  photos:
+    type: array
+    items:
+      $ref: ./PublicPhoto.yaml
+    maxItems: 5

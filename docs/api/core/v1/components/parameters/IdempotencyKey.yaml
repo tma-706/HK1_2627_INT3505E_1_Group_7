@@ -1,0 +1,12 @@
+in: header
+name: Idempotency-Key
+description: >-
+  Khóa do client tạo cho một lượt ghi. Dùng lại cùng khóa với cùng dữ liệu và cùng chủ thể; gửi khóa mới cho
+  lượt chủ động mới.
+required: true
+schema:
+  type: string
+  minLength: 1
+  maxLength: 128
+  examples:
+    - demo-upload-01

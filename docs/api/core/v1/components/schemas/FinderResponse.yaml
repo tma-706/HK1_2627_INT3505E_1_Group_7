@@ -1,0 +1,58 @@
+type: object
+additionalProperties: false
+required:
+  - responseId
+  - postId
+  - status
+  - description
+  - photos
+  - createdAt
+  - updatedAt
+  - conversationId
+properties:
+  responseId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  postId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  status:
+    type: string
+    enum:
+      - pending
+      - accepted
+      - declined
+      - withdrawn
+      - superseded
+  description:
+    type: string
+    minLength: 20
+    maxLength: 1000
+    examples:
+      - Mình đang giữ món đồ tìm được ở thư viện.
+  photos:
+    type: array
+    items:
+      $ref: ./PublicPhoto.yaml
+    maxItems: 3
+  createdAt:
+    type: string
+    format: date-time
+    examples:
+      - '2026-11-24T05:00:00Z'
+  updatedAt:
+    type: string
+    format: date-time
+    examples:
+      - '2026-11-24T05:00:00Z'
+  conversationId:
+    anyOf:
+      - type: string
+        minLength: 1
+        examples:
+          - item-123
+      - type: 'null'

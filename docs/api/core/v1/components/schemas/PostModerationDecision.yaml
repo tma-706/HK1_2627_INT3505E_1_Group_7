@@ -1,0 +1,39 @@
+type: object
+additionalProperties: false
+required:
+  - decisionId
+  - reviewerId
+  - reason
+  - decidedAt
+  - decision
+  - newVisibility
+properties:
+  decisionId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  reviewerId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  reason:
+    type: string
+    minLength: 1
+    examples:
+      - Lý do đã được kiểm tra.
+  decidedAt:
+    type: string
+    format: date-time
+    examples:
+      - '2026-11-24T05:00:00Z'
+  decision:
+    type: string
+    enum:
+      - dismiss
+      - hide
+      - remove
+      - restore
+  newVisibility:
+    $ref: ./PostVisibility.yaml

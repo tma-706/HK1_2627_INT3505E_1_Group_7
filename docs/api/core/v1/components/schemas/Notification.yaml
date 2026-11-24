@@ -1,0 +1,40 @@
+type: object
+additionalProperties: false
+required:
+  - notificationId
+  - event
+  - resourceId
+  - createdAt
+  - read
+properties:
+  notificationId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  event:
+    type: string
+    enum:
+      - newClaim
+      - newFinderResponse
+      - claimDecision
+      - finderResponseDecision
+      - newMessage
+      - matchSuggestion
+      - reportDecision
+      - postHidden
+      - postRemoved
+      - returnReminder
+      - appealDecision
+  resourceId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  createdAt:
+    type: string
+    format: date-time
+    examples:
+      - '2026-11-24T05:00:00Z'
+  read:
+    type: boolean

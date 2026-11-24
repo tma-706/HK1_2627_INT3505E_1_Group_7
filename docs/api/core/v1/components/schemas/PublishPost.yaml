@@ -1,0 +1,10 @@
+type: object
+additionalProperties: false
+required:
+  - textReviewId
+properties:
+  textReviewId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123

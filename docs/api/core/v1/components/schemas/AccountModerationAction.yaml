@@ -1,0 +1,56 @@
+type: object
+additionalProperties: false
+required:
+  - decisionId
+  - reviewerId
+  - reason
+  - decidedAt
+  - accountId
+  - action
+  - scope
+  - effectiveUntil
+properties:
+  decisionId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  reviewerId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  reason:
+    type: string
+    minLength: 1
+    examples:
+      - Lý do đã được kiểm tra.
+  decidedAt:
+    type: string
+    format: date-time
+    examples:
+      - '2026-11-24T05:00:00Z'
+  accountId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  action:
+    type: string
+    enum:
+      - warn
+      - lock
+      - unlock
+  scope:
+    type: string
+    enum:
+      - warning
+      - temporaryLogin
+      - moderation
+  effectiveUntil:
+    anyOf:
+      - type: string
+        format: date-time
+        examples:
+          - '2026-11-24T05:00:00Z'
+      - type: 'null'

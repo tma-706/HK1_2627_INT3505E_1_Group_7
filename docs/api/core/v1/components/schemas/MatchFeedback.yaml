@@ -1,0 +1,10 @@
+type: object
+additionalProperties: false
+required:
+  - feedback
+properties:
+  feedback:
+    type: string
+    enum:
+      - correct
+      - incorrect

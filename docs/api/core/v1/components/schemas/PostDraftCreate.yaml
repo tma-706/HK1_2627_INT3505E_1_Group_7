@@ -1,0 +1,108 @@
+oneOf:
+  - type: object
+    additionalProperties: false
+    required:
+      - type
+      - title
+      - description
+      - categoryId
+      - occurredAt
+      - areaId
+    properties:
+      type:
+        type: string
+        const: lost
+      title:
+        type: string
+        minLength: 5
+        maxLength: 100
+        examples:
+          - Ví vải màu xanh
+      description:
+        type: string
+        minLength: 20
+        maxLength: 2000
+        examples:
+          - Ví vải màu xanh được tìm thấy gần thư viện.
+      categoryId:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+      occurredAt:
+        type: string
+        format: date-time
+        examples:
+          - '2026-11-24T05:00:00Z'
+      areaId:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+      photoUploadIds:
+        type: array
+        items:
+          type: string
+          minLength: 1
+          examples:
+            - item-123
+        maxItems: 5
+  - type: object
+    additionalProperties: false
+    required:
+      - type
+      - title
+      - description
+      - categoryId
+      - occurredAt
+      - areaId
+      - custody
+    properties:
+      type:
+        type: string
+        const: found
+      title:
+        type: string
+        minLength: 5
+        maxLength: 100
+        examples:
+          - Ví vải màu xanh
+      description:
+        type: string
+        minLength: 20
+        maxLength: 2000
+        examples:
+          - Ví vải màu xanh được tìm thấy gần thư viện.
+      categoryId:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+      occurredAt:
+        type: string
+        format: date-time
+        examples:
+          - '2026-11-24T05:00:00Z'
+      areaId:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+      photoUploadIds:
+        type: array
+        items:
+          type: string
+          minLength: 1
+          examples:
+            - item-123
+        maxItems: 5
+      custody:
+        type: string
+        enum:
+          - heldByFinder
+          - handedToAuthorities
+      privateNote:
+        type: string
+        maxLength: 1000
+        examples:
+          - Ghi chú riêng của người nhặt

@@ -1,0 +1,21 @@
+type: object
+additionalProperties: false
+required:
+  - imageId
+  - url
+properties:
+  imageId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  url:
+    type: string
+    format: uri
+    examples:
+      - https://example.test/resource
+  altText:
+    type: string
+    minLength: 1
+    examples:
+      - Ảnh đã xử lý của đồ vật

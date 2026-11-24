@@ -1,0 +1,15 @@
+type: object
+additionalProperties: false
+required:
+  - questions
+properties:
+  questions:
+    type: array
+    items:
+      type: string
+      minLength: 10
+      maxLength: 200
+      examples:
+        - Khóa kéo của chiếc ví có đặc điểm gì?
+    maxItems: 3
+    minItems: 1

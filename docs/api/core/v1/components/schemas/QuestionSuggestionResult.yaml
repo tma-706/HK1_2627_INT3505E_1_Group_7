@@ -1,0 +1,21 @@
+type: object
+additionalProperties: false
+required:
+  - source
+  - questions
+properties:
+  source:
+    type: string
+    enum:
+      - ai
+      - categoryTemplate
+  questions:
+    type: array
+    items:
+      type: string
+      minLength: 10
+      maxLength: 200
+      examples:
+        - Khóa kéo của chiếc ví có đặc điểm gì?
+    maxItems: 5
+    minItems: 3

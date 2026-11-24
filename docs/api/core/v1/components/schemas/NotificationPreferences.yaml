@@ -1,0 +1,13 @@
+type: object
+additionalProperties: false
+required:
+  - activityEmailEnabled
+  - verificationEmailEnabled
+  - securityEmailEnabled
+properties:
+  activityEmailEnabled:
+    type: boolean
+  verificationEmailEnabled:
+    const: true
+  securityEmailEnabled:
+    const: true

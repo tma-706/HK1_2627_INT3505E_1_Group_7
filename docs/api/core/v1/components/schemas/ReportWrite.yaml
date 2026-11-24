@@ -1,0 +1,17 @@
+type: object
+additionalProperties: false
+required:
+  - reason
+properties:
+  reason:
+    type: string
+    enum:
+      - spam
+      - fraud
+      - harmfulContent
+      - other
+  note:
+    type: string
+    minLength: 1
+    examples:
+      - Ghi chú báo cáo tổng hợp.

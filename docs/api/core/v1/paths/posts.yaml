@@ -1,0 +1,1263 @@
+/post-drafts:
+  post:
+    tags:
+      - Bài đăng
+    summary: Tạo bản nháp Lost hoặc Found
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chủ thể của phiên sở hữu bản nháp. Bản nháp Found có cách bảo quản và ghi chú tùy chọn chỉ Finder tạo bài
+      được đọc. Giữ cùng một loại bài trong suốt vòng đời.
+    operationId: createPostDraft
+    x-use-cases:
+      - UC05
+      - UC06
+    x-access: member
+    security:
+      - CoreSession: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/PostDraftCreate.yaml
+          example:
+            type: lost
+            title: Ví vải màu xanh
+            description: Ví vải màu xanh được tìm thấy gần thư viện.
+            categoryId: item-123
+            occurredAt: '2026-11-24T05:00:00Z'
+            areaId: item-123
+            photoUploadIds: []
+    responses:
+      '201':
+        description: Tài nguyên đã được tạo.
+        headers:
+          Location:
+            description: 'URI tham chiếu của tài nguyên. Mẫu: /api/v1/post-drafts/{draftId}'
+            schema:
+              type: string
+              format: uri-reference
+            required: true
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/PostDraft.yaml
+            example:
+              draftId: item-123
+              type: lost
+              title: Ví vải màu xanh
+              description: Ví vải màu xanh được tìm thấy gần thư viện.
+              categoryId: item-123
+              occurredAt: '2026-11-24T05:00:00Z'
+              areaId: item-123
+              photoUploadIds: []
+              verificationQuestions: []
+              updatedAt: '2026-11-24T05:00:00Z'
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/post-drafts/{draftId}:
+  parameters:
+    - name: draftId
+      in: path
+      required: true
+      description: ID tài nguyên draftId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  get:
+    tags:
+      - Bài đăng
+    summary: Xem bản nháp của tôi
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ tác giả có quyền xem dữ liệu bản nháp, gồm ghi chú Found và câu hỏi của chính bài.
+    operationId: getMyPostDraft
+    x-use-cases:
+      - UC05
+      - UC06
+      - UC07
+    x-access: member
+    security:
+      - CoreSession: []
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/PostDraft.yaml
+            example:
+              draftId: item-123
+              type: lost
+              title: Ví vải màu xanh
+              description: Ví vải màu xanh được tìm thấy gần thư viện.
+              categoryId: item-123
+              occurredAt: '2026-11-24T05:00:00Z'
+              areaId: item-123
+              photoUploadIds: []
+              verificationQuestions: []
+              updatedAt: '2026-11-24T05:00:00Z'
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+  patch:
+    tags:
+      - Bài đăng
+    summary: Cập nhật bản nháp
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ tác giả sửa bản nháp còn sử dụng. Điều chỉnh nội dung làm mất hiệu lực lần xem trước che văn bản cho
+      bản nội dung cũ.
+    operationId: updatePostDraft
+    x-use-cases:
+      - UC05
+      - UC06
+    x-access: member
+    security:
+      - CoreSession: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/PostDraftUpdate.yaml
+          example:
+            title: Ví vải màu xanh
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/PostDraft.yaml
+            example:
+              draftId: item-123
+              type: lost
+              title: Ví vải màu xanh
+              description: Ví vải màu xanh được tìm thấy gần thư viện.
+              categoryId: item-123
+              occurredAt: '2026-11-24T05:00:00Z'
+              areaId: item-123
+              photoUploadIds: []
+              verificationQuestions: []
+              updatedAt: '2026-11-24T05:00:00Z'
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '409':
+        $ref: ../components/responses.yaml#/conflict
+      '422':
+        $ref: ../components/responses.yaml#/unprocessable
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/post-drafts/{draftId}/publications:
+  parameters:
+    - name: draftId
+      in: path
+      required: true
+      description: ID tài nguyên draftId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  post:
+    tags:
+      - Bài đăng
+    summary: Xuất bản bản nháp
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Kiểm textReviewId gắn đúng nội dung. Chỉ công khai dữ liệu đã che đạt yêu cầu và ảnh đã xử lý đúng bản
+      nháp. Found phải có 1–3 câu hỏi, Lost không có câu hỏi. Một bản nháp chỉ xuất bản một lần. Sau khi công
+      khai, đưa bài vào matching.
+    operationId: publishPostDraft
+    x-use-cases:
+      - UC05
+      - UC06
+      - UC07
+      - UC23
+      - UC24
+      - UC21
+    x-access: member
+    security:
+      - CoreSession: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/PublishPost.yaml
+          example:
+            textReviewId: item-123
+    responses:
+      '201':
+        description: Tài nguyên đã được tạo.
+        headers:
+          Location:
+            description: 'URI tham chiếu của tài nguyên. Mẫu: /api/v1/me/posts/{postId}'
+            schema:
+              type: string
+              format: uri-reference
+            required: true
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/MyPost.yaml
+            example:
+              postId: item-123
+              type: lost
+              title: Ví vải màu xanh
+              description: Ví vải màu xanh được tìm thấy gần thư viện.
+              categoryId: item-123
+              occurredAt: '2026-11-24T05:00:00Z'
+              areaId: item-123
+              status: open
+              visibility: visible
+              publishedAt: '2026-11-24T05:00:00Z'
+              photos:
+                - imageId: item-123
+                  url: https://example.test/resource
+              newClaimCount: 0
+              newResponseCount: 0
+              acceptedInteractionId: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '409':
+        $ref: ../components/responses.yaml#/conflict
+      '422':
+        $ref: ../components/responses.yaml#/unprocessable
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/post-drafts/{draftId}/verification-questions:
+  parameters:
+    - name: draftId
+      in: path
+      required: true
+      description: ID tài nguyên draftId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  put:
+    tags:
+      - Bài đăng
+    summary: Đặt câu hỏi cho bản nháp Found
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Tác giả Found thay toàn bộ 1–3 câu hỏi. Hệ thống lưu câu hỏi, không có trường đáp án đúng và Finder tự
+      đánh giá câu trả lời khi duyệt.
+    operationId: setDraftVerificationQuestions
+    x-use-cases:
+      - UC06
+      - UC07
+    x-access: member
+    security:
+      - CoreSession: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/VerificationQuestionWrite.yaml
+          example:
+            questions:
+              - Khóa kéo của chiếc ví có đặc điểm gì?
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/VerificationQuestions.yaml
+            example:
+              questions:
+                - questionId: item-123
+                  text: Khóa kéo của chiếc ví có đặc điểm gì?
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '409':
+        $ref: ../components/responses.yaml#/conflict
+      '422':
+        $ref: ../components/responses.yaml#/unprocessable
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/posts/{postId}/verification-questions:
+  parameters:
+    - name: postId
+      in: path
+      required: true
+      description: ID tài nguyên postId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  put:
+    tags:
+      - Bài đăng
+    summary: Thay câu hỏi xác minh
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ Finder tạo bài Found. Sau khi claim đầu tiên được tạo, cả chỉnh câu hỏi và thêm hoặc xóa câu đều bị
+      khóa. Kiểm điều kiện và ghi thay đổi trong cùng giao dịch.
+    operationId: replacePostVerificationQuestions
+    x-use-cases:
+      - UC07
+      - UC09
+    x-access: member
+    security:
+      - CoreSession: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/VerificationQuestionWrite.yaml
+          example:
+            questions:
+              - Khóa kéo của chiếc ví có đặc điểm gì?
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/VerificationQuestions.yaml
+            example:
+              questions:
+                - questionId: item-123
+                  text: Khóa kéo của chiếc ví có đặc điểm gì?
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '409':
+        description: Trạng thái hoặc dữ liệu hiện hành xung đột với thao tác.
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/Problem.yaml
+            example:
+              type: urn:campus-lost-found:problem:verification-questions-locked
+              title: Trạng thái hoặc dữ liệu hiện hành xung đột với thao tác.
+              status: 409
+              code: VERIFICATION_QUESTIONS_LOCKED
+        headers:
+          Cache-Control:
+            description: Phản hồi có thể thay đổi theo phiên, quyền hoặc trạng thái tài nguyên.
+            schema:
+              type: string
+              const: no-store
+            required: true
+      '422':
+        $ref: ../components/responses.yaml#/unprocessable
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+  get:
+    tags:
+      - Bài đăng
+    summary: Xem câu hỏi xác minh của bài Found
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ Finder tạo bài. Trả câu hỏi đang dùng để đối chiếu claim hoặc chỉnh trước claim đầu tiên.
+    operationId: getPostVerificationQuestions
+    x-use-cases:
+      - UC07
+      - UC09
+    x-access: member
+    security:
+      - CoreSession: []
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/VerificationQuestions.yaml
+            example:
+              questions:
+                - questionId: item-123
+                  text: Khóa kéo của chiếc ví có đặc điểm gì?
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/me/posts:
+  get:
+    tags:
+      - Bài đăng
+    summary: Xem danh sách bài của tôi
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ trả bài do chủ thể tạo. Sắp xếp theo thời điểm công khai và ID giảm dần. Bộ đếm tương tác mới theo
+      loại bài, quy tắc đặt lại bộ đếm còn mở.
+    operationId: listMyPosts
+    x-use-cases:
+      - UC08
+    x-access: member
+    security:
+      - CoreSession: []
+    parameters:
+      - $ref: ../components/parameters/Cursor.yaml
+      - $ref: ../components/parameters/Limit.yaml
+      - in: query
+        name: type
+        schema:
+          $ref: ../components/schemas/PostType.yaml
+        description: Lọc theo Lost hoặc Found.
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/MyPostPage.yaml
+            example:
+              items:
+                - postId: item-123
+                  type: lost
+                  title: Ví vải màu xanh
+                  description: Ví vải màu xanh được tìm thấy gần thư viện.
+                  categoryId: item-123
+                  occurredAt: '2026-11-24T05:00:00Z'
+                  areaId: item-123
+                  status: open
+                  visibility: visible
+                  publishedAt: '2026-11-24T05:00:00Z'
+                  photos:
+                    - imageId: item-123
+                      url: https://example.test/resource
+                  newClaimCount: 0
+                  newResponseCount: 0
+                  acceptedInteractionId: null
+              nextCursor: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/me/posts/{postId}:
+  parameters:
+    - name: postId
+      in: path
+      required: true
+      description: ID tài nguyên postId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  get:
+    tags:
+      - Bài đăng
+    summary: Xem chi tiết bài của tôi
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ tác giả. Trạng thái xử lý và kiểm duyệt nằm ở hai trường riêng. Bản chi tiết dùng ảnh đã xử lý, quy
+      trình xem dữ liệu gốc có tài nguyên riêng.
+    operationId: getMyPost
+    x-use-cases:
+      - UC08
+    x-access: member
+    security:
+      - CoreSession: []
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/MyPost.yaml
+            example:
+              postId: item-123
+              type: lost
+              title: Ví vải màu xanh
+              description: Ví vải màu xanh được tìm thấy gần thư viện.
+              categoryId: item-123
+              occurredAt: '2026-11-24T05:00:00Z'
+              areaId: item-123
+              status: open
+              visibility: visible
+              publishedAt: '2026-11-24T05:00:00Z'
+              photos:
+                - imageId: item-123
+                  url: https://example.test/resource
+              newClaimCount: 0
+              newResponseCount: 0
+              acceptedInteractionId: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/me/posts/{postId}/interaction-history:
+  parameters:
+    - name: postId
+      in: path
+      required: true
+      description: ID tài nguyên postId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  get:
+    tags:
+      - Bài đăng
+    summary: Xem lịch sử tương tác của bài
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ tác giả. Trả sự kiện tối thiểu thuộc phạm vi quyền, theo thời điểm và ID giảm dần.
+    operationId: listMyPostInteractionHistory
+    x-use-cases:
+      - UC08
+    x-access: member
+    security:
+      - CoreSession: []
+    parameters:
+      - $ref: ../components/parameters/Cursor.yaml
+      - $ref: ../components/parameters/Limit.yaml
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/MyPostInteractionHistory.yaml
+            example:
+              items:
+                - eventId: item-123
+                  interactionId: item-123
+                  type: claimSubmitted
+                  occurredAt: '2026-11-24T05:00:00Z'
+              nextCursor: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/posts/{postId}:
+  parameters:
+    - name: postId
+      in: path
+      required: true
+      description: ID tài nguyên postId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  patch:
+    tags:
+      - Bài đăng
+    summary: Cập nhật bài của tôi
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ tác giả. Có tương tác đang chờ hoặc đã chấp nhận thì khóa danh mục, nội dung nhận dạng, thời gian, khu
+      vực và ảnh liên quan. Nội dung văn bản thay đổi phải kèm textReviewId cho đúng bản sửa, ảnh thêm hoặc thay
+      phải sẵn sàng và thuộc bài. Giữ nguyên quyết định ẩn/gỡ và đưa bài đủ điều kiện vào matching sau thay đổi.
+    operationId: updatePost
+    x-use-cases:
+      - UC09
+      - UC07
+      - UC23
+      - UC24
+      - UC21
+    x-access: member
+    security:
+      - CoreSession: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/PostUpdate.yaml
+          example:
+            title: Ví vải màu xanh
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/MyPost.yaml
+            example:
+              postId: item-123
+              type: lost
+              title: Ví vải màu xanh
+              description: Ví vải màu xanh được tìm thấy gần thư viện.
+              categoryId: item-123
+              occurredAt: '2026-11-24T05:00:00Z'
+              areaId: item-123
+              status: open
+              visibility: visible
+              publishedAt: '2026-11-24T05:00:00Z'
+              photos:
+                - imageId: item-123
+                  url: https://example.test/resource
+              newClaimCount: 0
+              newResponseCount: 0
+              acceptedInteractionId: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '409':
+        description: Trạng thái hoặc dữ liệu hiện hành xung đột với thao tác.
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/Problem.yaml
+            example:
+              type: urn:campus-lost-found:problem:identification-fields-locked
+              title: Trạng thái hoặc dữ liệu hiện hành xung đột với thao tác.
+              status: 409
+              code: IDENTIFICATION_FIELDS_LOCKED
+        headers:
+          Cache-Control:
+            description: Phản hồi có thể thay đổi theo phiên, quyền hoặc trạng thái tài nguyên.
+            schema:
+              type: string
+              const: no-store
+            required: true
+      '422':
+        $ref: ../components/responses.yaml#/unprocessable
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+  get:
+    tags:
+      - Bài đăng
+    summary: Xem và chia sẻ chi tiết công khai
+    description: >-
+      Guest và người dùng đã đăng nhập. Thao tác này sử dụng dữ liệu công khai hoặc dữ liệu xác thực ở đầu vào.
+      Chỉ Open và Visible, kèm ảnh và mô tả đã che, khu vực được phép và tên hiển thị. shareUrl trỏ trang công
+      khai và áp cùng quy tắc với API, kể cả sau khi bài bị ẩn hoặc đóng.
+    operationId: getPublicPost
+    x-use-cases:
+      - UC13
+      - UC14
+    x-access: guest
+    security: []
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/PublicPost.yaml
+            example:
+              postId: item-123
+              type: lost
+              title: Ví vải màu xanh
+              description: Ví vải màu xanh được tìm thấy gần thư viện.
+              categoryId: item-123
+              occurredAt: '2026-11-24T05:00:00Z'
+              areaId: item-123
+              status: open
+              visibility: visible
+              publishedAt: '2026-11-24T05:00:00Z'
+              photos:
+                - imageId: item-123
+                  url: https://example.test/resource
+              author:
+                displayName: Lan
+              shareUrl: https://example.test/posts/item-123
+        headers:
+          Cache-Control:
+            description: Phản hồi có thể thay đổi theo phiên, quyền hoặc trạng thái tài nguyên.
+            schema:
+              type: string
+              const: no-store
+            required: true
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/posts/{postId}/closures:
+  parameters:
+    - name: postId
+      in: path
+      required: true
+      description: ID tài nguyên postId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  post:
+    tags:
+      - Bài đăng
+    summary: Đóng bài hoặc khởi tạo xác nhận trao trả
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Tác giả đóng bài vì đã tìm thấy bằng cách khác, đăng nhầm hoặc không còn nhu cầu. Trao trả qua ứng dụng
+      yêu cầu tương tác đã chấp nhận và một trong hai bên khởi tạo; chuyển sang chờ xác nhận. Nhắc sau 24 và 48
+      giờ. Quá 7 ngày chưa xác nhận vẫn ở trạng thái chờ và chuyển hàng đợi Admin.
+    operationId: closePost
+    x-use-cases:
+      - UC10
+    x-access: member
+    security:
+      - CoreSession: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/ClosePost.yaml
+          example:
+            reason: returnedViaApp
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/ClosureResult.yaml
+            example:
+              postId: item-123
+              status: closed
+              visibility: visible
+              updatedAt: '2026-11-24T05:00:00Z'
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '409':
+        $ref: ../components/responses.yaml#/conflict
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/posts/{postId}/reopenings:
+  parameters:
+    - name: postId
+      in: path
+      required: true
+      description: ID tài nguyên postId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  post:
+    tags:
+      - Bài đăng
+    summary: Mở lại bài đã đóng
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ tác giả, trong 7 ngày kể từ khi Closed, chưa có tương tác được chấp nhận và bài không bị Hidden hoặc
+      Removed.
+    operationId: reopenPost
+    x-use-cases:
+      - UC10
+    x-access: member
+    security:
+      - CoreSession: []
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/PostLifecycle.yaml
+            example:
+              postId: item-123
+              status: open
+              visibility: visible
+              updatedAt: '2026-11-24T05:00:00Z'
+              activeReturnRequestId: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '409':
+        $ref: ../components/responses.yaml#/conflict
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/posts/{postId}/return-requests/{requestId}:
+  parameters:
+    - name: postId
+      in: path
+      required: true
+      description: ID tài nguyên postId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+    - name: requestId
+      in: path
+      required: true
+      description: ID tài nguyên requestId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  get:
+    tags:
+      - Bài đăng
+    summary: Xem yêu cầu xác nhận trao trả
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ hai bên của tương tác được chấp nhận. Trả thời hạn xác nhận và thời điểm cần chuyển xem xét.
+    operationId: getReturnRequest
+    x-use-cases:
+      - UC10
+    x-access: member
+    security:
+      - CoreSession: []
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/ReturnRequest.yaml
+            example:
+              requestId: item-123
+              postId: item-123
+              interactionId: item-123
+              status: pending
+              startedAt: '2026-11-24T05:00:00Z'
+              confirmationDueAt: '2026-11-24T05:00:00Z'
+              needsReviewAt: '2026-11-24T05:00:00Z'
+              counterpartConfirmed: true
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/posts/{postId}/return-confirmations:
+  parameters:
+    - name: postId
+      in: path
+      required: true
+      description: ID tài nguyên postId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  post:
+    tags:
+      - Bài đăng
+    summary: Xác nhận trao trả
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Bên còn lại của bên khởi tạo xác nhận trong 72 giờ. Hai bên xác nhận đủ mới chuyển Returned. Sau mốc 72
+      giờ client hiển thị trạng thái đang chờ và hướng xử lý, quy trình quyết định muộn còn mở.
+    operationId: confirmPostReturn
+    x-use-cases:
+      - UC10
+    x-access: member
+    security:
+      - CoreSession: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/ReturnConfirmation.yaml
+          example:
+            requestId: item-123
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/PostLifecycle.yaml
+            example:
+              postId: item-123
+              status: open
+              visibility: visible
+              updatedAt: '2026-11-24T05:00:00Z'
+              activeReturnRequestId: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '409':
+        description: Trạng thái hoặc dữ liệu hiện hành xung đột với thao tác.
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/Problem.yaml
+            example:
+              type: urn:campus-lost-found:problem:return-confirmation-conflict
+              title: Trạng thái hoặc dữ liệu hiện hành xung đột với thao tác.
+              status: 409
+              code: RETURN_CONFIRMATION_CONFLICT
+        headers:
+          Cache-Control:
+            description: Phản hồi có thể thay đổi theo phiên, quyền hoặc trạng thái tài nguyên.
+            schema:
+              type: string
+              const: no-store
+            required: true
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/posts/{postId}/return-requests/{requestId}/my-cancellation:
+  parameters:
+    - name: postId
+      in: path
+      required: true
+      description: ID tài nguyên postId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+    - name: requestId
+      in: path
+      required: true
+      description: ID tài nguyên requestId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  put:
+    tags:
+      - Bài đăng
+    summary: Ghi nhận ý kiến hủy xác nhận trao trả
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Mỗi bên ghi đồng ý hoặc không đồng ý của mình trên yêu cầu còn chờ. Chỉ khi cả hai bên đồng ý mới hủy yêu
+      cầu và quay lại Open. Quyết định được ghi nhất quán với thao tác xác nhận trao trả.
+    operationId: setMyReturnCancellation
+    x-use-cases:
+      - UC10
+    x-access: member
+    security:
+      - CoreSession: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/ReturnCancellation.yaml
+          example:
+            agreed: true
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/PostLifecycle.yaml
+            example:
+              postId: item-123
+              status: open
+              visibility: visible
+              updatedAt: '2026-11-24T05:00:00Z'
+              activeReturnRequestId: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '409':
+        $ref: ../components/responses.yaml#/conflict
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/posts:
+  get:
+    tags:
+      - Bài đăng
+    summary: Xem bảng tin và tìm bài công khai
+    description: >-
+      Guest và người dùng đã đăng nhập. Thao tác này sử dụng dữ liệu công khai hoặc dữ liệu xác thực ở đầu vào.
+      Chỉ Open và Visible. Không có lọc theo trạng thái. Tìm kiếm theo từ khóa và bộ lọc cho phép, độc lập với
+      matching AI. Mỗi trang áp lại bộ lọc quyền; bài mới xuất hiện khi tải lại trang đầu.
+    operationId: listPublicPosts
+    x-use-cases:
+      - UC11
+      - UC12
+    x-access: guest
+    security: []
+    parameters:
+      - $ref: ../components/parameters/Cursor.yaml
+      - $ref: ../components/parameters/Limit.yaml
+      - in: query
+        name: q
+        schema:
+          type: string
+          minLength: 1
+          examples:
+            - ví xanh
+        description: Từ khóa trên trường công khai đã xử lý.
+      - in: query
+        name: type
+        schema:
+          $ref: ../components/schemas/PostType.yaml
+        description: Loại bài lost hoặc found.
+      - in: query
+        name: categoryId
+        schema:
+          type: string
+          minLength: 1
+          examples:
+            - item-123
+        description: Danh mục hiện tại hoặc danh mục lịch sử dùng để lọc.
+      - in: query
+        name: areaId
+        schema:
+          type: string
+          minLength: 1
+          examples:
+            - item-123
+        description: Khu vực ở mức công khai.
+      - in: query
+        name: from
+        schema:
+          type: string
+          format: date-time
+          examples:
+            - '2026-11-24T05:00:00Z'
+        description: Mốc bắt đầu bao gồm. Thiết kế hiện dùng thời điểm mất/nhặt occurredAt, chờ đối chiếu Q-11.
+      - in: query
+        name: to
+        schema:
+          type: string
+          format: date-time
+          examples:
+            - '2026-11-24T05:00:00Z'
+        description: Mốc kết thúc loại trừ. Phải sau from nếu có cả hai mốc.
+      - in: query
+        name: sort
+        schema:
+          type: string
+          enum:
+            - newest
+          default: newest
+        description: Thời điểm công khai giảm dần rồi postId giảm dần.
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/PublicPostPage.yaml
+            example:
+              items:
+                - postId: item-123
+                  type: lost
+                  title: Ví vải màu xanh
+                  description: Ví vải màu xanh được tìm thấy gần thư viện.
+                  categoryId: item-123
+                  occurredAt: '2026-11-24T05:00:00Z'
+                  areaId: item-123
+                  status: open
+                  visibility: visible
+                  publishedAt: '2026-11-24T05:00:00Z'
+                  photos:
+                    - imageId: item-123
+                      url: https://example.test/resource
+                  author:
+                    displayName: Lan
+                  shareUrl: https://example.test/posts/item-123
+              nextCursor: null
+        headers:
+          Cache-Control:
+            description: Phản hồi có thể thay đổi theo phiên, quyền hoặc trạng thái tài nguyên.
+            schema:
+              type: string
+              const: no-store
+            required: true
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '503':
+        $ref: ../components/responses.yaml#/unavailable

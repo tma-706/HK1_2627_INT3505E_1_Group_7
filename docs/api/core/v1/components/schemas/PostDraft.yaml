@@ -1,0 +1,76 @@
+type: object
+additionalProperties: false
+required:
+  - draftId
+  - type
+  - title
+  - description
+  - categoryId
+  - occurredAt
+  - areaId
+  - photoUploadIds
+  - verificationQuestions
+  - updatedAt
+properties:
+  draftId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  type:
+    $ref: ./PostType.yaml
+  title:
+    type: string
+    minLength: 5
+    maxLength: 100
+    examples:
+      - Ví vải màu xanh
+  description:
+    type: string
+    minLength: 20
+    maxLength: 2000
+    examples:
+      - Ví vải màu xanh được tìm thấy gần thư viện.
+  categoryId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  occurredAt:
+    type: string
+    format: date-time
+    examples:
+      - '2026-11-24T05:00:00Z'
+  areaId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  photoUploadIds:
+    type: array
+    items:
+      type: string
+      minLength: 1
+      examples:
+        - item-123
+    maxItems: 5
+  custody:
+    type: string
+    enum:
+      - heldByFinder
+      - handedToAuthorities
+  privateNote:
+    type: string
+    maxLength: 1000
+    examples:
+      - Ghi chú riêng
+  verificationQuestions:
+    type: array
+    items:
+      $ref: ./VerificationQuestion.yaml
+    maxItems: 3
+  updatedAt:
+    type: string
+    format: date-time
+    examples:
+      - '2026-11-24T05:00:00Z'

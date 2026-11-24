@@ -1,0 +1,22 @@
+type: object
+additionalProperties: false
+required:
+  - sourceCategoryId
+  - replacementCategoryId
+  - confirmedAt
+properties:
+  sourceCategoryId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  replacementCategoryId:
+    type: string
+    minLength: 1
+    examples:
+      - item-123
+  confirmedAt:
+    type: string
+    format: date-time
+    examples:
+      - '2026-11-24T05:00:00Z'

@@ -1,0 +1,10 @@
+in: query
+name: cursor
+schema:
+  type: string
+  minLength: 1
+  examples:
+    - cursor-demo
+description: >-
+  Cursor mờ dùng với đúng truy vấn, thứ tự và chủ thể ban đầu. Bỏ cursor để tải trang đầu. Cursor không hợp lệ
+  trả 400.
