@@ -1,17 +1,41 @@
 # Campus Lost & Found · Bàn giao API v1
 
-Hợp đồng thiết kế cho 30 UC ngày 24/11/2026. URL nghiệp vụ có dạng `https://{gateway-host}/api/v1/...`. File [openapi.yaml](v1/openapi.yaml) khai báo `servers.url: /api/v1`, các path khai báo từ tài nguyên trở xuống. Trạng thái triển khai và cấu hình gateway v1 thuộc nhóm thực hiện.
+Hợp đồng thiết kế ban đầu cho UC01–UC30, chốt làm baseline v1 ngày 24/11/2026. URL nghiệp vụ có dạng `https://{gateway-host}/api/v1/...`. File [openapi.yaml](v1/openapi.yaml) khai báo `servers.url: /api/v1`, các path khai báo từ tài nguyên trở xuống.
+
+## Baseline v1 và cách làm theo sprint
+
+- **Use case.** BA hoàn thiện dần từng cụm UC theo sprint. Chi tiết luồng, quy tắc nghiệp vụ và tiêu chí nghiệm thu có thể thay đổi khi cụm được phân tích và thống nhất. UC01–UC30 trong baseline là phạm vi tham chiếu để lập kế hoạch và truy vết.
+- **API spec.** OpenAPI `1.0.0` là bản đầu để Mobile, Admin, Core và QA mock, thống nhất hướng tích hợp và phát hiện sớm các điểm cần BA quyết định. Đặc tả có thể qua nhiều phiên bản. Khi cụm UC thay đổi, cập nhật các operation, schema, ví dụ mock và liên kết `x-use-cases` chịu ảnh hưởng. Ghi phiên bản và thay đổi để nhóm biết bản đang dùng. `info.version` theo dõi phiên bản tài liệu hợp đồng, còn `/api/v1` là tiền tố URL. Nếu thay đổi phá tương thích với client đã tích hợp, thống nhất cách chuyển client trước khi áp dụng.
+- **Kiến trúc.** Dùng v4 Testing làm nền dự kiến ổn định qua các sprint. Edge kết nối Mobile/Admin với Core theo modular monolith. Core sở hữu nghiệp vụ và phân quyền, Worker xử lý bất đồng bộ, AI Service xử lý tác vụ AI trong ranh giới dữ liệu đã định. Hạ tầng dùng một PostgreSQL và một Object Storage. Khi chi tiết UC thay đổi, đối chiếu tác động theo ranh giới này. Nếu thay đổi chạm vào quyền sở hữu dữ liệu, biên dịch vụ hoặc cách bảo đảm tính nhất quán, ghi quyết định kiến trúc cùng UC liên quan.
+
+Khi đưa một cụm UC vào sprint triển khai, BA và nhóm thực hiện xác nhận phần nghiệp vụ đã rõ, các quyết định còn mở và phiên bản hợp đồng dùng cho cụm. Mock và kiểm thử bám cùng phiên bản đó.
 
 ## Nguồn
 
 | Nguồn | Bản dùng và phạm vi |
 | --- | --- |
 | [LOST&FOUND.pdf](https://chatgpt.com/library?file_id=libfile_56962664f4a08191ace50f537d76ca7e&account_id=personal) | Bản 5 trang ngày 24/11/2026, `file_00000000950c823087b3f3307ecbb24b`. Nguồn UC01–UC30. |
+| `Lost_and_Found_Architecture_v4_Testing.pdf` | Bản đính kèm 10 trang, dùng để đối chiếu ranh giới hệ thống, mô hình dữ liệu, bàn giao, xử lý bất đồng bộ và chiến lược kiểm thử. |
 | [Execution Prompt đã duyệt](https://chatgpt.com/library?file_id=libfile_eeba4d982e0481919968098146c29ae8&account_id=personal) | Bản 1 ngày 24/11/2026. |
 | [Core 0.3.0](openapi.json) | `sha256:2bc3ced154893f3e813abb7909737af1be9c5f326212a3d5528307c61648656e`, repo `commit:638eda701aa5be0ad2d264ade9ca6ce69286d148`. |
 | [SRS thực nghiệm](../../requirements/lost-and-found-srs.pdf) | §3.1–3.3, 3.6, `sha256:2f67606fba01394440f4ece54716541ce4188ce8a4564748fffdf048d8a5196b`. UC-01 thực nghiệm là Google và quản lý phiên, UC-02 thực nghiệm là Hồ sơ và Mục của tôi. |
 | [Analysis thực nghiệm](../../requirements/analysis/uc-01-02.md) | `sha256:f297d9c06061148f88b1eaae287c532954acc37ab9cd5c19f3f1f2953ba547bb`. Các SEC/PERF của thực nghiệm dùng để so sánh và bàn giao theo phạm vi được duyệt. |
 | [Thiết kế tổng thể](../../architecture/target-design.md), [media](../../architecture/media-upload.md) | Đầu vào kiến trúc đề xuất. Tổng thể `sha256:b5e13f7b4e21e31eb5a8b6944055c41047d702913d7953b4b1ef01d680eee58f`, media `sha256:2cb698b5bfe6258d64c1fb6ce8b2208f9fd06f9ee3cfbdc5b250bbcee5caa837`. |
+
+## Mức độ phù hợp với kiến trúc v4 Testing
+
+**Kết luận.** OpenAPI v1 phù hợp làm baseline mock REST và định hướng tích hợp với Core. Các cụm Identity, Posts/Discovery, Claims/Returns, Chat, Media/Privacy, Matching và Moderation vẫn cần chốt các điểm ảnh hưởng đến client trước khi triển khai theo cụm.
+
+- **Gateway và Core (tr. 1–2).** [OpenAPI](v1/openapi.yaml#L9) đặt REST dưới `/api/v1`, dùng Bearer Core và phiên khiếu nại giới hạn. DTO và thao tác đi qua Core, phù hợp với Core làm chủ nghiệp vụ và phân quyền. Edge vẫn cần xác nhận cách trả lỗi rate limit, gồm định dạng lỗi và `Retry-After`, để client xử lý nhất quán với quota từ Core.
+- **Định danh (tr. 1–3, UC01–04).** V4 mô tả Google OIDC và `google_sub`, còn [accounts.yaml](v1/paths/accounts.yaml#L174) hiện dùng email/mật khẩu cùng xác minh email và reset theo PDF UC. Chốt phương thức đăng nhập được hỗ trợ và cách ánh xạ/liên kết tài khoản trước khi tích hợp Identity. Ranh giới phiên Core và phân quyền có thể dùng cho cả hai phương thức.
+- **Vị trí (tr. 3, 7, 9, UC05–06/09/12/21).** [PostDraftCreate](v1/components/schemas/PostDraftCreate.yaml) và [bộ lọc bài công khai](v1/paths/posts.yaml#L1196) dùng `areaId`. V4 cần điểm Found hoặc tâm và bán kính Lost để kiểm tra ranh giới campus và đối sánh. Chốt payload tạo/sửa, cách lọc theo khu vực và mức chi tiết vị trí được phép trả công khai.
+- **Claim và bàn giao (tr. 4–5, UC10/15–19).** [Approve/Accept](v1/paths/interactions.yaml#L525) khóa nhận tương tác mới và chuyển ngay các mục đang chờ sang Superseded theo PDF UC. V4 giữ hàng chờ còn hạn trong lúc trao đổi, hủy các mục còn lại khi hoàn tất và có nhánh Failed. Hai nguồn thống nhất chỉ Returned sau hai xác nhận và quá 7 ngày thì đưa vào hàng xem xét. BA cần chốt mốc xử lý hàng chờ, xác nhận muộn và thời điểm giải phóng bàn giao. Hợp đồng cũng cần làm rõ khi nào có bài nguồn để Core giữ chỗ cả hai bài, hành vi gửi lại lệnh claim và mã phản hồi khi phiên bản trạng thái đã đổi. `Idempotency-Key` hiện được khai báo cho cấp upload, chưa có trên các lệnh gửi/gửi lại claim.
+- **Công khai, Media và AI (tr. 3, 6, 8–9).** [PublicPost](v1/components/schemas/PublicPost.yaml) chỉ biểu diễn bài Open + Visible với ảnh và mô tả đã xử lý. [Upload](v1/paths/media.yaml#L403) có cấp quyền tải thẳng lên kho, xác nhận bất đồng bộ và đọc trạng thái. [AI](v1/paths/ai.yaml#L22) trả gợi ý qua Core. Chốt điều kiện Published và việc tiếp tục phục vụ revision cũ khi bản sửa chưa qua kiểm tra. Xác minh trên hệ thống tích hợp rằng URL ảnh thực thi đúng quyền, AI nhận đúng revision và dữ liệu đã xử lý, bài đóng/ẩn rời tập matching, và worker có thể xử lý lại job mà vẫn giữ nhất quán.
+- **Chat và thông báo (tr. 1–2, 8, UC19–20).** [communication.yaml](v1/paths/communication.yaml#L123) có REST đọc/gửi tin nhắn và đọc thông báo, đủ cho mock các màn hình. V4 có WebSocket. Trước sprint realtime, chốt kênh WebSocket gồm xác thực, sự kiện, nối lại và đồng bộ bù bằng REST.
+- **Kiểm thử (tr. 10).** Bundle và lint bằng Redocly kiểm cấu trúc hợp đồng đa tệp. V4 còn yêu cầu Spectral cho quy ước hợp đồng và kiểm thử trên test stack cho schema phản hồi, quyền, giao dịch, worker và tải đồng thời. Dùng mock để kiểm tích hợp giao diện, rồi dùng hệ thống đang chạy để thu bằng chứng nghiệm thu cho từng cụm.
+- **Ví dụ mock bàn giao.** [closePost](v1/paths/posts.yaml#L833) dùng cặp ví dụ mặc định `returnedViaApp` và `200 pendingReturnConfirmation` kèm `returnRequest` để Mobile có dữ liệu cho bước xác nhận. Cặp ví dụ `noLongerNeeded` và `200 closed` mô tả đóng bài thông thường. Mock luôn trả ví dụ mặc định cho mã HTTP đã chọn.
+
+Đợt rà soát này bundle và lint lại bằng Redocly CLI 2.71.1, ghi nhận 83 path, 96 operation và 30 mã UC. Lint có 0 lỗi và 1 cảnh báo `info-license`. Mock loopback trả lần lượt `200`, `200`, `401` và `404` cho bốn lệnh mẫu trong hướng dẫn. Hành vi của gateway, Core, worker và AI cần được kiểm trên bản triển khai.
 
 ## Truy vết use case
 
