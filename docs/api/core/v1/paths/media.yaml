@@ -205,7 +205,8 @@
     description: >-
       Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
       Cấp upload gắn với mục đích và chủ thể. Với phản hồi kiểm bài Lost đủ điều kiện. Với bằng chứng kiểm quyết
-      định của chủ thể. Giới hạn kích thước và media type của mục đích phụ còn mở. Client gửi toàn bộ formFields
+      định của chủ thể. Ảnh đại diện hỗ trợ JPG/PNG/WEBP đến 10 MB. Giới hạn cho các mục đích phụ khác còn mở.
+      Client gửi toàn bộ formFields
       qua HTTPS đến uploadUrl, thêm tệp và giữ version nhận được. Khóa idempotency được ràng buộc với chủ thể,
       đích, mục đích và nội dung.
     operationId: createAuxiliaryUpload
@@ -501,7 +502,8 @@
       Phiên Bearer của người bị ảnh hưởng hoặc Bearer giới hạn cho khiếu nại do Core cấp sau xác minh. Quyền chỉ
       áp dụng cho quyết định của chính chủ thể. Chỉ chủ thể sở hữu lượt upload. Với Bearer giới hạn khiếu nại,
       chỉ xử lý lượt đúng quyết định khiếu nại của chủ thể. Preview ngắn hạn thuộc bản đã xử lý hoặc bản xem
-      trước do tác giả được xem. Ảnh gốc và metadata không thuộc hình công khai.
+      trước do tác giả được xem. Với ảnh đại diện tạm, preview có thể có ở trạng thái pendingUpload sau khi
+      kiểm phiên bản object, metadata, dung lượng và SHA-256. Ảnh gốc và metadata không thuộc hình công khai.
     operationId: getUploadStatus
     x-use-cases:
       - UC04

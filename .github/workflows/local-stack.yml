@@ -1,0 +1,56 @@
+name: Local stack
+
+on: pull_request
+
+permissions:
+  contents: read
+
+jobs:
+  openapi-and-https:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Lint and bundle OpenAPI v1
+        run: docker compose --progress plain build mock
+      - name: Start the HTTPS stack
+        run: |
+          sh infra/nginx/generate-local-tls.sh
+          docker compose up --wait --wait-timeout 60
+      - name: Check GET /api/v1/posts over HTTPS
+        run: sh infra/smoke-posts.sh
+      - name: Show stack logs on failure
+        if: failure()
+        run: docker compose logs --no-color
+      - name: Stop the stack
+        if: always()
+        run: docker compose down
+
+  core-posts-and-private-media:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      COMPOSE_FILE: compose.yaml:compose.core.yaml
+      LF_MEDIA_UPLOAD_SECONDS: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build and type-check Core, lint and bundle OpenAPI v1
+        run: docker compose --progress plain build mock core object-store-init object-store
+      - name: Migrate PostgreSQL, provision the private bucket and start HTTPS
+        run: |
+          sh infra/nginx/generate-local-tls.sh
+          docker compose up --wait --wait-timeout 90
+      - name: Verify the PostgreSQL feed through Nginx HTTPS
+        run: sh tests/core-feed.sh
+      - name: Verify private image uploads and authorized reads over HTTPS
+        run: NODE_EXTRA_CA_CERTS="$PWD/.local/tls/gateway-ca.crt" node tests/core-media.mjs
+      - name: Show stack logs on failure
+        if: failure()
+        run: docker compose logs --no-color
+      - name: Stop the stack
+        if: always()
+        run: docker compose down --volumes

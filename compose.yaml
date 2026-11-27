@@ -1,0 +1,53 @@
+name: campus-lost-found-mock
+
+services:
+  mock:
+    init: true
+    build:
+      context: .
+      dockerfile: infra/mock/Dockerfile
+    environment:
+      MOCK_HOST: 0.0.0.0
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - >-
+          fetch('http://127.0.0.1:4010/api/v1/posts')
+            .then(response => { if (response.status !== 200) process.exit(1); })
+            .catch(() => process.exit(1))
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+  nginx:
+    image: nginx:1.30-alpine
+    environment:
+      LF_UPSTREAM: mock
+      LF_ADMIN_ORIGIN: ${LF_ADMIN_ORIGIN:-http://127.0.0.1:5173}
+    depends_on:
+      mock:
+        condition: service_healthy
+    ports:
+      - "${LF_HTTPS_BIND_IP:-127.0.0.1}:${LF_HTTPS_PORT:-8443}:443"
+    healthcheck:
+      test:
+        ["CMD", "curl", "--disable", "--noproxy", "*", "--fail", "--silent", "--show-error",
+         "--cacert", "/etc/nginx/tls/gateway-ca.crt", "--output", "/dev/null", "https://127.0.0.1/api/v1/posts"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - type: bind
+        source: ./infra/nginx/default.conf.template
+        target: /etc/nginx/templates/default.conf.template
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./.local/tls
+        target: /etc/nginx/tls
+        read_only: true
+        bind:
+          create_host_path: false

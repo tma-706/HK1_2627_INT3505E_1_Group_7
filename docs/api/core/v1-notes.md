@@ -1,3 +1,3 @@
-# Bàn giao Core API v1
+# Core API v1 cho kiểm thử hạ tầng
 
-Xem [hướng dẫn Core API](../../core-api/README.md) để chạy mock và kiểm tra hợp đồng. Tra cứu [phạm vi UC01–UC30, các quyết định cần chốt và ánh xạ operation](../../core-api/scope.md) trước khi triển khai. Đặc tả REST ở [OpenAPI v1](v1/openapi.yaml).
+Dùng [OpenAPI v1](v1/openapi.yaml) làm hợp đồng HTTP cho kiểm thử định tuyến. Xem [hướng dẫn chạy mock](../../infrastructure/local-stack.md#mock-để-thử-định-tuyến) và [tiêu chí nghiệm thu hạ tầng](../../infrastructure/acceptance.md).
