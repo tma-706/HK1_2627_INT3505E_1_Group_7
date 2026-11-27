@@ -154,6 +154,7 @@ if (!contract || !/^\d+$/.test(port) || Number(port) < 1 || Number(port) > 65535
   const spec = JSON.parse(readFileSync(contract, 'utf8').replace(/^\uFEFF/, ''));
   const mock = createMockHandler(spec);
   const swaggerPage = readFileSync(new URL('./swagger-ui.html', import.meta.url));
+  const host = process.env.MOCK_HOST || '127.0.0.1';
   createServer((req, res) => {
     const path = req.url.split('?')[0];
     if (req.method === 'GET' && path === '/docs') {
@@ -166,8 +167,8 @@ if (!contract || !/^\d+$/.test(port) || Number(port) < 1 || Number(port) > 65535
       return;
     }
     mock(req, res);
-  }).listen(Number(port), '127.0.0.1', () => {
-    console.log('Campus Lost & Found mock: http://127.0.0.1:' + port + spec.servers[0].url);
-    console.log('Swagger UI: http://127.0.0.1:' + port + '/docs');
+  }).listen(Number(port), host, () => {
+    console.log('Campus Lost & Found mock: http://' + host + ':' + port + spec.servers[0].url);
+    console.log('Swagger UI: http://' + host + ':' + port + '/docs');
   });
 }
