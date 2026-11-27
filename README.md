@@ -45,9 +45,26 @@ docker compose down
 unset COMPOSE_FILE
 ```
 
-Compose chạy migration và nạp fixture trước khi Core phục vụ request. PostgreSQL và Core chỉ có cổng trong mạng Compose. Core kết nối bằng role `core_reader` có quyền đọc bảng bài đăng. Mock cấp bộ kiểm schema cho smoke test, còn Nginx chuyển request đến Core. Lát cắt này chỉ phục vụ dữ liệu công khai và trả danh sách ảnh rỗng khi chưa tích hợp media.
+Compose chạy migration và nạp fixture trước khi Core phục vụ request. PostgreSQL và Core chỉ có cổng trong mạng Compose. Core kết nối bằng role `core_reader` có quyền đọc bảng bài đăng. Mock cấp bộ kiểm schema cho smoke test, còn Nginx chuyển request đến Core. Bảng tin hiện trả danh sách ảnh công khai rỗng.
 
 Giá trị mặc định là thông tin mẫu cho local. Có thể chép `.env.example` thành `.env` và sửa giá trị trước khi khởi tạo volume lần đầu. `docker compose down` giữ dữ liệu. Để đặt lại môi trường local, dùng `docker compose down --volumes` trong lúc `COMPOSE_FILE` đang được đặt. Lệnh đó xóa PostgreSQL volume của dự án Compose hiện tại.
+
+## Kiểm tra kho ảnh riêng
+
+Dùng Node.js 22 trở lên. Stack Core khởi tạo bucket SeaweedFS private có versioning. Media có cổng HTTPS riêng, mặc định là `8444`.
+
+```sh
+export COMPOSE_FILE=compose.yaml:compose.core.yaml
+export LF_MEDIA_UPLOAD_SECONDS=10
+sh infra/nginx/generate-local-tls.sh
+docker compose up --build --wait --wait-timeout 90
+NODE_EXTRA_CA_CERTS="$PWD/.local/tls/gateway-ca.crt" node tests/core-media.mjs
+```
+
+Bài kiểm tự tạo hai phiên Bearer tạm trong PostgreSQL và dọn bản ghi khi xong. Core cấp POST cho một object ảnh đại diện tạm qua `POST /api/v1/me/uploads`. Chủ lượt upload có thể lấy URL xem ảnh tối đa 60 giây từ `GET /api/v1/uploads/{uploadId}` sau khi Core khớp dung lượng, metadata và SHA-256 của phiên bản object. Mặc định grant upload có hiệu lực 5 phút. Bỏ biến `LF_MEDIA_UPLOAD_SECONDS` để chạy với thời hạn mặc định.
+
+Dùng `docker compose down` để dừng stack và giữ các volume. Với client ngoài máy host, đặt `LF_S3_PUBLIC_ENDPOINT` thành origin HTTPS mà client truy cập được và có trong chứng chỉ local.
+
 
 ## Demo bảng tin trên Mobile và Admin
 

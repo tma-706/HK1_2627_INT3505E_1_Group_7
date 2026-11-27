@@ -10,6 +10,12 @@ SELECT NOT EXISTS (SELECT FROM public.schema_migrations WHERE version = '001') A
     INSERT INTO public.schema_migrations VALUES ('001');
 \endif
 
+SELECT NOT EXISTS (SELECT FROM public.schema_migrations WHERE version = '002') AS apply_migration \gset
+\if :apply_migration
+    \ir migrations/002_private_media.sql
+    INSERT INTO public.schema_migrations VALUES ('002');
+\endif
+
 SELECT 'CREATE ROLE core_reader LOGIN' WHERE NOT EXISTS (
     SELECT FROM pg_roles WHERE rolname = 'core_reader'
 ) \gexec
@@ -17,6 +23,16 @@ ALTER ROLE core_reader PASSWORD :'core_password';
 GRANT CONNECT ON DATABASE campus TO core_reader;
 GRANT USAGE ON SCHEMA public TO core_reader;
 GRANT SELECT ON public.posts TO core_reader;
+
+\getenv media_password MEDIA_DB_PASSWORD
+SELECT 'CREATE ROLE core_media LOGIN' WHERE NOT EXISTS (
+    SELECT FROM pg_roles WHERE rolname = 'core_media'
+) \gexec
+ALTER ROLE core_media PASSWORD :'media_password';
+GRANT CONNECT ON DATABASE campus TO core_media;
+GRANT USAGE ON SCHEMA public TO core_media;
+GRANT SELECT ON public.media_members, public.media_sessions, public.media_uploads TO core_media;
+GRANT INSERT ON public.media_uploads TO core_media;
 
 \ir fixtures/public-posts.sql
 COMMIT;
