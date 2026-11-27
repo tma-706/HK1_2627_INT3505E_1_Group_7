@@ -1,25 +1,25 @@
-# Quy tắc đo và xác thực kết quả
+# Measurement and result validation rules
 
-## Kiểm tra cấu hình tải đã sinh
+## Check generated load configuration
 
-- Với từng profile, kiểm tra đơn vị của nhu cầu, tải theo pha, phạm vi SLO, dữ liệu test và ngân sách môi trường. Đối chiếu số mẫu dự kiến của endpoint với RPS của chính endpoint đó nhân thời lượng đo. Với đợt dồn tải, đo theo các cửa sổ bám theo sự kiện và ghi thời gian hồi phục. Với bài chạy dài, bao phủ chu kỳ nghiệp vụ hoặc tài nguyên cần quan sát.
-- Ghi tổng thời gian chạy riêng với thời gian đo. Locust `--run-time` tính cả ramp. Với mục tiêu ở trạng thái ổn định, mở cửa sổ đo khi đạt tải yêu cầu và kiểm tra đủ thời gian giữ. Với sự kiện hoặc lô, mở cửa sổ tại mốc nghiệp vụ đã định, theo dõi cả phần việc còn chờ sau khi ngừng phát tải và đối chiếu kết quả cuối theo hạn hoàn tất.
-- Kiểm tra giá trị dương và đơn vị, thứ tự của dải user và wait-time, khả năng hoàn thành ramp trong ngân sách, cùng giới hạn tải và thời gian của staging. Khi phải hạ tải, ghi cả tải nghiệp vụ và tải hiệu lực. Nếu trần staging thấp hơn tải cần để trả lời mục tiêu, ghi rõ phần không kiểm chứng được.
+- For each profile, verify demand units, phased load, SLO scope, test data, and environment budget. Compare expected endpoint sample counts with that endpoint's RPS multiplied by measurement duration. For bursts, align observation windows with the event and record recovery time. For long runs, cover the relevant business or resource cycle.
+- Record total runtime separately from measurement duration. Locust `--run-time` includes ramp-up. For steady-state objectives, start measuring once the target load is reached and confirm the hold period is long enough. For events or batches, start at the specified business milestone, track work still pending after load generation stops, and check final outcomes against the completion deadline.
+- Verify positive values and units, ordered user and wait-time ranges, whether ramp-up fits the budget, and staging load and time limits. When reducing load, record the business target and effective load. If staging cannot reach the load required to answer the question, record what remains unverified.
 
-## Dữ liệu dùng để đánh giá
+## Select data for evaluation
 
-- Ghi route mẫu, phase, user thực tế, cấu hình áp dụng, thời gian, phiên bản và cách tính từng chỉ số. Đặt phạm vi rõ cho tải nghiệp vụ, login/setup, phản hồi nghiệp vụ kỳ vọng và request dọn dẹp. Kiểm tra riêng lỗi setup. Chọn và ghi quy tắc tính mẫu cho p95, tỷ lệ lỗi và Apdex.
-- Đo p95 từ mẫu hoặc histogram đủ chi tiết của đúng cửa sổ và phạm vi. Ưu tiên thời gian request gốc ở biên SLO vì histogram mặc định của Locust có làm tròn. Ghép histogram theo số lượng mẫu trước khi tính percentile. Ấn định cách gán request vào cửa sổ, ví dụ theo lúc gửi rồi chờ các request đó hoàn tất theo timeout. Báo thiếu bằng chứng nếu còn mẫu chưa quyết toán có thể làm sai kết luận.
-- Tính tỷ lệ lỗi theo `100 × failures / attempts` cho phạm vi đã định. So sánh với giá trị phần trăm như `1.0` cho 1%. Khi có Apdex, lấy T từ dự án và dùng cùng đơn vị cho T và thời gian phản hồi. Nếu dự án dùng công thức chuẩn, một mẫu thành công ở mức ≤ T là thỏa mãn, mẫu thành công ở mức > T và ≤ 4T là chấp nhận được, mẫu còn lại gồm lỗi là không thỏa mãn. Điểm là `(số thỏa mãn + 0,5 × số chấp nhận được) / tổng mẫu`.
-- Ghi tập chỉ số bắt buộc của gate. Khi dự án hoặc người dùng yêu cầu Apdex, thiếu T hoặc thiếu mẫu dẫn đến kết quả không đủ bằng chứng cho gate. Dùng cùng phạm vi và cách tính khi chạy phân tán. Với soak, tổng hợp theo cửa sổ bằng bộ đếm hoặc histogram để giới hạn RAM máy phát tải.
+- Record the route template, phase, actual user count, effective configuration, time, version, and metric calculations. Define the scope for business traffic, login and setup, expected business responses, and cleanup requests. Check setup errors separately. Choose and record sampling rules for p95, error rate, and Apdex.
+- Compute p95 from samples or a sufficiently detailed histogram for the correct window and scope. Prefer raw request timings near SLO thresholds because Locust's default histogram rounds values. Merge histograms by sample counts before calculating percentiles. Specify how requests are assigned to windows, for example by start time, then wait for those requests up to their timeout. Report insufficient evidence if outstanding samples could change the conclusion.
+- Calculate error rate as `100 × failures / attempts` for the defined scope. Compare it with percentage values such as `1.0` for 1%. For Apdex, use the project's T and the same unit for T and response times. Under the standard formula, successful samples at or below T are satisfied, successful samples above T and at or below 4T are tolerating, and all others, including failures, are frustrated. The score is `(satisfied + 0.5 × tolerating) / total samples`.
+- Record the required gate metrics. If Apdex is required by the project or user, missing T or insufficient samples means insufficient gate evidence. Apply the same scope and calculations to distributed runs. For soak tests, aggregate by window using counters or histograms to bound generator memory.
 
-## Điều kiện dừng
+## Stop conditions
 
-- Đặt cửa sổ quan sát, phạm vi và số mẫu tối thiểu cho ngưỡng dừng. Tính trong lúc test và kiểm tra độc lập việc mất worker, thiếu tín hiệu hoặc lỗi setup. Khi worker gửi số liệu, lấy quyết định từ số liệu đã tổng hợp của toàn phạm vi. Ghi lý do và giữ số liệu khi dừng.
-- Với profile có ngưỡng dừng, đọc chỉ số, đơn vị, toán tử, ngưỡng, cửa sổ và hành động từ kế hoạch dự án. So với SLO đúng phạm vi nếu điều kiện phụ thuộc SLO. Kiểm tra nhánh dưới ngưỡng, đúng biên và vượt ngưỡng. Ghi bậc tải cuối còn đạt và tín hiệu kích hoạt nếu khảo sát công suất.
+- Set the observation window, scope, and minimum sample count for each stop threshold. Evaluate during the run and independently check worker loss, missing signals, and setup failures. When workers report metrics, decide from aggregated data for the full scope. Record the reason and preserve measurements when stopping.
+- For profiles with stop thresholds, read the metric, unit, operator, threshold, window, and action from the project plan. If a stop condition depends on an SLO, use the matching SLO scope. Verify behavior below, at, and above the threshold. For capacity exploration, record the last passing load level and triggering signal.
 
-## Kiểm tra CI gate
+## Validate the CI gate
 
-- Xác thực phiên bản ở môi trường đo, tải thực, cửa sổ đo, số mẫu và báo cáo hoàn tất trước khi kết luận. Giữ mã thoát và log Locust. Khi dùng mã riêng cho lỗi request qua `--exit-code-on-error`, chỉ tiếp tục đánh giá theo SLO nếu có bằng chứng quá trình hoàn tất, request lỗi đã được ghi vào số liệu và trạng thái script, setup, worker đều hợp lệ. Kiểm tra riêng lỗi task, ví dụ qua `user_error` hoặc báo cáo exceptions, vì Locust có thể dùng cùng mã thoát cho cả lỗi request và lỗi task.
-- Trả mã 0 khi tất cả chỉ số bắt buộc đạt. Phân biệt vi phạm, thiếu bằng chứng và lỗi thực thi bằng trạng thái trong log hoặc báo cáo. Khi một chỉ số hợp lệ vi phạm và chỉ số khác thiếu mẫu, giữ cả hai kết quả. Tìm cách kiểm chứng bước lưu artifact trong cả ca gate thất bại.
-- Kiểm thử tối thiểu các ca đạt, lỗi request trong ngân sách, chạm đúng ngưỡng và vượt ngưỡng, thiếu mẫu hoặc thiếu tải, thiếu T khi Apdex bắt buộc, lỗi task hoặc mất dữ liệu và việc đính kèm artifact khi gate thất bại.
+- Verify the version in the measured environment, actual load, measurement window, sample count, and report completion before concluding. Retain Locust's exit code and logs. When using a separate request-error code via `--exit-code-on-error`, continue to SLO evaluation only with evidence that execution completed, request failures were captured in the metrics, and script, setup, and workers were valid. Check task errors separately, for example through `user_error` or exception reports, because Locust can use the same exit code for request and task errors.
+- Return exit code 0 when every required metric passes. Distinguish SLO breaches, insufficient evidence, and execution failures in logs or reports. Retain both results when one valid metric breaches its threshold and another lacks samples. Verify artifact retention on failed gates.
+- At minimum, test passing, request errors within budget, values exactly at and above thresholds, insufficient samples or load, missing T when Apdex is required, task failures or data loss, and artifact retention when the gate fails.

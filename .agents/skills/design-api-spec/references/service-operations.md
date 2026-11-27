@@ -10,9 +10,7 @@ For each important trust boundary, connect a risk to a control, the caller-visib
 
 ### Example from Lost & Found
 
-For the proposed My Items list operation, the signed-in session and the scoped cursor make `SEC-PRF-001` and `GAP-PRF-003` relevant. `SEC-A01-01` helps check that the server enforces access. Express the session requirement in `security`, the cursor in the request parameters, and allowed list fields in the response schema. Describe the account and tab scope and check it with authorized and unauthorized fixtures. Record the response for an unusable cursor in the design decision if its exact semantics are still open.
-
-`EI-06` supports the page size of up to 20 items. `PERF-PRF-001` carries a proposed PR-05 target of displaying the page on mobile within 2 seconds for at least 95% of attempts under the stated conditions. Hand off this measurement to mobile and QA. Measure Core response time as a contributing signal while the API budget remains open. [UC-01/02 analysis](../../../../docs/requirements/analysis/uc-01-02.md)
+For UC08, Core v1 exposes listMyPosts at GET /api/v1/me/posts. The operation requires CoreSession, limits results to posts created by the caller, and supports a Lost or Found type filter and cursor pagination. The shared limit parameter defaults to 20 and permits up to 50. Verify authorization and filtering with distinct account fixtures. Use UC08 and its applicable PERF source to decide whether to measure time until the list is visible in Mobile. Core response latency is one contributing signal. [Core posts contract](../../../../docs/api/core/v1/paths/posts.yaml) · [Page limit](../../../../docs/api/core/v1/components/parameters/Limit.yaml)
 
 ## Access and resource protection
 

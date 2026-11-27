@@ -1,32 +1,32 @@
-# Kiểm tra trước và sau deploy
+# Pre-deployment and post-deployment checks
 
-## Thứ tự thực thi
+## Execution order
 
-| Giai đoạn | Thực hiện | Điều kiện sang bước sau |
+| Stage | Action | Condition to proceed |
 | --- | --- | --- |
-| Kiểm thử nhanh | Chạy unit, integration và kiểm tra hợp đồng OpenAPI bằng công cụ của dự án | Các kiểm tra bắt buộc đạt |
-| CI trước staging | Build bản ứng viên, dựng API và phụ thuộc trong môi trường tạm, đợi sẵn sàng, chạy smoke và nhóm bài hồi quy đã chọn | Smoke đạt và gate đủ dữ liệu, đạt SLO hồi quy |
-| Sau deploy staging | Deploy đúng bản build đã qua gate CI tạm. Kiểm tra phiên bản, readiness và smoke trên staging rồi chạy nhóm bài nghiệp vụ của staging | Gate staging đạt trên bản ứng viên, dưới tải dự kiến đã xác định |
-| Phát hành production | Áp dụng luồng release và phê duyệt của dự án | Chỉ phát hành bản ứng viên có gate staging đạt |
+| Fast verification | Run unit, integration, and OpenAPI contract checks with project tools | Required checks pass |
+| CI before staging | Build the candidate, start the API and dependencies in an ephemeral environment, wait for readiness, then run smoke and selected regression profiles | Smoke passes and the gate has sufficient evidence that regression SLOs pass |
+| After staging deployment | Deploy the exact build that passed the ephemeral CI gate. Verify the deployed version, readiness, and smoke on staging, then run staging business workload profiles | The candidate passes the staging gate under the defined expected load |
+| Production release | Follow the project's release and approval process | Release only the candidate that passed the staging gate |
 
-- Dùng môi trường, dữ liệu và tài khoản test riêng cho CI tạm. Đợi readiness của API và các phụ thuộc với timeout hữu hạn. Dùng cùng URL cho smoke và Locust. Dùng bộ smoke sẵn có như Newman nếu dự án dùng Postman.
-- Lấy danh sách profile của `pre-deploy` và `staging` từ cấu hình tải của dự án. Với mỗi profile, chạy đúng hành trình và đường tải đã chốt, áp dụng [quy tắc đo và xác thực kết quả](run-validation.md) và lưu cấu hình hiệu lực cùng báo cáo vào thư mục theo ID. Mỗi gate chỉ đạt khi tất cả profile bắt buộc đủ bằng chứng và đạt SLO. Nếu chỉ có bài thăm dò hoặc chưa đủ tải đại diện, ghi staging chưa kiểm chứng được mục tiêu phát hành.
-- Dùng phiên bản bất biến như image digest hoặc mã định danh bản build để nối kết quả với bản release. Chuyển bản build đã test qua artifact hoặc registry. Kiểm tra staging đang chạy bản đó trước gate staging và kiểm tra lại sau mỗi lần chạy gate staging hoàn tất, kể cả khi gate fail. Giữ cùng khóa từ lúc deploy đến khi hoàn tất bài đo. Trong cùng repo, dùng chung concurrency group cho các workflow đụng tới staging. Với nhiều repo hoặc deploy ở ngoài CI, dùng cơ chế khóa chung của hệ thống deploy.
-- Chạy riêng các bài khảo sát có mục tiêu và ngân sách vượt phạm vi CI. Khi dự án chưa có đường deploy staging, hoàn thành gate tạm và ghi phần staging còn thiếu. Khi đã có luồng phát hành production, giữ cơ chế phê duyệt và nối kết quả gate staging với đúng bản sẽ phát hành.
+- Use dedicated ephemeral CI test environments, data, and accounts. Wait for the API and dependencies with a bounded readiness timeout. Use the same URL for smoke and Locust. Reuse an existing smoke suite, such as Newman for a project that uses Postman.
+- Read the `pre-deploy` and `staging` profile lists from project workload configuration. For each profile, run the agreed journeys and load curve, apply the [measurement and validation rules](run-validation.md), and save effective configuration and reports in a directory named for the ID. A gate passes only when every required profile has sufficient evidence and meets its SLO. When only exploratory runs exist or load is unrepresentative, record that staging has yet to verify the release objective.
+- Use an immutable version such as an image digest or build ID to bind results to the release. Transfer the tested build through an artifact or registry. Verify staging serves that build before the staging gate and after every completed staging gate run, including failures. Hold the same lock from deployment through measurement. Within one repository, use a shared concurrency group for workflows that touch staging. For multiple repositories or deployments outside CI, use the deployment system's shared lock.
+- Run exploratory workloads with objectives and budgets outside CI separately. If the project lacks a staging deployment path, complete the ephemeral gate and record the staging gap. When a production release process exists, preserve its approvals and link the staging gate outcome to the exact build being released.
 
-## Tích hợp mẫu GitHub Actions
+## GitHub Actions template integration
 
-Dùng [mẫu workflow](../assets/pre-deploy.yml) cho dự án dùng Docker Compose trên GitHub-hosted runner. Khi repo đã có CI hoặc CD, tích hợp các bước vào job tương ứng và tái sử dụng lệnh sẵn có. Đổi tên nhánh, đường dẫn Docker build, service, danh sách secrets và ngân sách job theo dự án.
+Use the [workflow template](../assets/pre-deploy.yml) for projects using Docker Compose on GitHub-hosted runners. If the repository already has CI or CD, integrate steps into the corresponding jobs and reuse existing commands. Adapt branch names, Docker build paths, services, required secrets, and job budgets to the project.
 
-| Thành phần mẫu | Hợp đồng khi tích hợp |
+| Template component | Integration contract |
 | --- | --- |
-| `ci/fast-verification.sh` | Chạy unit, integration và lint/kiểm tra hợp đồng của dự án. Trả lỗi khi kiểm tra bắt buộc không đạt. |
-| `ci/compose.ephemeral.yml` | Service `api` sử dụng `${CANDIDATE_IMAGE}` vừa build. Publish API tại `127.0.0.1:18080`, cấu hình healthcheck đủ để xác nhận có thể phục vụ và chuẩn bị fixture cho smoke. |
-| `ci/smoke.sh <url> <output-dir>` | Chạy smoke và ghi JUnit hoặc báo cáo tương đương. Trả lỗi khi luồng bắt buộc không đạt. |
-| `ci/performance-gate.sh <stage> <url> <output-dir>` | Nạp dependencies đã chốt phiên bản, đọc nhóm profile theo stage (`pre-deploy` hoặc `staging`) từ `workloads.yml` hoặc cấu hình tương đương của cùng bản ứng viên, báo lỗi nếu thiếu nhóm hoặc profile, chạy Locust cho từng ID, ghi HTML/CSV, mã thoát gốc và kết quả của bộ đánh giá. Trả mã 0 sau khi đủ bằng chứng và tất cả chỉ số bắt buộc đạt. |
-| `ci/deploy-staging.sh <image> <commit> <release-file>` | Publish hoặc triển khai image đã qua gate bằng cơ chế của dự án. Ghi JSON có trường `release_id` là mã định danh bất biến một dòng, ví dụ image digest. Chỉ ghi metadata không nhạy cảm vào file này. |
-| `ci/verify-staging.sh <url> <release-file>` | Chờ readiness và kiểm tra bản đang phục vụ khớp với `release_id`. Ghi bản kỳ vọng và bản quan sát được vào log. Trả lỗi nếu không xác nhận được. |
+| `ci/fast-verification.sh` | Run project unit, integration, and lint or contract checks. Fail when a required check fails. |
+| `ci/compose.ephemeral.yml` | The `api` service uses the newly built `${CANDIDATE_IMAGE}`. Publish the API at `127.0.0.1:18080`, configure a health check that confirms it can serve requests, and prepare smoke fixtures. |
+| `ci/smoke.sh <url> <output-dir>` | Run smoke and write JUnit or an equivalent report. Fail when a required flow fails. |
+| `ci/performance-gate.sh <stage> <url> <output-dir>` | Load pinned dependencies and read the stage's profile group (`pre-deploy` or `staging`) from the candidate's `workloads.yml` or equivalent configuration. Fail on missing groups or profiles. Run Locust for each ID and record HTML, CSV, the original exit code, and the evaluator result. Exit 0 only with sufficient evidence and all required metrics passing. |
+| `ci/deploy-staging.sh <image> <commit> <release-file>` | Publish or deploy the gated image using the project mechanism. Write JSON with a one-line immutable `release_id`, such as an image digest. Write only non-sensitive metadata to this file. |
+| `ci/verify-staging.sh <url> <release-file>` | Wait for readiness and verify the serving build matches `release_id`. Log the expected and observed versions. Fail if verification is unavailable. |
 
-- Biến `STAGING_URL` và secrets dùng cho deploy, smoke và Locust nằm trong cấu hình staging. Map các secrets cần cho từng bước cụ thể. PR dùng fixture tạm.
-- Trong cùng workflow, đặt job production hiện có phụ thuộc vào `staging-load-gate` và dùng output `release_id` cho bản phát hành. Với production ở workflow riêng, lấy artifact phê duyệt từ lần chạy thành công của workflow đã cấu hình trên nhánh phát hành. Kiểm tra `release_id` khớp bản chọn phát hành cùng metadata commit, run và attempt. Giữ nguyên mã đó từ lúc chờ phê duyệt đến khi deploy.
-- Trước khi hoàn tất tích hợp, kiểm tra các nhánh fast verification fail, readiness fail, smoke fail, gate CI tạm fail, gate staging fail và phiên bản staging lệch. Xác nhận các bước hậu kiểm lưu báo cáo đã tạo. Kiểm tra PR chỉ thực hiện gate tạm và push lên nhánh phát hành mới mở đường deploy staging. Kiểm tra toàn pipeline trên runner của dự án khi các lệnh deploy và biến môi trường đã có.
+- Set `STAGING_URL` and secrets for deployment, smoke, and Locust in the staging environment configuration. Map the required secrets to each relevant step. Pull requests use ephemeral fixtures.
+- Within the same workflow, make the existing production job depend on `staging-load-gate` and consume its `release_id` output for the release. With a separate production workflow, obtain the approval artifact from a successful run of the configured workflow on the release branch. Verify `release_id` against the chosen release and the commit, run, and attempt metadata. Preserve that ID from approval through deployment.
+- Before completing integration, check failures in fast verification, readiness, smoke, the ephemeral CI gate, and the staging gate, plus staging version mismatches. Confirm post-check steps retain generated reports. Verify pull requests run only the ephemeral gate and only pushes to the release branch can deploy to staging. Verify the full pipeline on the project runner once deploy commands and environment variables are available.

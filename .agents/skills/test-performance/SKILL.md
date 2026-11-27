@@ -1,18 +1,18 @@
 ---
 name: test-performance
-description: Với lời gọi tường minh, thiết kế workload và suite hiệu năng từ UC spec hoặc chạy và phân tích suite sẵn có bằng Locust hay công cụ của repo. Dùng cho thiết kế tải, baseline, spike, stress, soak, breakpoint hoặc kiểm tra SLO trong CI.
+description: When explicitly invoked, design performance workloads and suites from a UC specification, or run and analyze an existing suite using Locust or repository tools. Covers workload design, baseline, spike, stress, soak, breakpoint, and CI SLO checks.
 ---
 
-# Thiết kế và chạy kiểm thử hiệu năng
+# Design and run performance tests
 
-Chọn điểm vào theo yêu cầu. Dùng [quy ước bàn giao](../../../docs/skill-workflow.md) để ghi phiên bản UC và theo [hướng dẫn môi trường](../../../docs/operations/environments.md) để xác định đích thực có tại Lost & Found.
+Choose the entry point based on the request. Use the [Lost & Found project context](../../lost-and-found-context.md) to pin the UC and contract versions, identify the local and CI plan, and verify what is runnable in the checkout. Use the OpenAPI mock for contract or routing smoke. Use the real candidate behind Nginx with its actual dependencies for performance claims. Verify staging and existing gates before planning to run them.
 
-## Thiết kế suite
+## Design a suite
 
-1. Đọc UC spec trước. Dùng SCN/PERF để chọn hành trình và contract để tra operation. Nếu thiếu UC, xác định việc cần bổ sung và ghi phạm vi thiết kế thăm dò làm được từ nguồn đang có.
-2. Ở Lost & Found, tra [hướng dẫn chọn phép đo hiệu năng](../../../docs/requirements/quality/performance.md) để ghép câu hỏi của UC với tín hiệu và hồ sơ tải. Dùng [cách sinh workload](references/dynamic-workloads.md) để chọn dữ liệu, tỷ trọng hành trình, tốc độ đến hoặc số người dùng đồng thời, các pha, số mẫu và giới hạn. Ghi mốc đo, phạm vi, công thức, cách tính lỗi, tiêu chí và nguồn của từng ngưỡng. Với luồng xử lý ảnh, ghi riêng thời gian nhận yêu cầu và thời gian đến kết quả hiển thị nếu UC cần cả hai. Nếu thiếu ngưỡng, thiết kế phép đo và ghi chưa đủ căn cứ kết luận SLO.
-3. Lưu thiết kế ở `tests/performance/<slug>/`, với phiên bản UC và ánh xạ profile → SCN/PERF → operation hay tín hiệu ngoài API. Dùng lại cấu trúc cũ khi đầu vào đã chỉ định suite có sẵn. Có thể bàn giao thiết kế trước mã hoặc staging. Ghi runner, fixture và thiết lập còn thiếu để ca chạy được.
+1. Read the UC specification first. Use SCN/PERF to select journeys and the contract to identify operations. If the UC is missing, identify the missing inputs and the exploratory design possible with the sources available.
+2. Map the UC question to signals and load profiles using applicable PERF requirements and the project acceptance criteria. For Lost & Found, distinguish HTTP status and latency, PostgreSQL-backed behavior, Worker backlog, retry and DEAD counts, and end-to-end time to a visible result when the journey crosses those layers. Follow the [workload design guide](references/dynamic-workloads.md) to select data, journey mix, arrival rates or concurrent users, phases, sample counts, and limits. Record measurement timing, scope, formulas, error accounting, criteria, and sources for each threshold. For image processing, record request acceptance time and time to a visible result separately when the UC requires both. If thresholds are missing, design the measurement and record that evidence is insufficient for an SLO conclusion.
+3. Save the design in `tests/performance/<slug>/`, including the UC version and mapping from profile to SCN/PERF and then to an operation or a signal outside the API. Reuse the existing layout when an existing suite is specified. The design can be handed off before code or staging is available. Record the runner, fixtures, and setup still needed to execute it.
 
-## Chạy suite hoặc phân tích lần chạy
+## Run a suite or analyze a run
 
-Dùng suite, profile và build xác định cùng môi trường thực có. Đọc [hướng dẫn chạy với Locust, phân tích và CI](references/execution.md) cho phần được giao. Khi thiếu đích chạy, tiếp tục chuẩn bị phần thiết kế hoặc phân tích bằng chứng đã có. Chỉ báo profile đã chạy khi có lệnh và kết quả, ghi riêng smoke, phép đo và kết luận theo đúng môi trường. Chỉ cấu hình gate hoặc deploy trong phạm vi được giao, dựa trên ngưỡng có nguồn và điều kiện đo hợp lệ.
+Use an identified suite, profile, build, and available environment. Read the [Locust execution, analysis, and CI guide](references/execution.md) for the assigned work. If a target is unavailable, continue preparing the design or analyzing existing evidence. Report a profile as executed only when you have the command and result. Record smoke checks, measurements, and conclusions separately for the environment used. Configure a gate or deployment only within the assigned scope using sourced thresholds and valid measurement conditions. Select Locust or the verified project runner. Treat the Docker Compose GitHub Actions template as an integration option and verify the corresponding jobs and commands before use.
