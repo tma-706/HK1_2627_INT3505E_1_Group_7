@@ -1,0 +1,4 @@
+interface:
+  display_name: "Thiết kế đặc tả API"
+  short_description: "Từ SRS và SEC/PERF đến hợp đồng API đã duyệt"
+  default_prompt: "Dùng $design-api-spec với SRS và bản phân tích SEC/PERF để soạn Execution Prompt cho tôi duyệt."

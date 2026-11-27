@@ -1,0 +1,7 @@
+interface:
+  display_name: "Kiểm thử hiệu năng"
+  short_description: "Thiết kế workload hoặc chạy suite hiệu năng"
+  default_prompt: "Dùng $test-performance với UC spec để thiết kế workload, hoặc chỉ định suite, build và đích chạy."
+
+policy:
+  allow_implicit_invocation: false
