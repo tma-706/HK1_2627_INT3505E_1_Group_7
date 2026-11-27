@@ -1,2 +1,5 @@
 /.local/
 /infra/mock/node_modules/
+/apps/core/node_modules/
+/apps/core/dist/
+/.env

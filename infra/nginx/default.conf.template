@@ -1,7 +1,7 @@
-upstream mock_api {
-    zone mock_api 64k;
+upstream feed_api {
+    zone feed_api 64k;
     resolver 127.0.0.11 valid=2s ipv6=off;
-    server mock:4010 resolve;
+    server ${LF_UPSTREAM}:4010 resolve;
 }
 
 server {
@@ -14,7 +14,7 @@ server {
 
     location /api/v1/ {
         # A proxy_pass without a URI preserves the /api/v1 prefix and query string.
-        proxy_pass http://mock_api;
+        proxy_pass http://feed_api;
         proxy_connect_timeout 2s;
         proxy_set_header Host $host;
         proxy_set_header X-Forwarded-Proto $scheme;

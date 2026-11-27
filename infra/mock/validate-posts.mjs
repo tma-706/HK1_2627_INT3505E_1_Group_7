@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { deepStrictEqual } from 'node:assert/strict';
 import Ajv2020 from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
 
@@ -16,5 +17,8 @@ if (!validate(body)) {
   console.error(ajv.errorsText(validate.errors, { separator: '\n' }));
   process.exitCode = 1;
 } else {
+  if (process.argv.length > 2) {
+    deepStrictEqual(body.items.map(post => post.postId), process.argv.slice(2));
+  }
   console.log(`PublicPostPage valid (${body.items.length} items)`);
 }

@@ -29,3 +29,22 @@ docker compose down
 ```
 
 Để chạy lại, dùng `docker compose up --build --wait --wait-timeout 60` với chứng chỉ còn hạn. Workflow `Local stack` trên `pull_request` lint và bundle OpenAPI khi build image mock, rồi chạy cùng script smoke qua Nginx.
+
+## Chạy bảng tin Core với PostgreSQL
+
+Dùng cùng Docker Compose, chứng chỉ và cổng HTTPS như stack mock. Nếu stack mock đang chạy, dừng bằng `docker compose down` trước khi đổi cấu hình. Chạy từ gốc repo:
+
+```sh
+export COMPOSE_FILE=compose.yaml:compose.core.yaml
+sh infra/nginx/generate-local-tls.sh
+docker compose up --build --wait --wait-timeout 90
+curl --noproxy '*' --cacert .local/tls/localhost.crt -i \
+  https://127.0.0.1:8443/api/v1/posts
+sh tests/core-feed.sh
+docker compose down
+unset COMPOSE_FILE
+```
+
+Compose chạy migration và nạp fixture trước khi Core phục vụ request. PostgreSQL và Core chỉ có cổng trong mạng Compose. Core kết nối bằng role `core_reader` có quyền đọc bảng bài đăng. Mock cấp bộ kiểm schema cho smoke test, còn Nginx chuyển request đến Core. Lát cắt này chỉ phục vụ dữ liệu công khai và trả danh sách ảnh rỗng khi chưa tích hợp media.
+
+Giá trị mặc định là thông tin mẫu cho local. Có thể chép `.env.example` thành `.env` và sửa giá trị trước khi khởi tạo volume lần đầu. `docker compose down` giữ dữ liệu. Để đặt lại môi trường local, dùng `docker compose down --volumes` trong lúc `COMPOSE_FILE` đang được đặt. Lệnh đó xóa PostgreSQL volume của dự án Compose hiện tại.
