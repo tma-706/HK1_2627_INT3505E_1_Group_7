@@ -9,7 +9,7 @@ url="https://127.0.0.1:${LF_HTTPS_PORT:-8443}/api/v1/posts"
 
 request() {
   curl --disable --noproxy '*' --silent --show-error --max-time 5 \
-    --cacert .local/tls/localhost.crt --get --output "$body" \
+    --cacert .local/tls/gateway-ca.crt --get --output "$body" \
     --write-out '%{http_code} %{content_type}' "$url" "$@"
 }
 
@@ -41,3 +41,20 @@ case "$result" in
   *) echo "Expected cursor rejection, got $result" >&2; exit 1 ;;
 esac
 echo 'PostgreSQL fixtures, filtering, pagination and cursor binding verified'
+
+cors_headers() {
+  curl --disable --noproxy '*' --fail --silent --show-error --max-time 5 \
+    --cacert .local/tls/gateway-ca.crt --header "Origin: $1" \
+    --dump-header - --output /dev/null "$url"
+}
+
+admin_origin=$(docker compose exec -T nginx printenv LF_ADMIN_ORIGIN)
+headers=$(cors_headers "$admin_origin")
+printf '%s\n' "$headers" | tr -d '\r' | grep -Fxi "Access-Control-Allow-Origin: $admin_origin" >/dev/null
+printf '%s\n' "$headers" | tr -d '\r' | grep -Fxi 'Vary: Origin' >/dev/null
+headers=$(cors_headers https://untrusted.invalid)
+if printf '%s\n' "$headers" | grep -qi '^Access-Control-Allow-Origin:'; then
+  echo 'Gateway allowed an unrelated origin' >&2
+  exit 1
+fi
+echo 'Admin origin allowed and unrelated origin denied'

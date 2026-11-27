@@ -32,3 +32,12 @@ Chạy [các lệnh trong README](../../README.md#chạy-stack-mock-qua-https) t
 Dùng cấu hình Compose tích hợp trong [README](../../README.md#chạy-bảng-tin-core-với-postgresql). Trên macOS arm64 với Compose 5.5.1, Node.js 22.23.4, Nginx 1.30.8 và PostgreSQL 17.12, `docker compose up --build --wait --wait-timeout 90` đã chạy migration từ volume rỗng. `sh tests/core-feed.sh` nhận HTTP 200 với TLS hợp lệ, đối chiếu schema và ID của hai fixture công khai, rồi kiểm tra bộ lọc, phân trang và cursor sai phạm vi. Sau `docker compose restart db` và `docker compose up --wait --wait-timeout 90`, phép kiểm vẫn đạt. Quyền của role `core_reader` trên bảng bài đăng cho phép SELECT và từ chối INSERT.
 
 Chạy lại mode mock với `sh infra/smoke-posts.sh item-123` cũng đạt. GitHub Actions chạy cả hai chế độ trong hai job riêng.
+
+## Kiểm tra Mobile và Admin với Core
+
+Đã chạy theo [hướng dẫn demo](../../README.md#demo-bảng-tin-trên-mobile-và-admin) trên macOS arm64 với Node.js 24.4.0, Compose 5.5.1, Nginx 1.30.8 và PostgreSQL 17.12. `npm run check:clients`, build Admin và `sh tests/core-feed.sh` đều đạt. Phép kiểm Gateway xác nhận origin Admin được phép đọc bảng tin và một origin khác bị từ chối.
+
+- **Mobile.** Build debug Expo 58.1.0 trên Android Emulator 37.3.10.0 chạy API 36. Ứng dụng xác minh TLS qua CA local với URL `https://10.0.2.2:8443/api/v1/posts`. Nginx ghi nhận HTTP 200 từ Android.
+- **Admin.** Firefox 159.0 nạp CA local trong profile demo và nhận HTTP 200 từ `https://127.0.0.1:8443/api/v1/posts`. Admin chạy trên Vite 7.3.8 tại `http://127.0.0.1:5173`. Đã kiểm tra thông báo lỗi và nút thử lại khi ngắt request trong trình duyệt.
+
+Cả hai màn hình hiển thị tiêu đề và mô tả của `fixture-found-keys` và `fixture-lost-wallet`.
