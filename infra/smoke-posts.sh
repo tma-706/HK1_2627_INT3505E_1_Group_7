@@ -16,4 +16,4 @@ case "$response" in
   *) echo "GET $url: expected 200 application/json, received $response" >&2; exit 1 ;;
 esac
 
-docker compose exec -T mock node validate-posts.mjs < "$body"
+docker compose exec -T mock node validate-posts.mjs "$@" < "$body"

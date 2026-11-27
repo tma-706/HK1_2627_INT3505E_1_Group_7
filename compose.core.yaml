@@ -1,0 +1,64 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: campus_admin
+      POSTGRES_PASSWORD: ${LF_DB_ADMIN_PASSWORD:-local-admin-password}
+      POSTGRES_DB: campus
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U campus_admin -d campus"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+  migrate:
+    image: postgres:17-alpine
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGHOST: db
+      PGUSER: campus_admin
+      PGPASSWORD: ${LF_DB_ADMIN_PASSWORD:-local-admin-password}
+      PGDATABASE: campus
+      CORE_DB_PASSWORD: ${LF_DB_READER_PASSWORD:-local-reader-password}
+    volumes:
+      - ./db:/sql:ro
+    command: ["psql", "-X", "--file", "/sql/init-local.sql"]
+
+  core:
+    init: true
+    build: ./apps/core
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      PGHOST: db
+      PGUSER: core_reader
+      PGPASSWORD: ${LF_DB_READER_PASSWORD:-local-reader-password}
+      PGDATABASE: campus
+      LF_CURSOR_SECRET: ${LF_CURSOR_SECRET:-local-feed-cursor-secret}
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - >-
+          fetch('http://127.0.0.1:4010/ready')
+            .then(response => { if (!response.ok) process.exit(1); })
+            .catch(() => process.exit(1))
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+  nginx:
+    environment:
+      LF_UPSTREAM: core
+    depends_on:
+      core:
+        condition: service_healthy
+
+volumes:
+  postgres-data:

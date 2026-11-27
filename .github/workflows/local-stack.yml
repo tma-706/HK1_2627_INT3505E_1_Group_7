@@ -27,3 +27,27 @@ jobs:
       - name: Stop the stack
         if: always()
         run: docker compose down
+
+  core-posts-and-postgres:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      COMPOSE_FILE: compose.yaml:compose.core.yaml
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build and type-check Core, lint and bundle OpenAPI v1
+        run: docker compose --progress plain build mock core
+      - name: Migrate PostgreSQL and start the HTTPS stack
+        run: |
+          sh infra/nginx/generate-local-tls.sh
+          docker compose up --wait --wait-timeout 90
+      - name: Verify the PostgreSQL feed through Nginx HTTPS
+        run: sh tests/core-feed.sh
+      - name: Show stack logs on failure
+        if: failure()
+        run: docker compose logs --no-color
+      - name: Stop the stack
+        if: always()
+        run: docker compose down --volumes

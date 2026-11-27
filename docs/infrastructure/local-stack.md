@@ -26,3 +26,9 @@ Chạy [các lệnh trong README](../../README.md#chạy-stack-mock-qua-https) t
 - `curl` trả mã thoát `60` khi thiếu `--cacert` hoặc khi dùng sai hostname. Ajv từ chối response thiếu `nextCursor` và response có `occurredAt` sai định dạng.
 - Sau `docker compose stop mock`, request đầu nhận `504`, rồi Nginx trả `502` và chuyển sang `unhealthy`. Chạy lại `docker compose up --wait --wait-timeout 60` khôi phục HTTP `200` với cùng container Nginx.
 - `actionlint .github/workflows/local-stack.yml` đạt. Cần xác minh lượt chạy `pull_request` trên runner GitHub `ubuntu-24.04`, gồm bước lint/bundle, smoke HTTPS và teardown.
+
+## Kiểm tra bảng tin Core với PostgreSQL
+
+Dùng cấu hình Compose tích hợp trong [README](../../README.md#chạy-bảng-tin-core-với-postgresql). Trên macOS arm64 với Compose 5.5.1, Node.js 22.23.4, Nginx 1.30.8 và PostgreSQL 17.12, `docker compose up --build --wait --wait-timeout 90` đã chạy migration từ volume rỗng. `sh tests/core-feed.sh` nhận HTTP 200 với TLS hợp lệ, đối chiếu schema và ID của hai fixture công khai, rồi kiểm tra bộ lọc, phân trang và cursor sai phạm vi. Sau `docker compose restart db` và `docker compose up --wait --wait-timeout 90`, phép kiểm vẫn đạt. Quyền của role `core_reader` trên bảng bài đăng cho phép SELECT và từ chối INSERT.
+
+Chạy lại mode mock với `sh infra/smoke-posts.sh item-123` cũng đạt. GitHub Actions chạy cả hai chế độ trong hai job riêng.
