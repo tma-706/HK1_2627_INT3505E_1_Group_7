@@ -1,0 +1,9 @@
+{
+  "name": "campus-lost-found-local-mock",
+  "private": true,
+  "dependencies": {
+    "@redocly/cli": "2.82.0",
+    "ajv": "8.18.0",
+    "ajv-formats": "3.0.1"
+  }
+}

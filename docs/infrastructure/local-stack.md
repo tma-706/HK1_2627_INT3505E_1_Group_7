@@ -16,3 +16,13 @@ node docs/api/core/v1/mock.mjs "$spec"
 ```
 
 Gọi `curl -i http://127.0.0.1:4010/api/v1/posts`, dự kiến trả HTTP `200`. Các phản hồi mock lấy từ ví dụ tĩnh trong đặc tả. Dùng bản backend tích hợp để kiểm readiness, quyền truy cập dữ liệu và xử lý nền.
+
+## Kết quả kiểm tra stack mock qua Nginx
+
+Chạy [các lệnh trong README](../../README.md#chạy-stack-mock-qua-https) từ bản sao sạch. Môi trường kiểm tra dùng macOS arm64, Docker Engine 29.8.1, Compose 5.5.1, Nginx 1.30.8, Node.js 22.23.4, Redocly CLI 2.82.0 và Ajv 8.18.0.
+
+- `docker compose --progress plain build --no-cache mock` lint và bundle thành công. Redocly báo một cảnh báo có sẵn về `info.license`.
+- `docker compose up --wait --wait-timeout 60` báo cả hai dịch vụ healthy. `curl --cacert` nhận `200 application/json` qua Nginx. `sh infra/smoke-posts.sh` xác nhận một bài đăng hợp schema `PublicPostPage`.
+- `curl` trả mã thoát `60` khi thiếu `--cacert` hoặc khi dùng sai hostname. Ajv từ chối response thiếu `nextCursor` và response có `occurredAt` sai định dạng.
+- Sau `docker compose stop mock`, request đầu nhận `504`, rồi Nginx trả `502` và chuyển sang `unhealthy`. Chạy lại `docker compose up --wait --wait-timeout 60` khôi phục HTTP `200` với cùng container Nginx.
+- `actionlint .github/workflows/local-stack.yml` đạt. Cần xác minh lượt chạy `pull_request` trên runner GitHub `ubuntu-24.04`, gồm bước lint/bundle, smoke HTTPS và teardown.
