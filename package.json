@@ -1,0 +1,14 @@
+{
+  "name": "campus-lost-found",
+  "private": true,
+  "workspaces": ["apps/mobile", "apps/admin", "packages/public-feed"],
+  "scripts": {
+    "generate:feed": "node packages/public-feed/generate-types.mjs",
+    "check:clients": "npm run check --workspaces --if-present"
+  },
+  "devDependencies": {
+    "openapi-typescript": "7.13.0",
+    "typescript": "5.9.3",
+    "yaml": "2.9.0"
+  }
+}

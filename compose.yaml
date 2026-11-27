@@ -25,15 +25,16 @@ services:
     image: nginx:1.30-alpine
     environment:
       LF_UPSTREAM: mock
+      LF_ADMIN_ORIGIN: ${LF_ADMIN_ORIGIN:-http://127.0.0.1:5173}
     depends_on:
       mock:
         condition: service_healthy
     ports:
-      - "127.0.0.1:${LF_HTTPS_PORT:-8443}:443"
+      - "${LF_HTTPS_BIND_IP:-127.0.0.1}:${LF_HTTPS_PORT:-8443}:443"
     healthcheck:
       test:
         ["CMD", "curl", "--disable", "--noproxy", "*", "--fail", "--silent", "--show-error",
-         "--cacert", "/etc/nginx/tls/localhost.crt", "--output", "/dev/null", "https://127.0.0.1/api/v1/posts"]
+         "--cacert", "/etc/nginx/tls/gateway-ca.crt", "--output", "/dev/null", "https://127.0.0.1/api/v1/posts"]
       interval: 3s
       timeout: 3s
       retries: 10
