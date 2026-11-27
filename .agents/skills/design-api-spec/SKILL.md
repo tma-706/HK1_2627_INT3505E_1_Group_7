@@ -1,27 +1,30 @@
 ---
 name: design-api-spec
-description: Draft an API design Execution Prompt for approval and execute the approved version. Use when turning an SRS and SEC/PERF analysis into an API contract or extending an existing contract from supplied requirements and constraints.
+description: Review and incrementally revise an existing API contract against a written use case, acceptance criteria, and applicable SEC/PERF requirements. Identify conflicts, update affected operations, and assess compatibility and versioning.
 ---
 
-# Design API contracts
+# Review and revise API contracts
 
-## Inputs
+## Establish the baseline
 
-For Lost & Found, read the [project context](../../lost-and-found-context.md), the current written UC or SRS, the existing interface contract and notes, and any applicable SEC/PERF analysis. Use the Core REST v1 contract and scope map as the product baseline. Keep readiness and internal Worker and Matching interfaces outside the public operation inventory unless the approved scope explicitly exposes them. Record source versions. If analysis is unavailable, record the constraints supported by current sources and the operations still affected.
+For Lost & Found, start with the [project context](../../lost-and-found-context.md), the current written UC or SRS, and the existing Core REST v1 contract at `docs/api/core/v1/openapi.yaml`. Read the referenced paths and components, adjacent notes, and the UC-to-operation map. Use the current working contract, including any existing edits, and record its source path, version, and relevant revision. Include applicable SEC/PERF analysis and approved decisions when available. Keep readiness and internal Worker and Matching interfaces outside the public operation inventory unless the agreed scope exposes them.
 
-Use applicable project or supplied security and performance criteria to identify candidates for each operation. Trace actors, data, permissions, dependencies, and workload to specific risks or measurement goals. Use the [criteria selection and mapping guide](references/service-operations.md#select-criteria-for-each-operation) to identify what belongs in OpenAPI and what needs a handoff. For criteria that lack enough evidence for a commitment, record the question, reference source, and affected operations.
+Outside Lost & Found, use the supplied contract and sources. If the expected baseline is missing, locate it or report which changes cannot be grounded. Design a new contract when the user requests one.
 
-Outside the project workflow, use the supplied requirements, user stories, contracts, and constraints.
+## Review the UC against the contract
 
-## 1. Draft the Execution Prompt for approval
+1. Map each relevant flow, alternative, exception, and acceptance criterion to existing operations using `x-use-cases` and the actual definitions. Check actor and effective authorization, inputs and schemas, responses and headers, errors, timing and limits, and observable state transitions. Identify requirements enforced by Core or another layer, including background processing and UI behavior.
+2. Record each mismatch or gap with its UC step or criterion, operation or enforcing layer, source evidence, and affected callers or other UCs. Distinguish internal business outcomes from what the API exposes. For example, rejecting creation of a duplicate account can coexist with a generic acceptance response. Establish whether the UC also requires an explicit caller-visible error before proposing a contract change.
+3. Identify the smallest supported edits and any open decisions. Use the [criteria selection guide](references/service-operations.md#select-criteria-for-each-operation) for relevant SEC/PERF obligations. When the UC and contract give conflicting caller-visible guarantees and the intended behavior is unclear, surface the decision and continue independent changes. Apply unambiguous changes when the request calls for edits. For a review-only request, report findings and proposed edits. Draft an Execution Prompt when requested or when the work needs a separately approved handoff.
 
-- Write a self-contained prompt in a Markdown code block with enough context for a new chat. Record source content and versions, API consumers, resource model, interactions, target format, permissions, observable outcomes, and required checks. Save it to a user-specified file when requested.
-- For each selected criterion, record its ID, source, status, proposed operation, rationale, observable behavior, and verification method. Identify where it belongs in OpenAPI and the handoff destination for enforcement or measurement. Use project REQ/SEC/PERF IDs and cite catalog IDs when available. For open SLOs, specify the measurement scope and method. Commit to error codes, limits, and responses only when supported by the approved scope.
-- When choosing an approach, use the [SOA and format guide](references/soa-course.md), [interaction patterns](references/design-patterns.md), [authorization and measurement](references/service-operations.md), or [API integration and lifecycle](references/api-product.md), as appropriate. For REST, choose an OpenAPI version compatible with existing tools and interfaces. Use the appropriate native format for other interfaces.
-- Present the exact prompt for approval or revision. Wait for approval before generating the full contract. A new chat can receive the prompt and an approval that explicitly identifies that version.
+## Assess compatibility and versioning
 
-## 2. Execute the approved prompt
+- Compare the proposed contract with the working baseline for existing consumers, including Mobile types and shared schemas. Check paths and operation IDs, required fields, validation, response fields and enums, status codes, permissions, ordering and defaults, and observable behavior. A change can affect consumers even when the YAML schema stays the same.
+- For incremental pre-release revisions, keep the current path and `info.version` by default. Record the UC, changed operations, decisions, and Git revision when available. If changes are uncommitted, identify the working diff without assigning it a new commit. Follow any established release policy for a published revision or intentional version bump.
+- When a breaking change affects a supported consumer, identify the affected behavior and consumers. Prefer a compatible evolution when it satisfies the requirement. If consumers need the old and new contracts to coexist, propose a new API version and a migration and retirement plan. Implement that version only when the decision is in scope. Use [lifecycle guidance](references/api-product.md) for the handoff. The root `openapi` field identifies the specification format and changes only when intentionally migrating that format.
 
-- For Core v1, update `docs/api/core/v1/` and its adjacent notes. Preserve the split entry point, paths, and shared components and keep `x-use-cases` mappings aligned. For other interfaces, use the approved location and reuse shared contracts. For each operation, specify its ID, inputs, permissions, outcomes, supported errors, and appropriate examples. Keep mappings and rules that the machine-readable format cannot express alongside the contract. Include SRS and analysis versions, the classification of internal requirements, and open questions in the handoff.
-- Compare the SRS and analysis against the contract and notes. Check that each in-scope REQ/SEC/PERF item maps to an operation and observable behavior, or has a reason and handoff destination for another layer. Trace back from the contract to detect added permissions, states, or errors. If sources change after approval, identify the affected scope and seek approval for material changes to the prompt.
-- Use available tools to verify IDs, schemas, effective operation permissions, including inheritance and overrides, and examples. Deliver a synchronized contract and notes with the approved scope, verification performed, and open UC items.
+## Apply and verify
+
+- Update the affected Core v1 paths, components, examples, and relevant notes or UC mappings in place. Check all operations that reuse a changed component. Add an operation only for a requirement that existing operations cannot reasonably cover. Preserve stable interfaces outside the requested change.
+- Trace changed behavior back to the UC or decision and test impacted references, schemas, examples, permissions, and operation IDs. Use the repository's OpenAPI lint and bundle commands where available. Check the diff for compatibility and keep fixture or mock evidence scoped to contract behavior.
+- Hand off the findings, files and operations changed, verification results, compatibility and versioning decision, and unresolved points. Identify the exact revised contract and revision for downstream UC specification work.
