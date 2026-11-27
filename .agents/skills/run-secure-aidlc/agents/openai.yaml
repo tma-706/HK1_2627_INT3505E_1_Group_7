@@ -1,4 +1,0 @@
-interface:
-  display_name: "Run Secure AI-DLC"
-  short_description: "Triển khai UC và audit theo quy trình Secure AI-DLC"
-  default_prompt: "Dùng $run-secure-aidlc với UC spec và API spec để chọn tiêu chí bảo mật và soạn prompt trước khi triển khai, audit và repair."
