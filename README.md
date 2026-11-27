@@ -1,7 +1,8 @@
 # Campus Lost & Found · Hạ tầng
 
-Nhánh triển khai môi trường chạy và triển khai cho Core API, dispatcher và Worker.
+Nhánh dựng môi trường chạy cho Core API và Worker.
 
+- [Kiến trúc triển khai và tổ chức mã nguồn](docs/architecture/implementation-baseline.md)
 - [Phạm vi và ranh giới hạ tầng](docs/infrastructure/architecture.md)
 - [Kế hoạch triển khai môi trường local và CI](docs/infrastructure/local-stack.md)
 - [Giao diện tích hợp và tiêu chí nghiệm thu](docs/infrastructure/acceptance.md)

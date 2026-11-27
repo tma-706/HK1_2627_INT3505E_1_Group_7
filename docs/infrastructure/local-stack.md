@@ -1,10 +1,9 @@
 # Kế hoạch môi trường local và CI
 
-1. **Cấu hình và mạng.** Tạo cấu hình khởi động local theo cách đã chọn và một tệp biến môi trường mẫu chỉ chứa giá trị giả. Quy định endpoint nội bộ, cổng cần truy cập từ host và cách cấp thông tin xác thực riêng cho từng tiến trình.
-2. **Dữ liệu và kho object.** Dựng PostgreSQL với PostGIS, cấp database, tài khoản và volume. Dựng bucket private và kiểm đường truy cập từ ứng dụng cùng đường upload từ client. Bổ sung lệnh khởi tạo, dừng và đặt lại dữ liệu local.
-3. **Hàng đợi.** Cấp hàng đợi và DLQ cho luồng thử nghiệm. Kiểm publish, nhận/ack, liệu message có còn sau restart và điều kiện chuyển DLQ.
-4. **Edge và smoke test.** Định tuyến `/api/v1` đến mock, sau đó chạy cùng phép kiểm trên Core thật khi có. Bổ sung kiểm cấu hình Nginx, readiness của phụ thuộc và xử lý khi upstream mất kết nối.
-5. **CI và staging.** Chạy kiểm hợp đồng và smoke test trong môi trường tạo mới. Khi có staging, bổ sung cấu hình triển khai, readiness, thông tin xác thực, backup/restore và tài liệu xử lý lỗi.
+1. **Cấu hình và dữ liệu.** Tạo Docker Compose và tệp biến môi trường mẫu với giá trị giả. Khai báo endpoint nội bộ, cổng cần truy cập từ host và tài khoản riêng theo vai trò. Dựng PostgreSQL với volume và hướng dẫn khởi tạo, dừng, đặt lại dữ liệu local.
+2. **Lát cắt feed công khai.** Định tuyến `/api/v1` qua Nginx đến mock, sau đó chạy `GET /api/v1/posts` với Core thật và PostgreSQL đã chạy migration cùng dữ liệu mẫu. CI lint/bundle OpenAPI, gửi request qua Nginx và kiểm mã trạng thái cùng schema response. Kiểm readiness và hành vi khi upstream mất kết nối.
+3. **Kho object và xử lý nền.** Khi tích hợp media, dựng bucket private và kiểm đường upload từ client. Khi tích hợp Worker, kiểm job bền qua restart, thu hồi lease hết hạn, retry, chuyển `DEAD` và replay.
+4. **Staging.** Bổ sung cấu hình triển khai, readiness, thông tin xác thực, backup/restore và tài liệu xử lý lỗi.
 
 ## Mock để thử định tuyến
 
