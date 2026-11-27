@@ -41,3 +41,11 @@ Chạy lại mode mock với `sh infra/smoke-posts.sh item-123` cũng đạt. Gi
 - **Admin.** Firefox 159.0 nạp CA local trong profile demo và nhận HTTP 200 từ `https://127.0.0.1:8443/api/v1/posts`. Admin chạy trên Vite 7.3.8 tại `http://127.0.0.1:5173`. Đã kiểm tra thông báo lỗi và nút thử lại khi ngắt request trong trình duyệt.
 
 Cả hai màn hình hiển thị tiêu đề và mô tả của `fixture-found-keys` và `fixture-lost-wallet`.
+
+## Kiểm tra kho ảnh riêng
+
+Stack Core dùng SeaweedFS 4.55 với bucket `campus-private` trên volume riêng, bật versioning và quy tắc hết hạn sau một ngày cho các object tạm dưới `uploads/`. Core dùng tài khoản S3 giới hạn theo bucket và vùng object. Nginx công bố cổng HTTPS media riêng và chuyển tiếp đường dẫn cùng host đã ký.
+
+Đã chạy [bộ kiểm ảnh mẫu](../../README.md#kiểm-tra-kho-ảnh-riêng) trên Docker Engine 29.8.1 và Compose 5.5.1 từ volume PostgreSQL và SeaweedFS rỗng. POST hợp lệ trả `204` và version ID. Policy hết hạn, sai key, sai loại ảnh và sai dung lượng đều bị kho từ chối. Chủ lượt lấy được ảnh đúng byte qua URL xem trước. Người dùng khác nhận `404`, khách nhận `401` từ Core, và kho trả `403` khi đọc object không có chữ ký. Bộ kiểm cũng kiểm việc gửi lại cùng khóa idempotency, giữ đúng phiên bản đã ký và không cấp preview cho dữ liệu sai SHA-256. Bài kiểm bảng tin chạy đạt trên cùng stack.
+
+CI chạy các ca này trong job Core. Luồng đã tích hợp dùng ảnh đại diện tạm và phiên thử nghiệm được nạp trực tiếp vào PostgreSQL. Các mục đích upload gắn với bài đăng, phản hồi, khiếu nại, và xử lý ảnh qua Worker phụ thuộc vào các module nghiệp vụ tương ứng.
