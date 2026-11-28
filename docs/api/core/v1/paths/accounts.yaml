@@ -5,8 +5,10 @@
     summary: Đăng ký tài khoản
     description: >-
       Guest và người dùng đã đăng nhập. Thao tác này sử dụng dữ liệu công khai hoặc dữ liệu xác thực ở đầu vào.
-      Chuẩn hóa email trước khi kiểm duy nhất. Tiếp nhận đăng ký và gửi liên kết có hiệu lực 24 giờ nếu đủ điều
-      kiện. Phản hồi chung cho email đã tồn tại. Tài khoản mới chưa có quyền đăng nhập trước khi xác thực.
+      Core bỏ khoảng trắng đầu và cuối email, chuyển chữ thường và bảo đảm duy nhất tại thời điểm tạo, kể cả khi các yêu cầu đến đồng thời. Đăng ký
+      hợp lệ tạo tài khoản chưa xác thực và ghi việc gửi email xác thực trong cùng giao dịch. Với email đã tồn tại,
+      Core từ chối tạo tài khoản và không xếp việc gửi thư, đồng thời trả cùng dạng biên nhận 202. Tài khoản mới
+      chỉ đủ điều kiện đăng nhập sau khi xác thực email thành công.
     operationId: registerAccount
     x-use-cases:
       - UC01
@@ -17,13 +19,13 @@
       content:
         application/json:
           schema:
-            $ref: ../components/schemas/EmailAndPassword.yaml
+            $ref: ../components/schemas/RegistrationCredentials.yaml
           example:
             email: lan@example.test
             password: fictional-secret-123
     responses:
       '202':
-        description: Yêu cầu đã được tiếp nhận. Theo dõi tài nguyên được nêu trong Location.
+        description: Biên nhận chung của yêu cầu. Location trỏ tới biên nhận, không xác nhận đã tạo tài khoản hoặc gửi thư.
         headers:
           Location:
             description: 'URI tham chiếu của tài nguyên. Mẫu: /api/v1/email-request-status/{requestId}'
@@ -56,7 +58,8 @@
     summary: Xác thực email
     description: >-
       Guest và người dùng đã đăng nhập. Thao tác này sử dụng dữ liệu công khai hoặc dữ liệu xác thực ở đầu vào.
-      Nhận token trong body. Kích hoạt tài khoản sau khi xác minh token hợp lệ trong vòng 24 giờ.
+      Khi khách mở liên kết, client gửi token trong body. Core tiêu thụ token hợp lệ một lần và kích hoạt tài khoản
+      trong cùng giao dịch. Token hết hạn sau 15 phút kể từ khi Core cấp. Khách có thể yêu cầu gửi lại để nhận token mới.
     operationId: verifyAccountEmail
     x-use-cases:
       - UC01
@@ -72,7 +75,7 @@
             token: fictional-secret-123
     responses:
       '204':
-        description: Thao tác hoàn tất, phản hồi rỗng.
+        description: Email đã được xác thực và tài khoản đã chuyển sang hoạt động. Phản hồi rỗng.
         headers:
           Cache-Control:
             description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
@@ -84,6 +87,7 @@
         $ref: ../components/responses.yaml#/invalidRequest
       '410':
         $ref: ../components/responses.yaml#/gone
+        description: Token xác thực đã hết hạn hoặc liên kết đã được dùng. Khách có thể yêu cầu gửi lại email xác thực.
       '503':
         $ref: ../components/responses.yaml#/unavailable
 /email-verification-requests:
@@ -93,8 +97,10 @@
     summary: Yêu cầu gửi lại email xác thực
     description: >-
       Guest và người dùng đã đăng nhập. Thao tác này sử dụng dữ liệu công khai hoặc dữ liệu xác thực ở đầu vào.
-      Tối đa 3 lượt gửi lại cho cùng email đã chuẩn hóa trong cửa sổ 15 phút. Phản hồi tiếp nhận chung.
-      Retry-After dùng thời gian còn lại của cửa sổ.
+      Core tiếp nhận tối đa 3 yêu cầu gửi lại cho cùng email đã chuẩn hóa trong cửa sổ 15 phút. Yêu cầu thứ tư
+      trong cửa sổ trả 429 và Retry-After cho biết số giây đến khi có thể thử lại. Thư đăng ký ban đầu và các lần
+      Worker thử lại khi gửi lỗi không tính vào hạn mức này. Core chỉ xếp việc gửi liên kết mới cho tài khoản chưa
+      xác thực. Dưới hạn mức, phản hồi tiếp nhận có cùng dạng cho mọi email hợp lệ.
     operationId: requestVerificationEmail
     x-use-cases:
       - UC01
@@ -169,10 +175,12 @@
     description: >-
       Guest và người dùng đã đăng nhập. Thao tác này sử dụng dữ liệu công khai hoặc dữ liệu xác thực ở đầu vào.
       Cấp phiên cho người dùng hoặc Admin có tài khoản hoạt động. 5 lần sai liên tiếp trong 15 phút khóa đăng
-      nhập 15 phút và hệ thống thông báo người dùng. Áp dụng khóa quản trị theo UC27. Sau khi xác minh thông tin
-      hợp lệ, Core có thể trả 403 cho tài khoản chưa xác thực hoặc bị khóa quản trị.
+      nhập 15 phút và hệ thống thông báo người dùng. Áp dụng khóa quản trị theo UC27. Core không cấp phiên cho
+      tài khoản chưa xác thực, kể cả khi mật khẩu đúng. Sau khi xác minh thông tin hợp lệ, Core có thể trả 403 cho
+      tài khoản chưa xác thực hoặc bị khóa quản trị.
     operationId: createPasswordSession
     x-use-cases:
+      - UC01
       - UC02
     x-access: guest
     security: []

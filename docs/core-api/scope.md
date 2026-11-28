@@ -25,7 +25,7 @@ Tra ngược mỗi operation qua `x-use-cases` trong đặc tả. Một operatio
 
 | Use case | Operation |
 | --- | --- |
-| UC01 · Register Account | `registerAccount`, `verifyAccountEmail`, `requestVerificationEmail`, `getEmailRequestStatus` |
+| UC01 · Register Account | `registerAccount`, `verifyAccountEmail`, `requestVerificationEmail`, `getEmailRequestStatus`, `createPasswordSession` (kiểm tra điều kiện trước khi cấp phiên) |
 | UC02 · Login | `createPasswordSession`, `getCurrentSession`, `revokeCurrentSession`, `moderateAccount` |
 | UC03 · Reset Password | `requestPasswordReset`, `getEmailRequestStatus`, `resetPassword` |
 | UC04 · Manage Personal Profile | `getMyProfile`, `updateMyProfile`, `changeMyPassword`, `createAuxiliaryUpload`, `confirmUpload`, `getUploadStatus` |

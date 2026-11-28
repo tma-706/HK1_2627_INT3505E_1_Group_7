@@ -1,0 +1,20 @@
+{
+  "name": "@lost-found/mobile",
+  "private": true,
+  "main": "index.ts",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@lost-found/public-feed": "*",
+    "expo": "58.1.0",
+    "react": "19.3.0",
+    "react-native": "0.88.1",
+    "react-native-safe-area-context": "~5.11.1"
+  },
+  "devDependencies": {
+    "@types/react": "~19.3.0"
+  }
+}

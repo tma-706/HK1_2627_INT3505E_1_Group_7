@@ -1,0 +1,155 @@
+x-store: &store
+  LF_S3_BUCKET: campus-private
+  LF_S3_ENDPOINT: http://object-store:8333
+
+x-store-admin: &store-admin
+  LF_S3_ADMIN_ACCESS_KEY: ${LF_S3_ADMIN_ACCESS_KEY:-local-provisioner}
+  LF_S3_ADMIN_SECRET_KEY: ${LF_S3_ADMIN_SECRET_KEY:-local-provisioner-secret}
+
+x-store-core: &store-core
+  LF_S3_ACCESS_KEY: ${LF_S3_ACCESS_KEY:-local-core-media}
+  LF_S3_SECRET_KEY: ${LF_S3_SECRET_KEY:-local-core-media-secret}
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: campus_admin
+      POSTGRES_PASSWORD: ${LF_DB_ADMIN_PASSWORD:-local-admin-password}
+      POSTGRES_DB: campus
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U campus_admin -d campus"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+  migrate:
+    image: postgres:17-alpine
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGHOST: db
+      PGUSER: campus_admin
+      PGPASSWORD: ${LF_DB_ADMIN_PASSWORD:-local-admin-password}
+      PGDATABASE: campus
+      MEDIA_DB_PASSWORD: ${LF_MEDIA_DB_PASSWORD:-local-media-db-password}
+      CORE_DB_PASSWORD: ${LF_DB_READER_PASSWORD:-local-reader-password}
+      IDENTITY_DB_PASSWORD: ${LF_IDENTITY_DB_PASSWORD:-local-identity-password}
+      IDENTITY_WORKER_DB_PASSWORD: ${LF_IDENTITY_WORKER_DB_PASSWORD:-local-identity-worker-password}
+    volumes:
+      - ./db:/sql:ro
+    command: ["psql", "-X", "--file", "/sql/init-local.sql"]
+
+  object-store:
+    build: ./infra/media
+    networks: [media]
+    environment:
+      <<: [*store-admin, *store-core]
+    volumes:
+      - object-data:/data
+
+  object-store-init:
+    build: ./apps/core
+    networks: [media]
+    depends_on:
+      object-store:
+        condition: service_started
+    environment:
+      <<: [*store, *store-admin]
+    command: ["node", "dist/modules/media/provision.js"]
+
+  media-edge:
+    image: nginx:1.30-alpine
+    networks: [default, media]
+    depends_on:
+      object-store-init:
+        condition: service_completed_successfully
+    ports:
+      - "${LF_HTTPS_BIND_IP:-127.0.0.1}:${LF_MEDIA_HTTPS_PORT:-8444}:443"
+    volumes:
+      - ./infra/media/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./.local/tls:/run/tls:ro
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          test "$$(curl --silent --cacert /run/tls/gateway-ca.crt -o /dev/null
+          -w '%{http_code}' https://127.0.0.1/)" = 404
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+  core:
+    networks: [default, media]
+    init: true
+    build: ./apps/core
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      object-store-init:
+        condition: service_completed_successfully
+    environment:
+      <<: [*store, *store-core]
+      LF_S3_PUBLIC_ENDPOINT: ${LF_S3_PUBLIC_ENDPOINT:-https://127.0.0.1:${LF_MEDIA_HTTPS_PORT:-8444}}
+      LF_MEDIA_UPLOAD_SECONDS: ${LF_MEDIA_UPLOAD_SECONDS:-300}
+      LF_MEDIA_DB_PASSWORD: ${LF_MEDIA_DB_PASSWORD:-local-media-db-password}
+      PGHOST: db
+      PGUSER: core_reader
+      PGPASSWORD: ${LF_DB_READER_PASSWORD:-local-reader-password}
+      PGDATABASE: campus
+      LF_CURSOR_SECRET: ${LF_CURSOR_SECRET:-local-feed-cursor-secret}
+      LF_IDENTITY_DB_PASSWORD: ${LF_IDENTITY_DB_PASSWORD:-local-identity-password}
+      LF_IDENTITY_OUTBOX_KEY: ${LF_IDENTITY_OUTBOX_KEY:?Set LF_IDENTITY_OUTBOX_KEY for local UC-01}
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - >-
+          fetch('http://127.0.0.1:4010/ready')
+            .then(response => { if (!response.ok) process.exit(1); })
+            .catch(() => process.exit(1))
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+  mailbox:
+    image: axllent/mailpit:v1.27.4
+    ports:
+      - "127.0.0.1:${LF_MAILBOX_PORT:-8025}:8025"
+
+  worker:
+    init: true
+    build: ./apps/core
+    command: ["node", "dist/worker.js"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      mailbox:
+        condition: service_started
+    environment:
+      PGHOST: db
+      PGUSER: identity_worker
+      PGPASSWORD: ${LF_IDENTITY_WORKER_DB_PASSWORD:-local-identity-worker-password}
+      PGDATABASE: campus
+      LF_IDENTITY_OUTBOX_KEY: ${LF_IDENTITY_OUTBOX_KEY:?Set LF_IDENTITY_OUTBOX_KEY for local UC-01}
+      LF_TEST_MAIL_API_URL: http://mailbox:8025
+      LF_VERIFICATION_LINK_URL: ${LF_VERIFICATION_LINK_URL:-campus-lost-found://verify-email}
+
+  nginx:
+    environment:
+      LF_UPSTREAM: core
+    depends_on:
+      core:
+        condition: service_healthy
+
+networks:
+  media:
+    internal: true
+
+volumes:
+  postgres-data:
+  object-data:

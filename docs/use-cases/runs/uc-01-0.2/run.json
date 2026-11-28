@@ -1,0 +1,219 @@
+{
+  "run_id": "uc-01-0.2",
+  "use_case": "UC-01",
+  "mode": "product",
+  "status": "blocked",
+  "checkpoint": "candidate_implemented_and_assessed",
+  "destination": {
+    "branch": "implementation/core-api",
+    "base_commit": "00a9b3dc6ce79d9a1b0baf2bfab9d554a94134e8",
+    "local_specification_edits_in_scope": true
+  },
+  "scenarios": [
+    "SCN-UC01-01",
+    "SCN-UC01-02",
+    "SCN-UC01-03",
+    "SCN-UC01-04",
+    "SCN-UC01-05",
+    "SCN-UC01-06",
+    "SCN-UC01-07",
+    "SCN-UC01-08"
+  ],
+  "sources": {
+    "use_case": {
+      "path": "docs/use-cases/uc-01.md",
+      "version": "0.2",
+      "sha256": "a4f64217138e08c06d20bed2af676dd0a7d706f4f8a98096896f21f55331df24"
+    },
+    "ui": {
+      "path": "docs/use-cases/uc-01-ui.md",
+      "version": "0.4",
+      "sha256": "74170b7fb47d65af3d1fc2e695f82577346300e66d55d16b01adb60876226603"
+    },
+    "ui_guidelines": {
+      "path": "docs/design/ui-guidelines.md",
+      "version": "0.2",
+      "sha256": "776541b35a1d4016c771fa6f763bebb45789c180c19ceb0bdad67e892cc59372"
+    },
+    "api": {
+      "base_path": "/api/v1",
+      "contract_version": "1.0.0",
+      "openapi_version": "3.1.0",
+      "path": "docs/api/core/v1/openapi.yaml",
+      "sha256": "ba0d1fd938011becbbbbda2e824c6f4b5e0a4776a20ecc9fff917979d6b917c7",
+      "accounts_path": "docs/api/core/v1/paths/accounts.yaml",
+      "accounts_sha256": "d0282a326108186c8da472910d51ebf46bd87e818234d320ad680e0b5b6a9ead",
+      "notes_path": "docs/api/core/v1-notes.md",
+      "notes_sha256": "306963c95a9810a26aff75739cd8ebcb8d7de1b09828419bc0d22bfe93816456"
+    },
+    "constraint_file_sha256": {
+      ".agents/lost-and-found-context.md": "abefd9239f7ef2a3050baa48deaea04b03c7a7d2c124eaf4f2474f4471d58b74",
+      "docs/core-api/scope.md": "f3c0b406111a57b9167eabdb9681fddb540d9d7e690ee4855604e1a9c3afede7",
+      "docs/core-api/domain-rules.md": "b77670e8ae13792f1d82e78c90fc791aed2dd76b571a954a183584080d0de386",
+      "docs/core-api/data-model.md": "39f0136cd201775ba3c125d7e7313bf90eaa75f49edf0ff3f4cf76fc83d74b79",
+      "docs/core-api/integration-contracts.md": "7ad382ee991855fca22f79e7fb7b1d43df5eac4db4cb776dc18ad48646d038e4",
+      "docs/core-api/acceptance-tests.md": "5d1ca0cfa82809f115d6b890249f00355321c70d5b4b18236f724a36057786a6",
+      "docs/api/core/v1/components/responses.yaml": "4073e90e1e476a96c051604b0ed7d312071f82963cdd4961b89d26cc88f12e5e",
+      "docs/api/core/v1/components/security-schemes.yaml": "133e55114b0f9d36afe97ac9616a010a7f700ed081576a28306200569b6fd027",
+      "docs/api/core/v1/components/schemas/EmailAndPassword.yaml": "41dab4dd8704a17b78a96f4c09e4f84340c7b7777d4d29c41ed7105f0236c272",
+      "docs/api/core/v1/components/schemas/EmailRequest.yaml": "50d984d05b45c8b8cc6a5996419c28687b38ad2919944ed821927f0cf533be99",
+      "docs/api/core/v1/components/schemas/EmailToken.yaml": "37cc5ddd79c14d8a29e8becad832a74e3b8354e9f3eefb89d7a6cc38927b8339",
+      "docs/api/core/v1/components/schemas/EmailRequestStatus.yaml": "ac939c75849ccc4d6d2be3750c878f798ae02b8b3d615863bca8f00aac1e155e",
+      "docs/api/core/v1/components/schemas/Problem.yaml": "8adfb8d70660e7bdbd3d9b049aca2f213cd86b247f68d5abed0a36248af5bdac",
+      "docs/api/core/v1/components/schemas/Session.yaml": "cbe4e51258a361c07f11db4d67e6ecd70b651fba8a01cb5a8ce6b0a888e98416"
+    },
+    "infrastructure": {
+      "ref": "origin/implementation/infrastructure",
+      "commit": "4c3582250930cd39f035b0ab0292d582a4630da7",
+      "baseline_review_commit": "f44919453e5d6f116ffd5e914f8abaf7b84d8ac3",
+      "paths": [
+        "docs/architecture/implementation-baseline.md",
+        "docs/infrastructure/local-stack.md",
+        "docs/infrastructure/acceptance.md"
+      ]
+    }
+  },
+  "approval_bundle": {
+    "path": "docs/use-cases/runs/uc-01-0.2/approval.md",
+    "version": 2,
+    "sha256": "31b319eb2432ad099d8f6002e30ec8e471c170835150081fb012cd7106ec8a96",
+    "revision_reason": "The requester changed the email verification token lifetime to 15 minutes from Core issuance. Update the linked source documents after approval of this bundle.",
+    "selected_security_criteria": [
+      "SEC-UC01-01",
+      "SEC-UC01-02",
+      "SEC-UC01-03",
+      "SEC-UC01-04",
+      "SEC-UC01-05",
+      "SEC-UC01-06",
+      "SEC-UC01-07",
+      "SEC-UC01-08",
+      "SEC-UC01-09",
+      "SEC-UC01-10"
+    ],
+    "schema_section": "B · Thiết kế và dữ liệu",
+    "criteria_section": "E · Prompt audit",
+    "approval_reference": "Requester replied approve to the presented A–F bundle version 2 on 2026-11-28."
+  },
+  "model_assignments": {
+    "drafting_agent": "GPT-6.1 Terra, medium reasoning",
+    "source_generation": "GPT-6.2 Sol (active orchestrator)",
+    "audits": [
+      { "phase": "first_pass", "model": "GPT-6.1 Terra", "reasoning": "medium" },
+      { "phase": "focused_repairs_001_to_003", "model": "GPT-6.1 Terra", "reasoning": "medium" },
+      { "phase": "latest_candidate", "model": "GPT-6.1 Terra", "reasoning": "medium" }
+    ]
+  },
+  "runtime_preflight": {
+    "docker_client_version": "29.9.3",
+    "docker_engine": "unavailable_at_preflight",
+    "detail": "The Linux engine pipe did not exist at preflight. The requester subsequently reported that Docker Desktop was installed and offered to start it when needed for runtime verification."
+  },
+  "initial_source_revision": {
+    "manifest_sha256": "3687918d196403ae99029e9d8adda5450071f5e1423a23c76236de1d3ac96bd6",
+    "file_count": 200,
+    "git_base": "00a9b3dc6ce79d9a1b0baf2bfab9d554a94134e8"
+  },
+  "initial_checks": {
+    "typescript_syntax_transpile": "pass for Core and Mobile files, without dependency typechecking",
+    "openapi_parse_and_local_references": "pass for all Core v1 YAML files",
+    "compose_config": "pass for compose.yaml plus compose.core.yaml with a synthetic key",
+    "embedded_postgresql": {
+      "status": "pass",
+      "engine": "PGlite 0.5.10, embedded PostgreSQL with a serialized connection adapter",
+      "email_adapter": "synthetic in-process sender",
+      "observed": [
+        "Migrations 001–003 and Identity grants applied",
+        "Duplicate normalized registration returned two generic receipts and created one account and job",
+        "Verification worked immediately before 15 minutes and rejected tokens at and after 15 minutes",
+        "Resend granted a fresh 15-minute lifetime and the fourth request was limited until expiry of the window",
+        "Identity denied the correct password before verification and marked the account eligible afterward",
+        "Worker retried three times after the initial attempt, recorded DEAD and cleared the encrypted payload",
+        "Worker reclaimed an expired lease and stopped processing a queued expired token",
+        "An outbox failure rolled back account creation and the worker role could not read password hashes"
+      ]
+    },
+    "clean_install_and_full_build": "blocked by uncached dependencies and outbound registry access refusal",
+    "docker_runtime": "Docker Desktop started, both configured Windows engine pipes rejected access",
+    "route_handler_mapping": "passed with injected request/reply objects and a synthetic service, without an HTTP listener",
+    "remaining_runtime": ["HTTPS Gateway with live Core and Mailpit", "multiple PostgreSQL connections", "Mobile build and device link handling", "UC02 session issuance and protected access"]
+  },
+  "first_pass_security": {
+    "revision": "3687918d196403ae99029e9d8adda5450071f5e1423a23c76236de1d3ac96bd6",
+    "counts": { "met": 0, "unmet": 2, "not_evaluable": 8 },
+    "results": [
+      { "sr": "SR-UC01-01", "status": "not_evaluable", "evidence": "003_account_verification.sql:1 and identity/service.ts:83. PGlite duplicate case passed with serialized connections." },
+      { "sr": "SR-UC01-02", "status": "unmet", "evidence": "identity/service.ts:24 rejected some accepted Unicode lengths after NFC. Gateway and formal lint/bundle lacked evidence." },
+      { "sr": "SR-UC01-03", "status": "not_evaluable", "evidence": "identity/credentials.ts:3 and :42. Synthetic crypto tests passed, real runtime log sample unavailable." },
+      { "sr": "SR-UC01-04", "status": "not_evaluable", "evidence": "identity/service.ts:102 and serialized one-use result. Parallel verification and activation rollback lacked direct runtime evidence." },
+      { "sr": "SR-UC01-05", "status": "not_evaluable", "evidence": "003_account_verification.sql:8 and identity/service.ts:109. Time-controlled PG verification and resend passed without Gateway HTTP evidence." },
+      { "sr": "SR-UC01-06", "status": "not_evaluable", "evidence": "identity/service.ts:125 and serialized quota test. Multiple sessions and full account-state matrix lacked direct evidence." },
+      { "sr": "SR-UC01-07", "status": "not_evaluable", "evidence": "identity/service.ts:147 and embedded eligibility test. Session issuance and protected access require UC02." },
+      { "sr": "SR-UC01-08", "status": "not_evaluable", "evidence": "identity/email-jobs.ts:36 and identity/service.ts:69. Embedded send/retry/lease/rollback passed with synthetic email, real Mailpit and restart not observed." },
+      { "sr": "SR-UC01-09", "status": "unmet", "evidence": "RegistrationFlow.tsx:219 omitted the check-mail action. Running Expo and deep link evidence unavailable." },
+      { "sr": "SR-UC01-10", "status": "not_evaluable", "evidence": "identity-api.ts, identity/routes.ts:55, credentials.ts:35, init-local.sql:43 and nginx configuration. Runtime TLS, link, logs and payload expiry during worker downtime not evaluated." }
+    ]
+  },
+  "repairs": [
+    {
+      "id": "repair-001",
+      "status": "verified_correction",
+      "start_revision": "3687918d196403ae99029e9d8adda5450071f5e1423a23c76236de1d3ac96bd6",
+      "requirements": ["SR-UC01-02", "SR-UC01-03", "SR-UC01-09"],
+      "defect": "A decomposed Unicode password within the allowed input length can fall below 15 after NFC and be rejected. Validate the entered characters and normalize for hashing as specified in the approved bundle.",
+      "result_revision": "742634dce69ffaa1f4e7aa0ffde8ecdff08b76c9017dbc07665a9dba378951e6",
+      "verification": "Targeted executable checks passed for a 15-code-point decomposed password, 14 ASCII, and 128/129 supplementary characters.",
+      "focused_audit": "GPT-6.1 Terra medium confirmed the specific correction. SR-UC01-02 and SR-UC01-03 still require live evidence."
+    },
+    {
+      "id": "repair-002",
+      "status": "verified_source_correction",
+      "start_revision": "742634dce69ffaa1f4e7aa0ffde8ecdff08b76c9017dbc07665a9dba378951e6",
+      "requirements": ["SR-UC01-09", "SR-UC01-10"],
+      "defect": "The check-mail screen has no open-inbox action. Add a configurable mailbox link and platform fallback for the approved local Mobile flow.",
+      "result_revision": "fe97bf4a9d70c73a555a6757012fc160ac4a923c0d6e4731f6053936f96f1d4b",
+      "verification": "TypeScript transpile, OpenAPI references, Compose configuration and embedded PostgreSQL rerun passed. Expo device navigation remains unobserved.",
+      "focused_audit": "GPT-6.1 Terra medium confirmed the accessible action and manual fallback. Android requires EXPO_PUBLIC_MAILBOX_URL to open the configured inbox."
+    },
+    {
+      "id": "repair-003",
+      "status": "verified_correction",
+      "start_revision": "fe97bf4a9d70c73a555a6757012fc160ac4a923c0d6e4731f6053936f96f1d4b",
+      "requirements": ["SR-UC01-09", "Preserve the public feed client"],
+      "defect": "Strict TypeScript check with locally available React Native declarations reports an implicit-any in the public feed renderItem callback. Annotate the callback with the existing PublicPost type.",
+      "result_revision": "089be8bf992d42b67afc040fe641d2bd8a68e4452ffee99624265600a7c5015b",
+      "verification": "Standalone strict Mobile typecheck passed with React Native 0.88.1 and cached Expo 58.0.26 declarations. Full workspace build remains unverified.",
+      "focused_audit": "GPT-6.1 Terra medium confirmed the annotation is type-only and addresses the reported error."
+    }
+  ],
+  "latest_candidate_assessment": {
+    "manifest_sha256": "089be8bf992d42b67afc040fe641d2bd8a68e4452ffee99624265600a7c5015b",
+    "implemented_specifications": {
+      "uc_01_version": "0.3",
+      "uc_01_sha256": "32007d3e24532114eb9b78896535186e9b3330439faed807de39d811cf053f86",
+      "ui_version": "0.5",
+      "ui_sha256": "1568613ebbd7ecb90ab86707b920223d897496fa97442c5e3b4cb90be3bb307f",
+      "accounts_sha256": "2da9686c98a429c0ee2524deee3055f023f108f00c0eb1bc51b45b3363e0c820"
+    },
+    "checks": [
+      "Final candidate passed the embedded PostgreSQL suite and synthetic sender suite described in initial_checks.",
+      "Unicode boundary check from repair-001 remains applicable to unchanged validation sources.",
+      "Core and Mobile syntax transpilation, cached strict Mobile typecheck, OpenAPI local references, Compose config and integration harness syntax passed.",
+      "Full clean dependency installation, Core build, Redocly lint/bundle, Expo device runtime and Docker acceptance are blocked or unverified. Docker Engine responds with named-pipe permission denied. npm registry access and offline cache could not supply all locked dependencies."
+    ],
+    "security_counts": { "met": 0, "unmet": 1, "not_evaluable": 9 },
+    "security_results": [
+      { "sr": "SR-UC01-01", "status": "not_evaluable", "evidence": "PGlite duplicate creation and receipts passed. Parallel PostgreSQL sessions and real HTTPS responses remain unverified." },
+      { "sr": "SR-UC01-02", "status": "not_evaluable", "evidence": "Unicode repair verified, synthetic handler mapping and local YAML references passed. Gateway requests and Redocly remain unverified." },
+      { "sr": "SR-UC01-03", "status": "not_evaluable", "evidence": "Salted scrypt, digest, encrypted outbox and worker role tested. Runtime log sampling remains unavailable." },
+      { "sr": "SR-UC01-04", "status": "not_evaluable", "evidence": "Serialized activation and replay passed. Concurrent PostgreSQL verification and a verification-specific rollback case remain unobserved." },
+      { "sr": "SR-UC01-05", "status": "not_evaluable", "evidence": "Embedded PostgreSQL under a controlled clock passed checks immediately before, on and after expiry and on resend. Equivalent Gateway HTTP remains unverified." },
+      { "sr": "SR-UC01-06", "status": "not_evaluable", "evidence": "Serialized three-of-four quota with correct reentry time passed. Full account-state matrix on concurrent PostgreSQL sessions remains unobserved." },
+      { "sr": "SR-UC01-07", "status": "not_evaluable", "evidence": "Identity correctly rejects an unverified account and marks a verified account eligible. UC02 session issuance and protected access remain pending." },
+      { "sr": "SR-UC01-08", "status": "not_evaluable", "evidence": "Synthetic sender covered retries, expiry, lease recovery, rollback and unchanged receipt. Real Mailpit, process restart and duplicate delivery remain unobserved." },
+      { "sr": "SR-UC01-09", "status": "not_evaluable", "evidence": "Mailbox action and typing corrections reviewed; isolated strict Mobile check passed. Expo device flow and actual email deep link remain unobserved." },
+      { "sr": "SR-UC01-10", "status": "unmet", "evidence": "apps/core/src/modules/identity/email-jobs.ts clears expired encrypted payloads on Worker processing. A stopped Worker can leave ciphertext beyond token expiry until it runs again. The approved maximum retention would require an independent expiry mechanism or an approved adjustment to the bound. Gateway TLS, real link and runtime log samples also remain unverified." }
+    ]
+  },
+  "final_verification": null,
+  "next_action": "Resume live acceptance once this session can connect to Docker Engine and restore the locked dependencies. Resolve the approved encrypted-payload retention deadline during downtime, then verify Mobile linking and the UC02 handoff when their runtime prerequisites are available."
+}

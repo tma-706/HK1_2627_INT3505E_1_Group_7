@@ -1,0 +1,14 @@
+/.local/
+/infra/mock/node_modules/
+/apps/core/node_modules/
+/apps/core/dist/
+/.env
+/node_modules/
+/apps/*/node_modules/
+/apps/*/.env
+/apps/*/.env.local
+/apps/*/.env.*.local
+/apps/admin/dist/
+/apps/mobile/.expo/
+/apps/mobile/android/
+/apps/mobile/ios/
