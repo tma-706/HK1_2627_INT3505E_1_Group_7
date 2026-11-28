@@ -138,6 +138,7 @@ services:
       LF_IDENTITY_OUTBOX_KEY: ${LF_IDENTITY_OUTBOX_KEY:?Set LF_IDENTITY_OUTBOX_KEY for local UC-01}
       LF_TEST_MAIL_API_URL: http://mailbox:8025
       LF_VERIFICATION_LINK_URL: ${LF_VERIFICATION_LINK_URL:-campus-lost-found://verify-email}
+      LF_PASSWORD_RESET_LINK_URL: ${LF_PASSWORD_RESET_LINK_URL:-campus-lost-found://reset-password}
 
   nginx:
     environment:

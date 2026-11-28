@@ -1,0 +1,704 @@
+/accounts:
+  post:
+    tags:
+      - Tài khoản và phiên
+    summary: Đăng ký tài khoản
+    description: >-
+      Guest và người dùng đã đăng nhập. Thao tác này sử dụng dữ liệu công khai hoặc dữ liệu xác thực ở đầu vào.
+      Core bỏ khoảng trắng đầu và cuối email, chuyển chữ thường và bảo đảm duy nhất tại thời điểm tạo, kể cả khi các yêu cầu đến đồng thời. Đăng ký
+      hợp lệ tạo tài khoản chưa xác thực và ghi việc gửi email xác thực trong cùng giao dịch. Với email đã tồn tại,
+      Core từ chối tạo tài khoản và không xếp việc gửi thư, đồng thời trả cùng dạng biên nhận 202. Tài khoản mới
+      chỉ đủ điều kiện đăng nhập sau khi xác thực email thành công.
+    operationId: registerAccount
+    x-use-cases:
+      - UC01
+    x-access: guest
+    security: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/RegistrationCredentials.yaml
+          example:
+            email: lan@example.test
+            password: fictional-secret-123
+    responses:
+      '202':
+        description: Biên nhận chung của yêu cầu. Location trỏ tới biên nhận, không xác nhận đã tạo tài khoản hoặc gửi thư.
+        headers:
+          Location:
+            description: 'URI tham chiếu của tài nguyên. Mẫu: /api/v1/email-request-status/{requestId}'
+            schema:
+              type: string
+              format: uri-reference
+            required: true
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/EmailRequestStatus.yaml
+            example:
+              requestId: item-123
+              status: received
+              receivedAt: '2026-11-24T05:00:00Z'
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/email-verifications:
+  post:
+    tags:
+      - Tài khoản và phiên
+    summary: Xác thực email
+    description: >-
+      Guest và người dùng đã đăng nhập. Thao tác này sử dụng dữ liệu công khai hoặc dữ liệu xác thực ở đầu vào.
+      Khi khách mở liên kết, client gửi token trong body. Core tiêu thụ token hợp lệ một lần và kích hoạt tài khoản
+      trong cùng giao dịch. Token hết hạn sau 15 phút kể từ khi Core cấp. Khách có thể yêu cầu gửi lại để nhận token mới.
+    operationId: verifyAccountEmail
+    x-use-cases:
+      - UC01
+    x-access: guest
+    security: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/EmailToken.yaml
+          example:
+            token: fictional-secret-123
+    responses:
+      '204':
+        description: Email đã được xác thực và tài khoản đã chuyển sang hoạt động. Phản hồi rỗng.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '410':
+        $ref: ../components/responses.yaml#/gone
+        description: Token xác thực đã hết hạn hoặc liên kết đã được dùng. Khách có thể yêu cầu gửi lại email xác thực.
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/email-verification-requests:
+  post:
+    tags:
+      - Tài khoản và phiên
+    summary: Yêu cầu gửi lại email xác thực
+    description: >-
+      Guest và người dùng đã đăng nhập. Thao tác này sử dụng dữ liệu công khai hoặc dữ liệu xác thực ở đầu vào.
+      Core tiếp nhận tối đa 3 yêu cầu gửi lại cho cùng email đã chuẩn hóa trong cửa sổ 15 phút. Yêu cầu thứ tư
+      trong cửa sổ trả 429 và Retry-After cho biết số giây đến khi có thể thử lại. Thư đăng ký ban đầu và các lần
+      Worker thử lại khi gửi lỗi không tính vào hạn mức này. Core chỉ xếp việc gửi liên kết mới cho tài khoản chưa
+      xác thực. Dưới hạn mức, phản hồi tiếp nhận có cùng dạng cho mọi email hợp lệ.
+    operationId: requestVerificationEmail
+    x-use-cases:
+      - UC01
+    x-access: guest
+    security: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/EmailRequest.yaml
+          example:
+            email: lan@example.test
+    responses:
+      '202':
+        description: Yêu cầu đã được tiếp nhận. Theo dõi tài nguyên được nêu trong Location.
+        headers:
+          Location:
+            description: 'URI tham chiếu của tài nguyên. Mẫu: /api/v1/email-request-status/{requestId}'
+            schema:
+              type: string
+              format: uri-reference
+            required: true
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/EmailRequestStatus.yaml
+            example:
+              requestId: item-123
+              status: received
+              receivedAt: '2026-11-24T05:00:00Z'
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '429':
+        description: Đã đạt hạn mức. Retry-After cho biết số giây trước thời điểm có thể thử lại.
+        headers:
+          Retry-After:
+            description: Số giây đến mốc thử lại.
+            schema:
+              type: integer
+              minimum: 1
+              example: 900
+            required: true
+          Cache-Control:
+            description: Phản hồi có thể thay đổi theo phiên, quyền hoặc trạng thái tài nguyên.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/Problem.yaml
+            example:
+              type: urn:campus-lost-found:problem:verification-resend-limit
+              title: Đã đạt hạn mức. Retry-After cho biết số giây trước thời điểm có thể thử lại.
+              status: 429
+              code: VERIFICATION_RESEND_LIMIT
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/auth/sessions:
+  post:
+    tags:
+      - Tài khoản và phiên
+    summary: Cấp phiên bằng email và mật khẩu
+    description: >-
+      Khách và Admin chưa đăng nhập gửi email và mật khẩu. Core tra cứu bằng email chuẩn hóa theo UC01 và
+      chỉ cấp phiên Bearer cho tài khoản đã xác thực, đang hoạt động và đủ điều kiện đăng nhập.
+      Phiên trả vai trò tài khoản. Core kiểm quyền chức năng và quyền theo đối tượng tại từng operation được bảo vệ.
+      Với yêu cầu hợp lệ về dữ liệu, email không khớp tài khoản hoặc mật khẩu sai được tính một lần
+      theo email chuẩn hóa và dùng cùng phản hồi 401 trước ngưỡng khóa. Lần sai thứ năm liên tiếp trong
+      cửa sổ trượt 15 phút bắt đầu khóa đăng nhập 15 phút và trả 429 ngay ở lần đó. Core cập nhật chuỗi sai
+      và trạng thái khóa nhất quán khi có yêu cầu đồng thời. Trong thời gian khóa, mọi lần thử tiếp theo
+      cho email đó trả 429, kể cả mật khẩu đúng, và không kéo dài thời gian khóa. Đăng nhập thành công,
+      hết khóa tạm hoặc mở khóa tạm theo UC27 kết thúc chuỗi sai. Ngoài thời gian khóa tạm, thông tin xác thực
+      đúng của tài khoản chưa xác thực email hoặc còn bị khóa quản trị nhận 403 chung.
+      Khi được gọi từ UC13, Mobile giữ ngữ cảnh bài và thao tác để kiểm lại quyền sau khi có phiên.
+    operationId: createPasswordSession
+    x-use-cases:
+      - UC01
+      - UC02
+      - UC13
+    x-access: guest
+    security: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/EmailAndPassword.yaml
+          example:
+            email: lan@example.test
+            password: fictional-secret-123
+    responses:
+      '200':
+        description: Đã cấp phiên Bearer và trả vai trò của tài khoản.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/Session.yaml
+            example:
+              accountId: item-123
+              role: member
+              accessToken: demo-core-session
+              expiresAt: '2026-11-24T05:00:00Z'
+              tokenType: Bearer
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/invalidCredentials
+      '403':
+        description: Thông tin đăng nhập đúng nhưng tài khoản chưa đủ điều kiện cấp phiên.
+        headers:
+          Cache-Control:
+            description: Phản hồi có thể thay đổi theo trạng thái tài khoản.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/Problem.yaml
+            example:
+              type: urn:campus-lost-found:problem:forbidden
+              title: Tài khoản chưa đủ điều kiện đăng nhập.
+              status: 403
+              code: FORBIDDEN
+      '429':
+        description: >-
+          Đã kích hoạt hoặc vẫn đang áp dụng khóa đăng nhập tạm thời. Mobile dùng Retry-After
+          để thông báo số giây còn lại của khóa tạm.
+        headers:
+          Retry-After:
+            description: Số giây đến mốc thử lại.
+            schema:
+              type: integer
+              minimum: 1
+              maximum: 900
+              example: 900
+            required: true
+          Cache-Control:
+            description: Phản hồi có thể thay đổi theo phiên, quyền hoặc trạng thái tài nguyên.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/Problem.yaml
+            example:
+              type: urn:campus-lost-found:problem:login-temporarily-locked
+              title: Đăng nhập tạm thời bị khóa.
+              status: 429
+              code: LOGIN_TEMPORARILY_LOCKED
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/auth/sessions/current:
+  get:
+    tags:
+      - Tài khoản và phiên
+    summary: Xác minh phiên hiện tại
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa.
+      Trả chủ thể, vai trò và hạn sử dụng của phiên hiện tại. Quyền truy cập một chức năng hoặc tài nguyên
+      cụ thể được kiểm tại operation tương ứng.
+    operationId: getCurrentSession
+    x-use-cases:
+      - UC02
+    x-access: member
+    security:
+      - CoreSession: []
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/SessionView.yaml
+            example:
+              accountId: item-123
+              role: member
+              expiresAt: '2026-11-24T05:00:00Z'
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+  delete:
+    tags:
+      - Tài khoản và phiên
+    summary: Thu hồi phiên hiện tại
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Thu hồi phiên trên thiết bị gọi. Gửi lại với cùng phiên đã thu hồi có thể trả 204 trong thời gian Core giữ
+      dấu thu hồi.
+    operationId: revokeCurrentSession
+    x-use-cases:
+      - UC02
+    x-access: member
+    security:
+      - CoreSession: []
+    responses:
+      '204':
+        description: Thao tác hoàn tất, phản hồi rỗng.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/password-reset-requests:
+  post:
+    tags:
+      - Tài khoản và phiên
+    summary: Yêu cầu đặt lại mật khẩu
+    description: >-
+      Khách gửi email đã đăng ký trong body. Thao tác không yêu cầu phiên. Core áp dụng cùng quy tắc tiếp
+      nhận và hạn mức cho mọi email hợp lệ theo khóa email đã chuẩn hóa, bất kể tài khoản có tồn tại hoặc đủ
+      điều kiện. Khi xét tiếp nhận, Core loại các lượt đã đủ 15 phút khỏi cửa sổ. Nếu cửa sổ trống, yêu cầu
+      hiện tại là lượt đầu. Trong các trường hợp còn lại, yêu cầu hiện tại là lượt gửi lại. Core giữ nguyên
+      phân loại của mỗi lượt đã tiếp nhận và cho phép tối đa 3 lượt gửi lại trong cửa sổ, kể cả khi xử lý
+      đồng thời. Lượt đầu, yêu cầu bị từ chối và lần Worker thử gửi lại không tính vào hạn mức. Core ghi
+      biên nhận và lượt tiếp nhận trong cùng giao dịch. Với tài khoản đủ điều kiện, giao dịch này đồng thời
+      cấp token dùng một lần, có hiệu lực 30 phút kể từ lúc cấp, và lưu việc gửi thư theo UC20. Core trả
+      biên nhận sau khi giao dịch thành công.
+    operationId: requestPasswordReset
+    x-use-cases:
+      - UC03
+    x-access: guest
+    security: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/EmailRequest.yaml
+          example:
+            email: lan@example.test
+    responses:
+      '202':
+        description: >-
+          Yêu cầu đã được tiếp nhận. Location trỏ đến biên nhận chung. Phản hồi không xác nhận email đã gửi,
+          tài khoản tồn tại hay đủ điều kiện.
+        headers:
+          Location:
+            description: 'URI tham chiếu của tài nguyên. Mẫu: /api/v1/email-request-status/{requestId}'
+            schema:
+              type: string
+              format: uri-reference
+            required: true
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/EmailRequestStatus.yaml
+            example:
+              requestId: item-123
+              status: received
+              receivedAt: '2026-11-24T05:00:00Z'
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '429':
+        description: Đã đủ ba lượt gửi lại trong cửa sổ. Yêu cầu bị từ chối và không tạo thêm việc gửi thư.
+        headers:
+          Retry-After:
+            description: Số giây còn lại đến khi lượt gửi lại cũ nhất trong cửa sổ đủ 15 phút, làm tròn lên.
+            schema:
+              type: integer
+              minimum: 1
+              example: 900
+            required: true
+          Cache-Control:
+            description: Phản hồi có thể thay đổi theo phiên, quyền hoặc trạng thái tài nguyên.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/Problem.yaml
+            example:
+              type: urn:campus-lost-found:problem:password-reset-resend-limit
+              title: Đã đạt hạn mức. Retry-After cho biết số giây trước thời điểm có thể thử lại.
+              status: 429
+              code: PASSWORD_RESET_RESEND_LIMIT
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/email-request-status/{requestId}:
+  parameters:
+    - name: requestId
+      in: path
+      required: true
+      description: ID tài nguyên requestId.
+      schema:
+        type: string
+        minLength: 1
+        examples:
+          - item-123
+  get:
+    tags:
+      - Tài khoản và phiên
+    summary: Tra cứu biên nhận yêu cầu email
+    description: >-
+      Guest và người dùng đã đăng nhập. Thao tác này sử dụng dữ liệu công khai hoặc dữ liệu xác thực ở đầu vào.
+      Mã biên nhận ngẫu nhiên chỉ cho biết yêu cầu đã được tiếp nhận. Kết quả giống nhau dù email có tồn tại, đủ
+      điều kiện hoặc thực sự nhận được thư.
+    operationId: getEmailRequestStatus
+    x-use-cases:
+      - UC01
+      - UC03
+    x-access: guest
+    security: []
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/EmailRequestStatus.yaml
+            example:
+              requestId: item-123
+              status: received
+              receivedAt: '2026-11-24T05:00:00Z'
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/password-resets:
+  post:
+    tags:
+      - Tài khoản và phiên
+    summary: Đặt lại mật khẩu
+    description: >-
+      Thao tác không yêu cầu phiên. Client gửi token từ liên kết email và mật khẩu mới trong body khi khách
+      xác nhận biểu mẫu. Mở liên kết chỉ mở biểu mẫu. Core kiểm tra token dành cho đặt lại mật khẩu khi xử lý
+      yêu cầu. Token xác thực email và mã biên nhận yêu cầu email không cấp quyền đặt lại mật khẩu. Tại hoặc
+      sau mốc 30 phút kể từ lúc cấp, hoặc nếu token đã dùng, Core trả 410 và khách cần yêu cầu liên kết mới.
+      Core cập nhật mật khẩu của tài khoản gắn với token và tiêu thụ token trong cùng giao
+      dịch. Tối đa một yêu cầu dùng cùng token thành công, kể cả khi xử lý đồng thời. Giao dịch thất bại giữ
+      nguyên mật khẩu và trạng thái token. Phản hồi không chứa mật khẩu hoặc token.
+    operationId: resetPassword
+    x-use-cases:
+      - UC03
+    x-access: guest
+    security: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/PasswordReset.yaml
+          example:
+            token: fictional-reset-token-123
+            newPassword: fictional-new-password-123
+    responses:
+      '204':
+        description: Mật khẩu mới đã có hiệu lực và token đã được tiêu thụ. Phản hồi rỗng.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '410':
+        $ref: ../components/responses.yaml#/gone
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/me/profile:
+  get:
+    tags:
+      - Tài khoản và phiên
+    summary: Xem hồ sơ của tôi
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Lấy chủ thể từ phiên. Email và ảnh hồ sơ thuộc bản riêng tư.
+    operationId: getMyProfile
+    x-use-cases:
+      - UC04
+    x-access: member
+    security:
+      - CoreSession: []
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/MyProfile.yaml
+            example:
+              accountId: item-123
+              email: lan@example.test
+              displayName: Lan
+              avatarUrl: null
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+  patch:
+    tags:
+      - Tài khoản và phiên
+    summary: Cập nhật hồ sơ của tôi
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Chỉ nhận tên hiển thị và ID ảnh avatar của chính chủ. Giá trị null xóa avatar. ID ảnh phải thuộc loại
+      avatar và sẵn sàng.
+    operationId: updateMyProfile
+    x-use-cases:
+      - UC04
+    x-access: member
+    security:
+      - CoreSession: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/ProfileUpdate.yaml
+          example:
+            displayName: Lan
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/MyProfile.yaml
+            example:
+              accountId: item-123
+              email: lan@example.test
+              displayName: Lan
+              avatarUrl: null
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '404':
+        $ref: ../components/responses.yaml#/concealed
+      '409':
+        $ref: ../components/responses.yaml#/conflict
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/me/password:
+  put:
+    tags:
+      - Tài khoản và phiên
+    summary: Đổi mật khẩu của tôi
+    description: >-
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
+      Xác minh mật khẩu hiện tại trước khi đổi. Chính sách mật khẩu và ảnh hưởng đến các phiên khác được theo
+      dõi trong ghi chú.
+    operationId: changeMyPassword
+    x-use-cases:
+      - UC04
+    x-access: member
+    security:
+      - CoreSession: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/PasswordChange.yaml
+          example:
+            currentPassword: fictional-secret-123
+            newPassword: fictional-secret-123
+    responses:
+      '204':
+        description: Thao tác hoàn tất, phản hồi rỗng.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/unauthorized
+      '403':
+        $ref: ../components/responses.yaml#/forbidden
+      '422':
+        $ref: ../components/responses.yaml#/unprocessable
+      '503':
+        $ref: ../components/responses.yaml#/unavailable
+/auth/appeal-sessions:
+  post:
+    tags:
+      - Tài khoản và phiên
+    summary: Xác minh quyền khiếu nại giới hạn
+    description: >-
+      Guest và người dùng đã đăng nhập. Thao tác này sử dụng dữ liệu công khai hoặc dữ liệu xác thực ở đầu vào.
+      Phương án v1 cho chủ thể bị khóa không thể đăng nhập. Core xác minh thông tin xác thực dành riêng cho
+      quyết định, cấp Bearer giới hạn cho quyết định của chủ thể. Luồng phát hành và TTL credential giới hạn
+      được ghi ở v1-notes, không cấp quyền tạo tương tác khác.
+    operationId: exchangeAppealCredential
+    x-use-cases:
+      - UC29
+    x-access: guest
+    security: []
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: ../components/schemas/EmailToken.yaml
+          example:
+            token: fictional-secret-123
+    responses:
+      '200':
+        description: Thao tác hoàn tất.
+        headers:
+          Cache-Control:
+            description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/json:
+            schema:
+              $ref: ../components/schemas/AppealSession.yaml
+            example:
+              accessToken: demo-appeal-session
+              expiresAt: '2026-11-24T05:00:00Z'
+              decisionId: decision-123
+              tokenType: Bearer
+      '400':
+        $ref: ../components/responses.yaml#/invalidRequest
+      '401':
+        $ref: ../components/responses.yaml#/invalidCredentials
+      '410':
+        $ref: ../components/responses.yaml#/gone
+      '503':
+        $ref: ../components/responses.yaml#/unavailable

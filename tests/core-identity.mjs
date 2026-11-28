@@ -16,7 +16,7 @@ async function request(path, status, input, { method = input ? 'POST' : 'GET', a
     body: input ? JSON.stringify(input) : undefined,
     signal: AbortSignal.timeout(6000),
   });
-  assert.equal(response.status, status, `Expected HTTP ${status} for ${path.split('/')[0]}`);
+  assert.ok([status].flat().includes(response.status), `Expected HTTP ${status} for ${path.split('/')[0]}, got ${response.status}`);
   assert.equal(response.headers.get('cache-control'), 'no-store');
   return response;
 }
@@ -31,23 +31,31 @@ async function getReceipt(response) {
   return body.requestId;
 }
 
-async function pollMailbox() {
+async function pollMailbox(email = address, reset = false, seen = new Set()) {
+  const subject = reset ? 'Đặt lại mật khẩu Campus Lost & Found' : 'Xác thực email Campus Lost & Found';
   for (let attempt = 0; attempt < 30; attempt++) {
     const listed = await fetch(`${mailbox}/api/v1/messages?limit=50`, { signal: AbortSignal.timeout(4000) });
     assert.ok(listed.ok, 'Mailbox API was unavailable');
     const { messages } = await listed.json();
-    const message = messages.find(entry => entry.To.some(recipient => recipient.Address === address));
+    const message = messages.find(entry => entry.Subject === subject && !seen.has(entry.ID)
+      && entry.To.some(recipient => recipient.Address === email));
     if (message) {
       const opened = await fetch(`${mailbox}/api/v1/message/${encodeURIComponent(message.ID)}`);
       assert.ok(opened.ok, 'Mailbox message could not be opened');
       const { Text: content } = await opened.json();
       const token = content.match(/#token=([a-zA-Z0-9_-]{43})(?:\s|$)/)?.[1];
-      assert.ok(token, 'Verification link did not have the expected format');
+      assert.ok(token, 'Identity link did not have the expected format');
+      if (reset) {
+        assert.ok(content.includes('30 phút'), 'Reset email did not state the token lifetime');
+        assert.ok(content.includes(`${process.env.LF_TEST_PASSWORD_RESET_LINK_URL ?? 'campus-lost-found://reset-password'}#token=`),
+          'Reset email did not use the configured destination');
+      }
+      seen.add(message.ID);
       return token;
     }
     await delay(500);
   }
-  throw new Error('The test mailbox did not receive a verification email');
+  throw new Error('The test mailbox did not receive an Identity email');
 }
 
 const [registered, duplicate] = await Promise.all([
@@ -121,3 +129,77 @@ const limited = await request('email-verification-requests', 429, { email: addre
 assert.match(limited.headers.get('retry-after') ?? '', /^\d+$/);
 assert.equal((await limited.json()).code, 'VERIFICATION_RESEND_LIMIT');
 console.log('UC01 and UC02 Gateway checks passed: registration, verification, sessions, lockout and public detail.');
+
+const resetEmail = `uc03-${randomUUID()}@example.test`;
+const unknownEmail = `uc03-unknown-${randomUUID()}@example.test`;
+const resetCredentials = { email: resetEmail, password };
+const newPassword = 'mat-khau-moi-uc03-demo-an-toan';
+const nextPassword = 'mat-khau-khac-uc03-demo-an-toan';
+await getReceipt(await request('accounts', 202, resetCredentials));
+const verification = await pollMailbox(resetEmail);
+await request('email-verifications', 204, { token: verification });
+const [oldSession, spareSession] = await Promise.all([
+  request('auth/sessions', 200, resetCredentials).then(response => response.json()),
+  request('auth/sessions', 200, resetCredentials).then(response => response.json()),
+]);
+
+await request('password-reset-requests', 400, { email: 'invalid' });
+const sentAt = performance.now();
+const acceptedReset = await request('password-reset-requests', 202, { email: resetEmail });
+const acceptedMs = Math.round(performance.now() - sentAt);
+const resetReceipt = await getReceipt(acceptedReset);
+await getReceipt(await request('password-reset-requests', 202, { email: unknownEmail }));
+const seen = new Set();
+const firstResetToken = await pollMailbox(resetEmail, true, seen);
+const deliveredMs = Math.round(performance.now() - sentAt);
+await request('password-resets', 400, { token: resetReceipt, newPassword });
+await request('password-resets', 400, { token: verification, newPassword });
+await request('password-resets', 400, { token: firstResetToken, newPassword: 'too short' });
+await request('auth/sessions/current', 200, undefined, { accessToken: oldSession.accessToken });
+
+for (const email of [resetEmail, unknownEmail]) {
+  const resends = await Promise.all(Array.from({ length: 4 }, (_, index) =>
+    request('password-reset-requests', [202, 429], { email: index % 2 ? email.toUpperCase() : email })));
+  assert.deepEqual(resends.map(reply => reply.status).sort(), [202, 202, 202, 429]);
+  for (const reply of resends) {
+    if (reply.status === 202) await getReceipt(reply);
+    else {
+      const seconds = Number(reply.headers.get('retry-after'));
+      assert.ok(Number.isInteger(seconds) && seconds >= 1 && seconds <= 900);
+      assert.equal((await reply.json()).code, 'PASSWORD_RESET_RESEND_LIMIT');
+    }
+  }
+}
+
+const otherResetToken = await pollMailbox(resetEmail, true, seen);
+const [first, second, racingLogin] = await Promise.all([
+  request('password-resets', [204, 410], { token: firstResetToken, newPassword }),
+  request('password-resets', [204, 410], { token: firstResetToken, newPassword: nextPassword }),
+  request('auth/sessions', [200, 401], resetCredentials),
+  request('auth/sessions/current', [200, 401], undefined, { accessToken: oldSession.accessToken }),
+]);
+assert.deepEqual([first.status, second.status].sort(), [204, 410]);
+assert.equal(await (first.status === 204 ? first : second).text(), '');
+await request('password-resets', 410, { token: otherResetToken, newPassword });
+await request('password-resets', 410, { token: firstResetToken, newPassword });
+await request('auth/sessions/current', 401, undefined, { accessToken: oldSession.accessToken });
+await request('auth/sessions/current', 401, undefined, { accessToken: spareSession.accessToken });
+if (racingLogin.status === 200) {
+  const { accessToken } = await racingLogin.json();
+  await request('auth/sessions/current', 401, undefined, { accessToken });
+}
+await request('auth/sessions', 401, resetCredentials);
+await request('auth/sessions', 200, { email: resetEmail, password: first.status === 204 ? newPassword : nextPassword });
+
+await getReceipt(await request('password-reset-requests', 202, { email: address }));
+const lockedReset = await pollMailbox(address, true);
+await request('password-resets', 204, { token: lockedReset, newPassword });
+await request('auth/sessions', 429, { email: address, password: newPassword });
+await request('auth/sessions/current', 401, undefined, survivingSession);
+
+const listed = await fetch(`${mailbox}/api/v1/messages?limit=100`, { signal: AbortSignal.timeout(4000) });
+assert.ok(listed.ok);
+const { messages } = await listed.json();
+assert.ok(!messages.some(message => message.To.some(recipient => recipient.Address === unknownEmail)));
+
+console.log(`UC03 Gateway checks passed: receipt, Mailpit, quota, reset, token purpose, concurrency and sessions. Sample 202=${acceptedMs} ms, mail observed=${deliveredMs} ms.`);

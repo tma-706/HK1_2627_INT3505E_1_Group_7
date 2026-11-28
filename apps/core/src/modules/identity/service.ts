@@ -3,6 +3,7 @@ import type { Pool, PoolClient } from 'pg';
 import { encryptToken, hashPassword, passwordMatches, tokenDigest } from './credentials.js';
 
 export const verificationMinutes = 15;
+export const passwordResetMinutes = 30;
 const resendWindowMs = 15 * 60_000;
 const maxResends = 3;
 const loginWindowMs = 15 * 60_000;
@@ -65,12 +66,19 @@ async function writeReceipt(client: PoolClient, now: Date) {
 
 type AccountRow = { account_id: string; verified_at: Date | null };
 type VerificationRow = { account_id: string; expires_at: Date; consumed_at: Date | null };
+type ResetToken = VerificationRow & { revoked_at: Date | null };
+type ResetTarget = ResetToken & Pick<LoginAccount, 'verified_at' | 'moderation_until'>;
+type ResetWindow = { first_at: Date | null; resent_at: Date[] };
 type LoginWindow = { failures: Date[]; locked_until: Date | null };
 type LoginAccount = AccountRow & { role: 'member' | 'admin'; moderation_until: Date | number | null };
-type StoredSession = LoginAccount & { expires_at: Date; revoked_at: Date | null };
+type StoredSession = { expires_at: Date; revoked_at: Date | null };
 
-function canUseSession(account: LoginAccount, at: Date) {
+function canUseSession(account: Pick<LoginAccount, 'verified_at' | 'moderation_until'>, at: Date) {
   return Boolean(account.verified_at) && (account.moderation_until === null || +account.moderation_until <= +at);
+}
+
+function resetTokenClosed(reset: ResetToken, at: Date) {
+  return Boolean(reset.consumed_at || reset.revoked_at || +reset.expires_at <= +at);
 }
 
 function sessionView(account: LoginAccount, expiresAt: Date) {
@@ -81,16 +89,21 @@ export function createIdentityService(db: Pool, outboxKey: Buffer, now = () => n
   async function currentSession(token: string, revoke: boolean) {
     return transaction(db, async client => {
       const digest = tokenDigest(token);
+      const owner = (await client.query<{ account_id: string }>(`
+        SELECT account_id FROM public.identity_sessions WHERE token_digest = $1`, [digest])).rows[0];
+      if (!owner) return { status: 'invalidSession' } as const;
+      const account = (await client.query<LoginAccount>(`
+        SELECT account_id, verified_at, role, moderation_until FROM public.identity_accounts
+        WHERE account_id = $1 FOR SHARE`, [owner.account_id])).rows[0];
       const session = (await client.query<StoredSession>(`
-        SELECT a.account_id, a.verified_at, a.role, a.moderation_until, s.expires_at, s.revoked_at
-        FROM public.identity_sessions s JOIN public.identity_accounts a USING (account_id)
-        WHERE s.token_digest = $1 FOR UPDATE OF s FOR SHARE OF a`, [digest])).rows[0];
+        SELECT expires_at, revoked_at FROM public.identity_sessions
+        WHERE token_digest = $1 AND account_id = $2 FOR UPDATE`, [digest, owner.account_id])).rows[0];
       const at = now();
-      if (!session || +session.expires_at <= +at || (!revoke && session.revoked_at)) {
+      if (!account || !session || +session.expires_at <= +at || (!revoke && session.revoked_at)) {
         return { status: 'invalidSession' } as const;
       }
-      if (!canUseSession(session, at)) return { status: 'forbidden' } as const;
-      if (!revoke) return { status: 'current', session: sessionView(session, session.expires_at) } as const;
+      if (!canUseSession(account, at)) return { status: 'forbidden' } as const;
+      if (!revoke) return { status: 'current', session: sessionView(account, session.expires_at) } as const;
       if (!session.revoked_at) {
         await client.query('UPDATE public.identity_sessions SET revoked_at = $2 WHERE token_digest = $1', [digest, at]);
       }
@@ -98,15 +111,17 @@ export function createIdentityService(db: Pool, outboxKey: Buffer, now = () => n
     });
   }
 
-  async function enqueueEmail(client: PoolClient, accountId: string, issuedAt: Date) {
+  async function enqueueEmail(client: PoolClient, accountId: string, issuedAt: Date, reset = false) {
     const token = randomBytes(32).toString('base64url');
     const digest = tokenDigest(token);
     const eventId = randomUUID();
-    const expiresAt = new Date(issuedAt.getTime() + verificationMinutes * 60_000);
-    await client.query(`INSERT INTO public.identity_verification_tokens
+    const expiresAt = new Date(+issuedAt + (reset ? passwordResetMinutes : verificationMinutes) * 60_000);
+    const tokens = reset ? 'identity_password_reset_tokens' : 'identity_verification_tokens';
+    const jobs = reset ? 'identity_password_reset_jobs' : 'identity_email_jobs';
+    await client.query(`INSERT INTO public.${tokens}
       (token_digest, account_id, issued_at, expires_at) VALUES ($1, $2, $3, $4)`,
     [digest, accountId, issuedAt, expiresAt]);
-    await client.query(`INSERT INTO public.identity_email_jobs
+    await client.query(`INSERT INTO public.${jobs}
       (event_id, token_digest, encrypted_token, next_attempt_at) VALUES ($1, $2, $3, $4)`,
     [eventId, digest, encryptToken(token, outboxKey, eventId), issuedAt]);
   }
@@ -176,7 +191,80 @@ export function createIdentityService(db: Pool, outboxKey: Buffer, now = () => n
       });
     },
 
+    async requestPasswordReset(email: string) {
+      return transaction(db, async client => {
+        const window = (await client.query<ResetWindow>(`
+          INSERT INTO public.identity_password_reset_windows (email_normalized, discard_after) VALUES ($1, $2)
+          ON CONFLICT (email_normalized) DO UPDATE SET email_normalized = EXCLUDED.email_normalized
+          RETURNING first_at, resent_at`, [email, new Date(+now() + resendWindowMs)])).rows[0];
+        const account = (await client.query<LoginAccount>(`
+          SELECT account_id, verified_at, role, moderation_until FROM public.identity_accounts
+          WHERE email_normalized = $1 FOR SHARE`, [email])).rows[0];
+        const at = now();
+        const cutoff = +at - resendWindowMs;
+        const first = window.first_at && +window.first_at > cutoff ? window.first_at : null;
+        const resends = window.resent_at.filter(time => +time > cutoff);
+        if (resends.length >= maxResends) {
+          const retryAfter = Math.ceil((+resends[0] - cutoff) / 1000);
+          return { retryAfter } as const;
+        }
+        const isFirst = !first && resends.length === 0;
+        await client.query(`UPDATE public.identity_password_reset_windows
+          SET first_at = $2, resent_at = $3, discard_after = $4 WHERE email_normalized = $1`,
+        [email, isFirst ? at : first, isFirst ? [] : [...resends, at], new Date(+at + resendWindowMs)]);
+        if (account && canUseSession(account, at)) await enqueueEmail(client, account.account_id, at, true);
+        return { receipt: await writeReceipt(client, at) } as const;
+      });
+    },
+
+    async resetPassword(token: string, password: string) {
+      const digest = tokenDigest(token);
+      const owner = (await db.query<ResetTarget>(`
+        SELECT t.account_id, t.expires_at, t.consumed_at, t.revoked_at, a.verified_at, a.moderation_until
+        FROM public.identity_password_reset_tokens t JOIN public.identity_accounts a USING (account_id)
+        WHERE t.token_digest = $1`, [digest])).rows[0];
+      if (!owner) return 'invalid';
+      const submittedAt = now();
+      if (resetTokenClosed(owner, submittedAt)) return 'gone';
+      if (!canUseSession(owner, submittedAt)) return 'invalid';
+      const hash = await hashPassword(password);
+
+      return transaction(db, async client => {
+        const account = (await client.query<LoginAccount>(`
+          SELECT account_id, verified_at, role, moderation_until FROM public.identity_accounts
+          WHERE account_id = $1 FOR UPDATE`, [owner.account_id])).rows[0];
+        const reset = (await client.query<ResetToken>(`
+          SELECT account_id, expires_at, consumed_at, revoked_at FROM public.identity_password_reset_tokens
+          WHERE token_digest = $1`, [digest])).rows[0];
+        const changedAt = now();
+        if (!account || !reset) return 'invalid';
+        if (resetTokenClosed(reset, changedAt)) return 'gone';
+        if (!canUseSession(account, changedAt)) return 'invalid';
+        await client.query('UPDATE public.identity_accounts SET password_hash = $2 WHERE account_id = $1',
+          [account.account_id, hash]);
+        await client.query('UPDATE public.identity_password_reset_tokens SET consumed_at = $2 WHERE token_digest = $1',
+          [digest, changedAt]);
+        await client.query(`UPDATE public.identity_password_reset_tokens SET revoked_at = $2
+          WHERE account_id = $1 AND consumed_at IS NULL AND revoked_at IS NULL AND expires_at > $2`,
+        [account.account_id, changedAt]);
+        await client.query(`UPDATE public.identity_sessions SET revoked_at = $2
+          WHERE account_id = $1 AND revoked_at IS NULL AND expires_at > $2`, [account.account_id, changedAt]);
+        return 'reset';
+      });
+    },
+
     async createPasswordSession(email: string, password: string) {
+      const snapshot = (await db.query<{ password_hash: string | null; locked_until: Date | null }>(`
+        SELECT (SELECT password_hash FROM public.identity_accounts WHERE email_normalized = $1) AS password_hash,
+               (SELECT locked_until FROM public.identity_login_windows WHERE email_normalized = $1) AS locked_until`,
+      [email])).rows[0];
+      const submittedAt = now();
+      if (snapshot.locked_until && +snapshot.locked_until > +submittedAt) {
+        return { status: 'locked', retryAfter: Math.ceil((+snapshot.locked_until - +submittedAt) / 1000) } as const;
+      }
+      const checkedHash = snapshot.password_hash ?? undefined;
+      const snapshotMatches = await passwordMatches(password, checkedHash);
+
       return transaction(db, async client => {
         const window = (await client.query<LoginWindow>(`
           INSERT INTO public.identity_login_windows (email_normalized, discard_after) VALUES ($1, $2)
@@ -190,7 +278,9 @@ export function createIdentityService(db: Pool, outboxKey: Buffer, now = () => n
         const account = (await client.query<LoginAccount & { password_hash: string }>(`
           SELECT account_id, verified_at, role, moderation_until, password_hash
           FROM public.identity_accounts WHERE email_normalized = $1 FOR SHARE`, [email])).rows[0];
-        const matches = await passwordMatches(password, account?.password_hash);
+        // A reset may have committed while scrypt was running. The account lock stabilizes the current hash.
+        const matches = account?.password_hash === checkedHash
+          ? snapshotMatches : await passwordMatches(password, account?.password_hash);
         const at = now();
         if (!matches || !account) {
           const failures = window.failures.filter(time => +time > +at - loginWindowMs);
@@ -231,6 +321,9 @@ export function createIdentityService(db: Pool, outboxKey: Buffer, now = () => n
         ORDER BY expires_at LIMIT 1000 FOR UPDATE SKIP LOCKED)`, [at]);
       await db.query(`DELETE FROM public.identity_login_windows WHERE email_normalized IN (
         SELECT email_normalized FROM public.identity_login_windows WHERE discard_after <= $1
+        ORDER BY discard_after LIMIT 1000 FOR UPDATE SKIP LOCKED)`, [at]);
+      await db.query(`DELETE FROM public.identity_password_reset_windows WHERE email_normalized IN (
+        SELECT email_normalized FROM public.identity_password_reset_windows WHERE discard_after <= $1
         ORDER BY discard_after LIMIT 1000 FOR UPDATE SKIP LOCKED)`, [at]);
     },
   };

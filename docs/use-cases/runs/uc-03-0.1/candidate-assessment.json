@@ -1,0 +1,68 @@
+{
+  "candidate_manifest_sha256": "a19db54703550588d7c8a3f4a87f57859527c94383af41d6018f698cb86f859e",
+  "auditor": {
+    "model": "GPT-6.1 Terra",
+    "reasoning": "medium"
+  },
+  "counts": {
+    "met": 5,
+    "unmet": 0,
+    "not_evaluable": 3
+  },
+  "rows": [
+    {
+      "id": "SR-UC03-01",
+      "status": "met",
+      "evidence": "HTTPS and Mailpit verified shared 202/GET/429 results including eligible, unknown, unverified and actively moderated fixtures; no ineligible token or reset mail."
+    },
+    {
+      "id": "SR-UC03-02",
+      "status": "met",
+      "evidence": "Controlled clock, retained resend classification, cutoff and rejected token count passed, as did concurrent normalized-email gateway requests and Retry-After."
+    },
+    {
+      "id": "SR-UC03-03",
+      "status": "not_evaluable",
+      "evidence": "Purpose isolation, expiry, same-token 204/410 and distinct-token race passed. Opening a link on-device without consuming it was not observed."
+    },
+    {
+      "id": "SR-UC03-04",
+      "status": "met",
+      "evidence": "Controlled admission and reset rollback verified quota, token, receipt, outbox, password and session state on the repaired candidate."
+    },
+    {
+      "id": "SR-UC03-05",
+      "status": "not_evaluable",
+      "evidence": "Source review, DB grants, gateway TLS and filtered Gateway/Core/Worker logs support required handling. Runtime Mobile credential/telemetry observation requires a device."
+    },
+    {
+      "id": "SR-UC03-06",
+      "status": "met",
+      "evidence": "Transient retry recovered; terminal failure exhausted four attempts with stable event and token, unchanged expiry and wiped ciphertext. Revoked job closed before send; public receipt remained received."
+    },
+    {
+      "id": "SR-UC03-07",
+      "status": "met",
+      "evidence": "Active/expired moderation, unverified state, preserved temporary login lock and account-scoped session/token revocation were checked. Gateway regression assertions passed with diagnostic timeout and deterministic stale-hash login plus concurrent reset/DELETE passed."
+    },
+    {
+      "id": "SR-UC03-08",
+      "status": "not_evaluable",
+      "evidence": "Typecheck and Android Hermes export passed. Device scenarios for incoming links, stale replies, UI errors and navigation remain unobserved."
+    }
+  ],
+  "repair_001": {
+    "affected": [
+      "SR-UC03-02",
+      "SR-UC03-03",
+      "SR-UC03-04",
+      "SR-UC03-07"
+    ],
+    "outcome": "No actionable source finding after re-audit. Same-token reset and UC02 burst assertions that failed first pass passed on this candidate."
+  },
+  "limits": [
+    "Default client timeout Gateway invocation did not complete. Diagnostic invocation retained every assertion and used a 20-second request budget.",
+    "No connected Android device or emulator. PERF thresholds are unspecified."
+  ],
+  "evidence": "docs/use-cases/runs/uc-03-0.1/runtime.md"
+}

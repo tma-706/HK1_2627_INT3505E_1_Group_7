@@ -31,6 +31,15 @@ Kiểm cú pháp và tham chiếu bằng lệnh bundle/lint ở [hướng dẫn 
 4. **Tiêu chí 5.** Từ chi tiết bài công khai, Khách chọn thao tác cần định danh, chuyển đến UC02 rồi quay lại đúng bài. Thử claim với bài Found, phản hồi với bài Lost và trường hợp sai loại hoặc thiếu quyền. Khi bài bị ẩn hoặc đóng trong lúc đăng nhập, tải lại chi tiết trả `404` và Mobile dừng thao tác. Kiểm quyết định cuối ở endpoint được bảo vệ.
 5. **Tiêu chí 6.** Dùng mật khẩu đúng của tài khoản chưa xác thực và chưa khóa tạm. Core trả `403` chung và thao tác cần `CoreSession` vẫn bị chặn. Hoàn tất UC01 rồi thử lại để kiểm điều kiện cấp phiên.
 
+## UC03
+
+1. **Tiêu chí 1, 6.** Gửi yêu cầu với email của tài khoản đủ điều kiện và email chưa đăng ký. Cùng nhận `202`, `Location` và biên nhận `received`. Tra cứu hai biên nhận nhận `200` cùng cấu trúc và trạng thái. Kiểm chỉ hộp thư của tài khoản đủ điều kiện nhận liên kết, hạn 30 phút tính từ lúc Core cấp token. Kiểm API, giao diện và log theo luồng để xác nhận bí mật không bị lộ.
+2. **Tiêu chí 2–4.** Dùng đồng hồ điều khiển và token riêng cho các mốc ngay trước, đúng tại và sau 30 phút. Với token còn hạn, `204` xác nhận mật khẩu mới có hiệu lực. Với token hết hạn hoặc đã dùng, `410` yêu cầu liên kết mới và giữ mật khẩu đang có hiệu lực. Thử mở biểu mẫu trước hạn rồi gửi sau hạn. Với hai yêu cầu đồng thời cùng token, chỉ một yêu cầu trả `204`, yêu cầu còn lại trả `410`. Khi giao dịch cập nhật thất bại, mật khẩu và trạng thái token giữ nguyên.
+3. **Tiêu chí 5.** Gửi lượt đầu và ba lượt gửi lại cho cùng email chuẩn hóa trong 15 phút. Lượt gửi lại thứ tư trả `429` và `Retry-After` làm tròn lên đến lúc lượt gửi lại cũ nhất đủ 15 phút. Kiểm đúng mốc hết chờ, các yêu cầu đồng thời tại ngưỡng, email chưa đăng ký và các biến thể email cho cùng kết quả chuẩn hóa. Kiểm yêu cầu bị từ chối không tạo việc gửi mới hoặc kéo dài thời gian chờ.
+4. **Ngoại lệ UC20.** Giả lập lỗi gửi tạm thời rồi thành công, và lỗi liên tiếp đến hết lượt. Worker dùng cùng việc gửi và token, thử lại tối đa ba lần sau lần đầu. Kiểm trạng thái thất bại nội bộ khi hết lượt, biên nhận vẫn `received`, hạn token và hạn mức gửi lại của khách không đổi.
+5. **Ranh giới giao dịch và cửa sổ.** Ép giao dịch tiếp nhận thất bại sau khi ghi việc gửi. Kiểm biên nhận, lượt tiếp nhận, token và việc gửi cùng rollback. Dùng đồng hồ để lượt đầu đủ 15 phút trong khi cả ba lượt gửi lại chưa đủ 15 phút. Yêu cầu mới vẫn trả `429`. Khi cả cửa sổ trống, lượt tiếp theo được tính là lượt đầu.
+6. **Phạm vi credential.** Dùng mã biên nhận UC03 và token xác thực email UC01 ở `resetPassword`. Cả hai bị từ chối và mật khẩu giữ nguyên. Kiểm mở liên kết reset không thay đổi mật khẩu hay tiêu thụ token.
+
 ## Smoke test mock
 
 Chạy mock trước, rồi thực hiện các lệnh sau. Kết quả lần lượt là `200`, `200`, `401` và `404`.

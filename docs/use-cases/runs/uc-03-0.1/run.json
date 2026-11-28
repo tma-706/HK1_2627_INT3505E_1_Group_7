@@ -1,0 +1,199 @@
+{
+  "run_id": "uc-03-0.1",
+  "use_case": "UC-03",
+  "mode": "product",
+  "status": "blocked",
+  "checkpoint": "repaired_candidate_verified_backend_pending_android_evidence",
+  "destination": {
+    "branch": "codex/uc-02",
+    "base_commit": "c5822ea72dd9420a475fea77d663f4ec5581c3e2",
+    "worktree": "current_checkout",
+    "contract_input": "working_diff",
+    "source_generation_authorized": true
+  },
+  "scenarios": [
+    "SCN-UC03-01",
+    "SCN-UC03-02",
+    "SCN-UC03-03",
+    "SCN-UC03-04",
+    "SCN-UC03-05",
+    "SCN-UC03-06",
+    "SCN-UC03-07"
+  ],
+  "sources": {
+    "use_case": {
+      "path": "docs/use-cases/uc-03.md",
+      "version": "0.1",
+      "approval_status": "pending"
+    },
+    "ui": {
+      "path": "docs/use-cases/uc-03-ui.md",
+      "version": "0.1",
+      "approval_status": "pending"
+    },
+    "ui_guidelines": {
+      "path": "docs/design/ui-guidelines.md",
+      "version": "0.2",
+      "approval_status": "pending"
+    },
+    "api": {
+      "path": "docs/api/core/v1/openapi.yaml",
+      "notes": "docs/api/core/v1-notes.md",
+      "base_path": "/api/v1",
+      "contract_version": "1.0.0",
+      "openapi_version": "3.1.0"
+    },
+    "documentation_verification": "docs/use-cases/runs/uc-03-0.1/verification.md",
+    "snapshots": {
+      "docs/use-cases/uc-03.md": "docs/use-cases/runs/uc-03-0.1/inputs/uc-03.md",
+      "docs/use-cases/uc-03-ui.md": "docs/use-cases/runs/uc-03-0.1/inputs/uc-03-ui.md",
+      "docs/api/core/v1-notes.md": "docs/use-cases/runs/uc-03-0.1/inputs/v1-notes.md",
+      "docs/api/core/v1/paths/accounts.yaml": "docs/use-cases/runs/uc-03-0.1/inputs/accounts.yaml",
+      "docs/api/core/v1/components/schemas/PasswordReset.yaml": "docs/use-cases/runs/uc-03-0.1/inputs/PasswordReset.yaml",
+      "db/init-local.sql": "HEAD:db/init-local.sql",
+      "compose.core.yaml": "HEAD:compose.core.yaml"
+    },
+    "infrastructure": {
+      "ref": "origin/implementation/infrastructure",
+      "commit": "5cca1b964dbc29c22138428f313b054f78d9cd5a",
+      "blob_oids": {
+        "docs/architecture/implementation-baseline.md": "b728ced24ceb41eb4903ba13123d73d1b7f9f1c6",
+        "docs/infrastructure/local-stack.md": "84f4bb6f99cbbbf07221b44af10d95b82b641549",
+        "docs/infrastructure/acceptance.md": "4f450859508612cac0045cbb0938ac4871c440ca"
+      }
+    },
+    "sha256_by_path": {
+      "docs/use-cases/uc-03.md": "4e7ae22806f6a2f35029da20e6c799f01bc145b7278b4af97e9615b7e9bd33fb",
+      "docs/use-cases/uc-03-ui.md": "24974efba557f234c5b23858877e7fab7ac0b642f62647ecd07d710dbb607c56",
+      "docs/design/ui-guidelines.md": "776541b35a1d4016c771fa6f763bebb45789c180c19ceb0bdad67e892cc59372",
+      "docs/use-cases/runs/uc-03-0.1/verification.md": "b48f86f1b672204e191874e42015ba10a72285aabe2f8f7562701e97f8e7f5d8",
+      "docs/api/core/v1/openapi.yaml": "ba0d1fd938011becbbbbda2e824c6f4b5e0a4776a20ecc9fff917979d6b917c7",
+      "docs/api/core/v1/paths/accounts.yaml": "bf037a11f8b1dbe25302c4f40c3414681d4f971f0f6d6b5bd0a738101b91820d",
+      "docs/api/core/v1-notes.md": "5fffa909877f7122b46f2677a3f73e88d9416fb37681621a44a05eefc962f6d9",
+      "docs/api/core/v1/components/responses.yaml": "4073e90e1e476a96c051604b0ed7d312071f82963cdd4961b89d26cc88f12e5e",
+      "docs/api/core/v1/components/schemas/EmailRequest.yaml": "50d984d05b45c8b8cc6a5996419c28687b38ad2919944ed821927f0cf533be99",
+      "docs/api/core/v1/components/schemas/EmailRequestStatus.yaml": "ac939c75849ccc4d6d2be3750c878f798ae02b8b3d615863bca8f00aac1e155e",
+      "docs/api/core/v1/components/schemas/PasswordReset.yaml": "bf85c6a6dcf641aae2e3211b2490600506817c51e3591dd23b25f8c6b72d7e8a",
+      "docs/api/core/v1/components/schemas/Problem.yaml": "8adfb8d70660e7bdbd3d9b049aca2f213cd86b247f68d5abed0a36248af5bdac",
+      "docs/api/core/v1/components/schemas/RegistrationCredentials.yaml": "6b6354be45c96dfa7cb984971ed2f2fde73d0e7caff12656e7e47f752187560e",
+      "docs/core-api/scope.md": "84e12673515238e2e4416b63688c548132335f158268210e3ae0d7a558071378",
+      "docs/core-api/acceptance-tests.md": "b9ebde1a914a456c223695b091991ed125aa1600582708bf52c79ba2fc80b812",
+      "docs/core-api/domain-rules.md": "930b66016e6d8b97ff89080fa4044f62e4553f64869c9e7cea645fab73d6b9ba",
+      "docs/core-api/data-model.md": "39f0136cd201775ba3c125d7e7313bf90eaa75f49edf0ff3f4cf76fc83d74b79",
+      "docs/core-api/integration-contracts.md": "7ad382ee991855fca22f79e7fb7b1d43df5eac4db4cb776dc18ad48646d038e4",
+      ".agents/lost-and-found-context.md": "abefd9239f7ef2a3050baa48deaea04b03c7a7d2c124eaf4f2474f4471d58b74",
+      ".agents/skills/run-secure-aidlc/SKILL.md": "b52df2c768ccc87a5fb1a2f59ad81485baa822c49017a70439cbd3430f2fd90e",
+      ".agents/skills/run-secure-aidlc/references/workflow.md": "bf2d61cad9ef9c84091f6c823394ef02afb9131cd85432080ac4756b99e695fb",
+      ".agents/skills/run-secure-aidlc/references/project-context.md": "b9ebf04f1e5de3fc92bdcba0650a6afaa5a445662882a0ff00cff74d2f075d6b",
+      "docs/use-cases/runs/uc-01-0.2/approval.md": "31b319eb2432ad099d8f6002e30ec8e471c170835150081fb012cd7106ec8a96",
+      "docs/use-cases/runs/uc-02-0.2/approval.md": "38dcdba66592b3a3aea91cc8734c1b994185fe3a259e710447763c81b4c0c9eb",
+      "db/init-local.sql": "ac8afcd58fa870409da65e58c8362b7dfeef2ee75e73774ea504b69ba2bb91be",
+      "db/migrations/003_account_verification.sql": "5ffce509c1dc37d71fa57b4d64d3e54faea09289a9a4d7962868fcd7ac866c2b",
+      "db/migrations/004_password_sessions.sql": "f95e55b2239209e9ec50fc2e1616a45dd8b96d8159aaf7f2bcd0f2f8da771f77",
+      "compose.core.yaml": "a33390e2a7acc72415dc7b0a3c78763e476644fad66a8f9251c3cf5dae2d057a"
+    }
+  },
+  "approval": {
+    "status": "approved",
+    "bundle_version": "0.1",
+    "path": "docs/use-cases/runs/uc-03-0.1/approval.md",
+    "sha256": "fe7ab48f78d6646456df0b37909047edbd76044eee7bf3eff61b32beeb3942e5",
+    "reference": "Requester replied 'approve' to the exact UC-03 0.1 bundle on 2026-11-28 (Asia/Bangkok).",
+    "decision_ids": [
+      "Q1",
+      "Q2",
+      "Q3"
+    ],
+    "schema_section": "Prompt B"
+  },
+  "security_scope": [
+    {
+      "criterion": "SEC-UC03-01",
+      "sr": "SR-UC03-01",
+      "status": "frozen"
+    },
+    {
+      "criterion": "SEC-UC03-02",
+      "sr": "SR-UC03-02",
+      "status": "frozen"
+    },
+    {
+      "criterion": "SEC-UC03-03",
+      "sr": "SR-UC03-03",
+      "status": "frozen"
+    },
+    {
+      "criterion": "SEC-UC03-04",
+      "sr": "SR-UC03-04",
+      "status": "frozen"
+    },
+    {
+      "criterion": "SEC-UC03-05",
+      "sr": "SR-UC03-05",
+      "status": "frozen"
+    },
+    {
+      "criterion": "SEC-UC03-06",
+      "sr": "SR-UC03-06",
+      "status": "frozen"
+    },
+    {
+      "criterion": "SEC-UC03-07",
+      "sr": "SR-UC03-07",
+      "status": "frozen"
+    },
+    {
+      "criterion": "SEC-UC03-08",
+      "sr": "SR-UC03-08",
+      "status": "frozen"
+    }
+  ],
+  "assignments": {
+    "bundle_draft": {
+      "model": "GPT-6.1 Terra",
+      "reasoning": "medium",
+      "completed": true
+    },
+    "audit": {
+      "required_model": "GPT-6.1 Terra",
+      "required_reasoning": "medium",
+      "status": "candidate_assessed"
+    }
+  },
+  "verification": {
+    "documentation": "docs/use-cases/runs/uc-03-0.1/verification.md",
+    "runtime": "Gateway, PostgreSQL and Worker checks passed with the documented diagnostic client timeout; Android device acceptance pending.",
+    "runtime_evidence": "docs/use-cases/runs/uc-03-0.1/runtime.md",
+    "perf_threshold": "unspecified"
+  },
+  "initial_source_revision": {
+    "base_commit": "c5822ea72dd9420a475fea77d663f4ec5581c3e2",
+    "manifest_path": "docs/use-cases/runs/uc-03-0.1/initial-source.json",
+    "manifest_sha256": "1cdf17500ace1d84a2b470bfa63aefa77af46fddc7a6de4195e7f2135e5e86d9"
+  },
+  "first_pass_security": {
+    "path": "docs/use-cases/runs/uc-03-0.1/first-pass.json",
+    "counts": { "met": 2, "unmet": 1, "not_evaluable": 5 }
+  },
+  "repairs": [
+    {
+      "id": "repair-001",
+      "started": true,
+      "scope": "Move scrypt out of contended login and reset critical sections, with authoritative revalidation under locks.",
+      "affected": ["SR-UC03-02", "SR-UC03-03", "SR-UC03-04", "SR-UC03-07"],
+      "initial_revision": "1cdf17500ace1d84a2b470bfa63aefa77af46fddc7a6de4195e7f2135e5e86d9",
+      "evidence": "Initial gateway login burst and concurrent reset requests returned 503. PostgreSQL reported statement timeouts in the login-window path.",
+      "initial_source_snapshot": "docs/use-cases/runs/uc-03-0.1/inputs/initial-identity-service.ts",
+      "candidate_manifest": "docs/use-cases/runs/uc-03-0.1/final-candidate.json",
+      "candidate_manifest_sha256": "a19db54703550588d7c8a3f4a87f57859527c94383af41d6018f698cb86f859e",
+      "focused_reaudit": "docs/use-cases/runs/uc-03-0.1/candidate-assessment.json",
+      "outcome": "Evidenced gateway failures repaired; no actionable source defect in focused re-audit."
+    }
+  ],
+  "candidate_assessment": {
+    "path": "docs/use-cases/runs/uc-03-0.1/candidate-assessment.json",
+    "counts": { "met": 5, "unmet": 0, "not_evaluable": 3 }
+  },
+  "final_assessment": null,
+  "next_action": "Use a connected Android device or emulator to observe reset link opening, credential handling and Mobile navigation/error states for SR-UC03-03, SR-UC03-05 and SR-UC03-08 before final acceptance."
+}

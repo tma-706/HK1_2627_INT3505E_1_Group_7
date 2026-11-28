@@ -347,10 +347,17 @@
       - Tài khoản và phiên
     summary: Yêu cầu đặt lại mật khẩu
     description: >-
-      Guest và người dùng đã đăng nhập. Thao tác này sử dụng dữ liệu công khai hoặc dữ liệu xác thực ở đầu vào.
-      Phản hồi tiếp nhận chung. Với tài khoản đủ điều kiện, liên kết chỉ dùng một lần và hết hạn sau 30 phút.
-      Tối đa 3 lượt gửi lại trong 15 phút cho email đã chuẩn hóa. Lượt đầu và các lượt gửi lại được Core phân
-      biệt trong cửa sổ.
+      Khách gửi email đã đăng ký trong body. Thao tác không yêu cầu phiên. Core áp dụng cùng quy tắc tiếp
+      nhận và hạn mức cho mọi email hợp lệ theo khóa email đã chuẩn hóa, bất kể tài khoản có tồn tại hoặc đủ
+      điều kiện. Khi xét tiếp nhận, Core loại các lượt đã đủ 15 phút khỏi cửa sổ. Nếu cửa sổ trống, yêu cầu
+      hiện tại là lượt đầu. Trong các trường hợp còn lại, yêu cầu hiện tại là lượt gửi lại. Core giữ nguyên
+      phân loại của mỗi lượt đã tiếp nhận và cho phép tối đa 3 lượt gửi lại trong cửa sổ, kể cả khi xử lý
+      đồng thời. Lượt đầu, yêu cầu bị từ chối và lần Worker thử gửi lại không tính vào hạn mức. Core ghi
+      biên nhận và lượt tiếp nhận trong cùng giao dịch. Với tài khoản đủ điều kiện, giao dịch này đồng thời
+      cấp token dùng một lần, có hiệu lực 30 phút kể từ lúc cấp, và lưu việc gửi thư theo UC20. Core trả
+      biên nhận sau khi giao dịch thành công. Tài khoản đủ điều kiện đã xác thực email và không có khóa
+      quản trị đang hiệu lực. Gửi lại giữ hiệu lực của các liên kết reset trước đó đến hết hạn riêng hoặc
+      đến khi một lần đặt lại mật khẩu thành công.
     operationId: requestPasswordReset
     x-use-cases:
       - UC03
@@ -366,7 +373,9 @@
             email: lan@example.test
     responses:
       '202':
-        description: Yêu cầu đã được tiếp nhận. Theo dõi tài nguyên được nêu trong Location.
+        description: >-
+          Yêu cầu đã được tiếp nhận. Location trỏ đến biên nhận chung. Phản hồi không xác nhận email đã gửi,
+          tài khoản tồn tại hay đủ điều kiện.
         headers:
           Location:
             description: 'URI tham chiếu của tài nguyên. Mẫu: /api/v1/email-request-status/{requestId}'
@@ -391,10 +400,10 @@
       '400':
         $ref: ../components/responses.yaml#/invalidRequest
       '429':
-        description: Đã đạt hạn mức. Retry-After cho biết số giây trước thời điểm có thể thử lại.
+        description: Đã đủ ba lượt gửi lại trong cửa sổ. Yêu cầu bị từ chối và không tạo thêm việc gửi thư.
         headers:
           Retry-After:
-            description: Số giây đến mốc thử lại.
+            description: Số giây còn lại đến khi lượt gửi lại cũ nhất trong cửa sổ đủ 15 phút, làm tròn lên.
             schema:
               type: integer
               minimum: 1
@@ -472,9 +481,15 @@
       - Tài khoản và phiên
     summary: Đặt lại mật khẩu
     description: >-
-      Guest và người dùng đã đăng nhập. Thao tác này sử dụng dữ liệu công khai hoặc dữ liệu xác thực ở đầu vào.
-      Xác minh và tiêu thụ token một lần, cùng giao dịch đổi mật khẩu. Token hết hạn hoặc đã dùng cần yêu cầu
-      liên kết mới.
+      Thao tác không yêu cầu phiên. Client gửi token từ liên kết email và mật khẩu mới trong body khi khách
+      xác nhận biểu mẫu. Mở liên kết chỉ mở biểu mẫu. Core kiểm tra token dành cho đặt lại mật khẩu khi xử lý
+      yêu cầu. Token xác thực email và mã biên nhận yêu cầu email không cấp quyền đặt lại mật khẩu. Tại hoặc
+      sau mốc 30 phút kể từ lúc cấp, hoặc nếu token đã dùng hay đã thu hồi, Core trả 410 và khách cần yêu cầu
+      liên kết mới. Core trả 400 chung khi dữ liệu hoặc token không hợp lệ hay tài khoản chưa xác thực email
+      hoặc đang có khóa quản trị. Core cập nhật mật khẩu, tiêu thụ token và thu hồi token reset cùng các phiên
+      Identity khác còn hiệu lực của tài khoản trong cùng giao dịch. Khóa đăng nhập tạm theo UC02 tiếp tục
+      theo mốc hiện hành. Tối đa một yêu cầu dùng cùng token thành công, kể cả khi xử lý đồng thời. Giao dịch
+      thất bại giữ nguyên mật khẩu, token và phiên. Phản hồi không chứa mật khẩu hoặc token.
     operationId: resetPassword
     x-use-cases:
       - UC03
@@ -487,11 +502,11 @@
           schema:
             $ref: ../components/schemas/PasswordReset.yaml
           example:
-            token: fictional-secret-123
-            newPassword: fictional-secret-123
+            token: fictional-reset-token-123
+            newPassword: fictional-new-password-123
     responses:
       '204':
-        description: Thao tác hoàn tất, phản hồi rỗng.
+        description: Mật khẩu mới đã có hiệu lực và token đã được tiêu thụ. Phản hồi rỗng.
         headers:
           Cache-Control:
             description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.

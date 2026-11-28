@@ -7,6 +7,7 @@ const problems = {
   missing: [404, 'resource-not-found', 'RESOURCE_NOT_FOUND', 'Tài nguyên không tồn tại hoặc nằm ngoài phạm vi người gọi được xem.'],
   gone: [410, 'link-no-longer-valid', 'LINK_NO_LONGER_VALID', 'Liên kết đã hết hạn hoặc đã được dùng. Hãy yêu cầu liên kết mới.'],
   limited: [429, 'verification-resend-limit', 'VERIFICATION_RESEND_LIMIT', 'Đã đạt hạn mức gửi lại.'],
+  resetLimited: [429, 'password-reset-resend-limit', 'PASSWORD_RESET_RESEND_LIMIT', 'Đã đạt hạn mức gửi lại.'],
   invalidCredentials: [401, 'invalid-credentials', 'INVALID_CREDENTIALS', 'Thông tin đăng nhập không hợp lệ.'],
   invalidSession: [401, 'session-invalid', 'SESSION_INVALID', 'Phiên Bearer không còn hợp lệ hoặc bị thiếu.'],
   forbidden: [403, 'forbidden', 'FORBIDDEN', 'Không đủ điều kiện thực hiện thao tác.'],
@@ -74,6 +75,27 @@ export async function registerIdentityRoutes(app: FastifyInstance, identity: Ide
       return problem(reply, 'limited');
     }
     return accepted(reply, result.receipt);
+  });
+
+  app.post(`${api}/password-reset-requests`, { bodyLimit: 8 * 1024 }, async (request, reply) => {
+    const email = normalizeEmail(fields(request.body, ['email'])?.email);
+    if (!email) return problem(reply, 'invalid');
+    const result = await identity.requestPasswordReset(email);
+    if ('retryAfter' in result) {
+      reply.header('Retry-After', String(result.retryAfter));
+      return problem(reply, 'resetLimited');
+    }
+    return accepted(reply, result.receipt);
+  });
+
+  app.post(`${api}/password-resets`, { bodyLimit: 8 * 1024 }, async (request, reply) => {
+    const input = fields(request.body, ['token', 'newPassword']);
+    if (!isVerificationToken(input?.token) || !isRegistrationPassword(input?.newPassword)) {
+      return problem(reply, 'invalid');
+    }
+    const result = await identity.resetPassword(input.token, input.newPassword);
+    if (result === 'reset') return reply.code(204).send();
+    return problem(reply, result);
   });
 
   app.post(`${api}/auth/sessions`, { bodyLimit: 8 * 1024 }, async (request, reply) => {

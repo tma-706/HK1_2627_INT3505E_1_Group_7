@@ -27,7 +27,7 @@ Tra ngược mỗi operation qua `x-use-cases` trong đặc tả. Một operatio
 | --- | --- |
 | UC01 · Register Account | `registerAccount`, `verifyAccountEmail`, `requestVerificationEmail`, `getEmailRequestStatus`, `createPasswordSession` (kiểm tra điều kiện trước khi cấp phiên) |
 | [UC02 · Login](../use-cases/uc-02.md) | `createPasswordSession`, `getCurrentSession`, `revokeCurrentSession`, `moderateAccount`, `getPublicPost` (quay lại bài từ UC13) |
-| UC03 · Reset Password | `requestPasswordReset`, `getEmailRequestStatus`, `resetPassword` |
+| [UC03 · Reset Password](../use-cases/uc-03.md) | `requestPasswordReset`, `getEmailRequestStatus` (tra cứu biên nhận chung), `resetPassword` |
 | UC04 · Manage Personal Profile | `getMyProfile`, `updateMyProfile`, `changeMyPassword`, `createAuxiliaryUpload`, `confirmUpload`, `getUploadStatus` |
 | UC05 · Create Lost Post | `createPostDraft`, `getMyPostDraft`, `updatePostDraft`, `publishPostDraft`, `createDraftTextRedactionReview`, `getDraftTextRedactionReview`, `setDraftManualRedaction`, `getDraftOriginalText`, `createDraftPhotoUpload`, `confirmUpload`, `getUploadStatus`, `listCategories` |
 | UC06 · Create Found Post | `createPostDraft`, `getMyPostDraft`, `updatePostDraft`, `publishPostDraft`, `setDraftVerificationQuestions`, `createDraftTextRedactionReview`, `getDraftTextRedactionReview`, `setDraftManualRedaction`, `getDraftOriginalText`, `createDraftPhotoUpload`, `confirmUpload`, `getUploadStatus`, `listCategories` |

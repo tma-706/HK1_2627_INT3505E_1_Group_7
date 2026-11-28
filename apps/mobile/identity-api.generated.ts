@@ -14,6 +14,13 @@ export interface IdentityRequests {
     "email": string;
     "password": string;
   };
+  requestPasswordReset: {
+    "email": string;
+  };
+  resetPassword: {
+    "token": string;
+    "newPassword": string;
+  };
 }
 
 export interface PasswordSession {

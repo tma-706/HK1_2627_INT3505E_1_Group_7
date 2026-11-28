@@ -1,0 +1,66 @@
+{
+  "revision": "1cdf17500ace1d84a2b470bfa63aefa77af46fddc7a6de4195e7f2135e5e86d9",
+  "auditor": {
+    "model": "GPT-6.1 Terra",
+    "reasoning": "medium"
+  },
+  "counts": {
+    "met": 2,
+    "unmet": 1,
+    "not_evaluable": 5
+  },
+  "rows": [
+    {
+      "id": "SR-UC03-01",
+      "status": "not_evaluable",
+      "evidence": "Common receipt/source and terminal 200 received observed; the full eligible/unregistered gateway comparison did not complete."
+    },
+    {
+      "id": "SR-UC03-02",
+      "status": "not_evaluable",
+      "evidence": "Controlled 15-minute cutoffs and original classification passed; complete gateway evidence not captured by audit checkpoint."
+    },
+    {
+      "id": "SR-UC03-03",
+      "status": "not_evaluable",
+      "evidence": "Controlled before/at/after expiry and distinct-token race passed; complete wrong-purpose, same-token and device checks not captured by audit checkpoint."
+    },
+    {
+      "id": "SR-UC03-04",
+      "status": "met",
+      "evidence": "check-core.mjs and check-worker.mjs verified admission rollback for windows, tokens, receipts and jobs, plus reset rollback for password, token and session."
+    },
+    {
+      "id": "SR-UC03-05",
+      "status": "not_evaluable",
+      "evidence": "Credential hashing, digest, outbox encryption, grants, HTTPS and no-store inspected; complete cross-layer log, telemetry and UI observation unavailable."
+    },
+    {
+      "id": "SR-UC03-06",
+      "status": "met",
+      "evidence": "Worker temporary recovery, four attempts, stable event/token/expiry and terminal ciphertext cleanup passed, and the HTTP receipt stayed received. Invalidated-before-send is source-supported only."
+    },
+    {
+      "id": "SR-UC03-07",
+      "status": "unmet",
+      "evidence": "Gateway UC02 burst returned 401/401/503/503/503 instead of 401/401/401/401/429; PostgreSQL confirmed statement timeouts on identity_login_windows. Candidate login method was identical to baseline at this point."
+    },
+    {
+      "id": "SR-UC03-08",
+      "status": "not_evaluable",
+      "evidence": "Mobile typecheck and Android Hermes bundle passed; no connected device to observe deep links, navigation and stale replies."
+    }
+  ],
+  "post_assessment_pre_repair_evidence": [
+    "Targeted UC03 HTTPS/Mailpit suite returned 503 in the concurrent same-token reset scenario, where 204 and 410 were required. This additional SR-03 finding arrived after the auditor checkpoint and was captured before modification."
+  ],
+  "checks": [
+    "Redocly lint/bundle passed with existing info.license warning",
+    "Core build passed",
+    "Mobile typecheck and Expo Android Hermes export passed",
+    "Docker fresh init and isolated 004 to 005 upgrade passed",
+    "Controlled PostgreSQL and Worker checks passed",
+    "Gateway regression returned 503 under concurrent login",
+    "ADB had no connected target"
+  ]
+}

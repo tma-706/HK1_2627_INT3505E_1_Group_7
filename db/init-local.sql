@@ -28,6 +28,12 @@ SELECT NOT EXISTS (SELECT FROM public.schema_migrations WHERE version = '004') A
     INSERT INTO public.schema_migrations VALUES ('004');
 \endif
 
+SELECT NOT EXISTS (SELECT FROM public.schema_migrations WHERE version = '005') AS apply_migration \gset
+\if :apply_migration
+    \ir migrations/005_password_reset.sql
+    INSERT INTO public.schema_migrations VALUES ('005');
+\endif
+
 SELECT 'CREATE ROLE core_reader LOGIN' WHERE NOT EXISTS (
     SELECT FROM pg_roles WHERE rolname = 'core_reader'
 ) \gexec
@@ -60,7 +66,7 @@ GRANT CONNECT ON DATABASE campus TO core_identity, identity_worker;
 GRANT USAGE ON SCHEMA public TO core_identity, identity_worker;
 GRANT SELECT, INSERT ON public.identity_accounts, public.identity_verification_tokens,
     public.identity_email_receipts, public.identity_resend_windows TO core_identity;
-GRANT UPDATE (verified_at) ON public.identity_accounts TO core_identity;
+GRANT UPDATE (verified_at, password_hash) ON public.identity_accounts TO core_identity;
 REVOKE INSERT ON public.identity_accounts FROM core_identity;
 GRANT INSERT (account_id, email_normalized, password_hash) ON public.identity_accounts TO core_identity;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.identity_login_windows TO core_identity;
@@ -73,6 +79,14 @@ GRANT INSERT ON public.identity_email_jobs TO core_identity;
 GRANT SELECT (account_id, email_normalized, verified_at) ON public.identity_accounts TO identity_worker;
 GRANT SELECT (token_digest, account_id, expires_at) ON public.identity_verification_tokens TO identity_worker;
 GRANT SELECT, UPDATE ON public.identity_email_jobs TO identity_worker;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.identity_password_reset_windows TO core_identity;
+GRANT SELECT, INSERT, UPDATE (consumed_at, revoked_at) ON public.identity_password_reset_tokens TO core_identity;
+GRANT INSERT ON public.identity_password_reset_jobs TO core_identity;
+GRANT SELECT (moderation_until) ON public.identity_accounts TO identity_worker;
+GRANT SELECT (token_digest, account_id, expires_at, consumed_at, revoked_at)
+    ON public.identity_password_reset_tokens TO identity_worker;
+GRANT SELECT, UPDATE (encrypted_token, state, attempts, next_attempt_at, lease_id, lease_until, terminal_reason)
+    ON public.identity_password_reset_jobs TO identity_worker;
 
 \ir fixtures/public-posts.sql
 COMMIT;

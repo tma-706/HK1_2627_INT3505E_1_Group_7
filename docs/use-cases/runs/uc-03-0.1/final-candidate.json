@@ -1,0 +1,19 @@
+{
+  "apps/core/src/modules/identity/service.ts": "f8dc20c5a1bf539d28fbed3ba56e1c640dd857220f4e850d2cade6cdf19c1f41",
+  "apps/core/src/modules/identity/routes.ts": "303c6d9448e81d90e7ba2201d4b67ea821015ff91f54ea4e7b8a241b80002c47",
+  "apps/core/src/modules/identity/email-jobs.ts": "20eb56d025e75175123faa6028c916754b2ef988926b5bd1cc1874321ac9214c",
+  "apps/core/src/worker.ts": "8365eeccad4b77a417785550a12f09a18ab43eae63581ca1a24d6d8642247f31",
+  "db/migrations/005_password_reset.sql": "3e9be0310573aaf32b5169fa8ccc1583be511a3a0e4b489dbe7e7b7a9b278334",
+  "db/init-local.sql": "6182dde546576f3d79f369fb5b114ea8000e384493444f313e46349fcf0b477a",
+  "compose.core.yaml": "fe71fd83716b31f60d66aaf42b908edcc69110ca1ad86dd028e40d100a53c1fd",
+  "apps/mobile/RegistrationFlow.tsx": "4881c9a3a2bf12891974902e350d863ba3fa63e11e0bc3286d4431f30fd134b6",
+  "apps/mobile/identity-api.ts": "89098791023ae4b81828f55c7f3828759607a1235f476234f4d754422b3e532b",
+  "apps/mobile/generate-identity-types.mjs": "2afa80c8803be9b70db485b18599ad468c1573a6d3172787ccb093122098b425",
+  "apps/mobile/identity-api.generated.ts": "7ecb6689f5bdae95cce83e499d31a43a697fc78dec2dbaf614b968eb10f6ec99",
+  "docs/api/core/v1/paths/accounts.yaml": "4e05ebeaaea502440d1de49a6df41da1bc152b78eb45a97bc4b8479b1b58dac1",
+  "docs/api/core/v1/components/schemas/PasswordReset.yaml": "7913a54de74d56ea2bdb6526ed934fc34e4cc83aaf80e9601c1300adf923fe98",
+  "docs/api/core/v1-notes.md": "01ab1596e1efecc4014910ae03885f5edc5095cf9443b31270757cb98f6dab27",
+  "docs/use-cases/uc-03.md": "31f7da905cd9dbf5b3994562190be488d07a1b5561c740ad5bd3acbc3906882d",
+  "docs/use-cases/uc-03-ui.md": "da8208d276708de720d30dc8b0dec61fdcf40aa75c287dbf1b15069a8fd1b60e",
+  "tests/core-identity.mjs": "dd49cbe508531aeb9b7b003d518897989bad91b3c4d07aa9c10bae2dd65449aa"
+}

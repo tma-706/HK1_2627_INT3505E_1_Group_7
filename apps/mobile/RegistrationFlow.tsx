@@ -4,11 +4,14 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { PublicPost } from '@lost-found/public-feed';
-import { login, register, resend, revoke, verificationLink, verify } from './identity-api';
+import {
+  login, passwordResetLink, register, requestPasswordReset, resend, resetPassword, revoke, verificationLink, verify,
+} from './identity-api';
 import type { PasswordSession } from './identity-api.generated';
 import PostDetail from './PostDetail';
 
-type Screen = 'feed' | 'register' | 'checkMail' | 'resend' | 'verify' | 'verified' | 'login' | 'detail' | 'admin';
+type Screen = 'feed' | 'register' | 'checkMail' | 'resend' | 'verify' | 'verified' | 'login' | 'detail' | 'admin'
+  | 'resetRequest' | 'resetMail' | 'resetPassword' | 'resetExpired' | 'resetInvalid' | 'resetDone';
 type Feedback = { kind: 'invalid' | 'expired' | 'retry' | 'forbidden' | 'credentials'; message: string };
 export type FeedActions = {
   openRegistration: () => void;
@@ -23,6 +26,9 @@ export type FeedActions = {
 const headings = {
   register: 'Đăng ký tài khoản', checkMail: 'Kiểm tra email', resend: 'Gửi lại email xác thực',
   verify: 'Xác thực email', verified: 'Xác thực thành công', login: 'Đăng nhập', admin: 'Quản trị',
+  resetRequest: 'Đặt lại mật khẩu', resetMail: 'Kiểm tra email', resetPassword: 'Tạo mật khẩu mới',
+  resetExpired: 'Liên kết không còn hiệu lực', resetInvalid: 'Không thể mở liên kết',
+  resetDone: 'Đã đặt lại mật khẩu',
 };
 
 function Action({ label, onPress, disabled, secondary = false }: {
@@ -46,14 +52,17 @@ export default function RegistrationFlow({ feed }: { feed: (actions: FeedActions
   const [mailboxUnavailable, setMailboxUnavailable] = useState(false);
   const [retryByEmail, setRetryByEmail] = useState<Record<string, number>>({});
   const [loginRetryByEmail, setLoginRetryByEmail] = useState<Record<string, number>>({});
+  const [resetRetryByEmail, setResetRetryByEmail] = useState<Record<string, number>>({});
   const [session, setSession] = useState<PasswordSession>();
   const [postId, setPostId] = useState<string>();
   const [postIntent, setPostIntent] = useState<PublicPost['type']>();
   const [now, setNow] = useState(Date.now);
   const active = useRef<AbortController | null>(null);
   const verificationToken = useRef<string | null>(null);
+  const resetToken = useRef<string | null>(null);
   const normalizedEmail = email.trim().toLowerCase();
-  const deadlines = screen === 'login' ? loginRetryByEmail : retryByEmail;
+  const requestingReset = screen === 'resetRequest' || screen === 'resetMail';
+  const deadlines = requestingReset ? resetRetryByEmail : screen === 'login' ? loginRetryByEmail : retryByEmail;
   const remaining = Math.max(0, Math.ceil(((deadlines[normalizedEmail] ?? 0) - now) / 1000));
 
   const cancel = useCallback(() => {
@@ -70,6 +79,7 @@ export default function RegistrationFlow({ feed }: { feed: (actions: FeedActions
     setPassword('');
     setNow(Date.now());
     verificationToken.current = null;
+    resetToken.current = null;
     setScreen(next);
   }, [cancel]);
 
@@ -119,10 +129,25 @@ export default function RegistrationFlow({ feed }: { feed: (actions: FeedActions
     });
   }, [cancel, navigate, run]);
 
+  const openResetLink = useCallback((token: string | null) => {
+    if (token && token === resetToken.current) return;
+    if (!token || !/^[a-zA-Z0-9_-]{43}$/.test(token)) {
+      navigate('resetInvalid');
+      return;
+    }
+    navigate('resetPassword');
+    resetToken.current = token;
+  }, [navigate]);
+
   useEffect(() => {
     let seenEvent = false;
     let disposed = false;
     const handleLink = (url: string) => {
+      const reset = passwordResetLink(url);
+      if (reset) {
+        openResetLink(reset.token);
+        return;
+      }
       const link = verificationLink(url);
       if (link) submitVerification(link.token);
     };
@@ -140,9 +165,9 @@ export default function RegistrationFlow({ feed }: { feed: (actions: FeedActions
       active.current = null;
       controller?.abort();
     };
-  }, [submitVerification]);
+  }, [openResetLink, submitVerification]);
 
-  const cooling = (screen === 'resend' || screen === 'login') && remaining > 0;
+  const cooling = (screen === 'resend' || screen === 'login' || requestingReset) && remaining > 0;
   useEffect(() => {
     if (!cooling) return;
     const timer = setInterval(() => setNow(Date.now()), 500);
@@ -188,6 +213,22 @@ export default function RegistrationFlow({ feed }: { feed: (actions: FeedActions
       return;
     }
     setInvalidField(undefined);
+    if (requestingReset) {
+      void run(signal => requestPasswordReset({ email: normalizedEmail }, signal), response => {
+        if (response.status === 202) navigate('resetMail');
+        else if (response.status === 429) {
+          const seconds = Number(response.headers.get('Retry-After'));
+          if (Number.isSafeInteger(seconds) && seconds >= 1 && seconds <= 900) {
+            const receivedAt = Date.now();
+            setNow(receivedAt);
+            setResetRetryByEmail(previous => ({ ...previous, [normalizedEmail]: receivedAt + seconds * 1000 }));
+          } else setFeedback({ kind: 'retry', message: 'Đã đạt hạn mức gửi lại. Bạn có thể thử lại sau.' });
+        } else if (response.status === 400) {
+          setFeedback({ kind: 'invalid', message: 'Hãy kiểm tra địa chỉ email.' });
+        } else setFeedback({ kind: 'retry', message: 'Chưa nhận được kết quả. Hãy thử lại hoặc kiểm tra email.' });
+      });
+      return;
+    }
     if (screen === 'login') {
       void run(signal => login({ email: normalizedEmail, password }, signal), result => {
         const { response, retryAfter, session: issued } = result;
@@ -246,6 +287,33 @@ export default function RegistrationFlow({ feed }: { feed: (actions: FeedActions
     });
   }
 
+  function submitResetPassword() {
+    const token = resetToken.current;
+    if (!token || session || active.current) return;
+    const length = [...password].length;
+    if (length < 15 || length > 128) {
+      setInvalidField('password');
+      setFeedback({ kind: 'invalid', message: 'Mật khẩu cần có từ 15 đến 128 ký tự.' });
+      return;
+    }
+    setInvalidField(undefined);
+    void run(signal => resetPassword({ token, newPassword: password }, signal), response => {
+      if (response.status === 204) navigate('resetDone');
+      else if (response.status === 410) navigate('resetExpired');
+      else if (response.status === 400) {
+        setFeedback({ kind: 'invalid', message: 'Chưa thể đặt lại mật khẩu. Hãy kiểm tra dữ liệu hoặc tạo yêu cầu mới.' });
+      } else setFeedback({ kind: 'retry', message: 'Chưa nhận được kết quả đặt lại. Bạn có thể thử lại hoặc đăng nhập bằng mật khẩu mới.' });
+    });
+  }
+
+  function logoutForReset() {
+    if (!session || active.current) return;
+    void run(signal => revoke(session.accessToken, signal), response => {
+      if (response.status === 204 || response.status === 401) setSession(undefined);
+      else setFeedback({ kind: 'retry', message: 'Chưa đăng xuất được. Bạn có thể thử lại.' });
+    });
+  }
+
   if (screen === 'feed') return feed({
     openRegistration: () => navigate('register'),
     openLogin: () => navigate('login'),
@@ -264,8 +332,9 @@ export default function RegistrationFlow({ feed }: { feed: (actions: FeedActions
       onBack={openFeed} onLogin={type => { setPostIntent(type); navigate('login'); }} />
   );
   if (screen === 'detail') return null;
-  const form = screen === 'register' || screen === 'resend' || screen === 'login';
-  const primaryLabel = screen === 'register' ? 'Đăng ký' : screen === 'resend' ? 'Gửi lại email' : 'Đăng nhập';
+  const form = screen === 'register' || screen === 'resend' || screen === 'login' || screen === 'resetRequest';
+  const primaryLabel = screen === 'register' ? 'Đăng ký' : screen === 'resend' ? 'Gửi lại email'
+    : screen === 'resetRequest' ? 'Gửi yêu cầu' : 'Đăng nhập';
   const goToLogin = () => navigate('login');
 
   async function openMailbox() {
@@ -302,7 +371,7 @@ export default function RegistrationFlow({ feed }: { feed: (actions: FeedActions
                 keyboardType="email-address" autoCapitalize="none" autoCorrect={false} autoComplete="email"
                 style={[styles.input, invalidField === 'email' && styles.invalid]} />
               {invalidField === 'email' && <Text accessibilityRole="alert" style={styles.alert}>{feedback?.message}</Text>}
-              {screen !== 'resend' && <>
+              {(screen === 'register' || screen === 'login') && <>
                 <Text style={styles.label}>Mật khẩu</Text>
                 <TextInput accessibilityLabel="Mật khẩu" value={password} onChangeText={value => edit('password', value)}
                   secureTextEntry autoCapitalize="none" autoCorrect={false}
@@ -314,7 +383,9 @@ export default function RegistrationFlow({ feed }: { feed: (actions: FeedActions
               </>}
             </>}
             {pending && <View style={styles.notice} accessibilityLiveRegion="polite">
-              <ActivityIndicator color="#1E4BDD" /><Text style={styles.body}>{screen === 'verify' ? 'Đang xác thực…' : screen === 'login' ? 'Đang đăng nhập…' : 'Đang gửi yêu cầu…'}</Text>
+              <ActivityIndicator color="#1E4BDD" /><Text style={styles.body}>{screen === 'verify' ? 'Đang xác thực…'
+                : screen === 'login' ? 'Đang đăng nhập…' : screen === 'resetPassword' ? (session ? 'Đang đăng xuất…' : 'Đang đặt lại…')
+                  : screen === 'resetMail' ? 'Đang gửi lại…' : 'Đang gửi yêu cầu…'}</Text>
             </View>}
             {feedback && !invalidField && <Text accessibilityRole="alert" style={styles.alert}>{feedback.message}</Text>}
             {form && <>
@@ -326,7 +397,39 @@ export default function RegistrationFlow({ feed }: { feed: (actions: FeedActions
                 onPress={() => submitForm(true)} disabled={pending} />}
               {screen === 'login' && feedback?.kind === 'forbidden' &&
                 <Action secondary label="Gửi lại email xác thực" onPress={() => navigate('resend')} />}
+              {screen === 'login' && !session && <Action secondary label="Đặt lại mật khẩu" onPress={() => navigate('resetRequest')} />}
             </>}
+            {screen === 'resetMail' && <>
+              <Text style={[styles.body, styles.notice]}>Yêu cầu đã được tiếp nhận. Nếu có thư đặt lại mật khẩu, hãy mở liên kết trong hộp thư.</Text>
+              {cooling && <Text accessibilityLiveRegion="polite" style={styles.body}>Bạn có thể gửi lại sau {remaining} giây.</Text>}
+              <Action label={feedback?.kind === 'retry' ? 'Thử lại' : 'Gửi lại email'} onPress={() => submitForm()} disabled={pending || cooling} />
+              {(cooling || feedback) && <Action secondary label="Sửa email" onPress={() => navigate('resetRequest')} />}
+            </>}
+            {screen === 'resetPassword' && (session ? <>
+              <Text style={styles.body}>Đăng xuất để tiếp tục đặt lại mật khẩu.</Text>
+              <Action label="Đăng xuất" onPress={logoutForReset} disabled={pending} />
+            </> : <>
+              <Text style={styles.label}>Mật khẩu mới</Text>
+              <TextInput accessibilityLabel="Mật khẩu mới" value={password} onChangeText={value => edit('password', value)}
+                secureTextEntry autoCapitalize="none" autoCorrect={false} autoComplete="new-password"
+                style={[styles.input, invalidField === 'password' && styles.invalid]} />
+              {invalidField === 'password'
+                ? <Text accessibilityRole="alert" style={styles.alert}>{feedback?.message}</Text>
+                : <Text style={styles.hint}>Từ 15 đến 128 ký tự.</Text>}
+              <Action label={feedback?.kind === 'retry' ? 'Thử lại' : 'Đặt lại mật khẩu'} onPress={submitResetPassword} disabled={pending} />
+              {feedback?.kind === 'invalid' && <Action secondary label="Tạo yêu cầu mới" onPress={() => navigate('resetRequest')} />}
+              {feedback?.kind === 'retry' && <Action secondary label="Về đăng nhập" onPress={goToLogin} />}
+            </>)}
+            {(screen === 'resetExpired' || screen === 'resetInvalid') && <>
+              <Text style={[styles.body, styles.notice]}>{screen === 'resetExpired'
+                ? 'Liên kết đã hết hạn hoặc không còn dùng được.' : 'Liên kết thiếu thông tin đặt lại.'}</Text>
+              <Action label="Tạo yêu cầu mới" onPress={() => navigate('resetRequest')} />
+            </>}
+            {screen === 'resetDone' && <>
+              <Text style={[styles.body, styles.notice]}>Mật khẩu mới đã có hiệu lực.</Text>
+              <Action label="Về đăng nhập" onPress={goToLogin} />
+            </>}
+            {requestingReset && <Action secondary label="Quay lại đăng nhập" onPress={goToLogin} />}
             {screen === 'checkMail' && <>
               <Text style={[styles.body, styles.notice]}>Yêu cầu đã được tiếp nhận. Hãy kiểm tra hộp thư và mở liên kết xác thực trong email nếu nhận được.</Text>
               <Action label="Mở hộp thư" onPress={() => void openMailbox()} />

@@ -3,7 +3,10 @@ import { parse } from 'yaml';
 
 const source = new URL('../../docs/api/core/v1/paths/accounts.yaml', import.meta.url);
 const paths = parse(await readFile(source, 'utf8'));
-const operations = ['/accounts', '/email-verifications', '/email-verification-requests', '/auth/sessions'];
+const operations = [
+  '/accounts', '/email-verifications', '/email-verification-requests', '/auth/sessions',
+  '/password-reset-requests', '/password-resets',
+];
 
 const entries = await Promise.all(operations.map(async path => {
   const { operationId, requestBody } = paths[path].post;

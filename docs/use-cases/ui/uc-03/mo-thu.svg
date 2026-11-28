@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="760" viewBox="0 0 390 760" role="img" aria-labelledby="title">
+  <title id="title">Mở thư đặt lại mật khẩu</title>
+  <g font-family="Inter, Roboto, Segoe UI, Arial, sans-serif">
+    <rect x="0" y="0" width="390" height="760" rx="0" fill="#FFFFFF" stroke="none"/>
+    <rect x="0" y="0" width="390" height="86" rx="0" fill="#F8FAFC" stroke="none"/>
+    <text x="24" y="57" font-size="30" font-weight="400" fill="#10192C" text-anchor="start">‹</text>
+    <text x="54" y="55" font-size="17" font-weight="600" fill="#10192C" text-anchor="start">Hộp thư</text>
+    <text x="24" y="135" font-size="23" font-weight="700" fill="#10192C" text-anchor="start">Đặt lại mật khẩu</text>
+    <text x="24" y="174" font-size="15" font-weight="600" fill="#10192C" text-anchor="start">Lost &amp; Found</text>
+    <text x="24" y="198" font-size="14" font-weight="400" fill="#506279" text-anchor="start">Gửi đến lan@example.test</text>
+    <text x="24" y="254" font-size="15" font-weight="400" fill="#10192C" text-anchor="start">Bạn đã yêu cầu đặt lại mật khẩu.</text>
+    <text x="24" y="275" font-size="15" font-weight="400" fill="#10192C" text-anchor="start">Mở liên kết để tạo mật khẩu mới.</text>
+    <rect x="24" y="312" width="342" height="48" rx="11" fill="#1E4BDD" stroke="none"/>
+    <text x="195" y="342" font-size="16" font-weight="700" fill="#FFFFFF" text-anchor="middle">Mở liên kết đặt lại</text>
+  </g>
+</svg>

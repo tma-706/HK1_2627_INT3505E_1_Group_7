@@ -61,14 +61,30 @@ export function verify(body: IdentityRequests['verifyAccountEmail'], signal: Abo
   return post('email-verifications', body, signal);
 }
 
-export function verificationLink(url: string) {
+export function requestPasswordReset(body: IdentityRequests['requestPasswordReset'], signal: AbortSignal) {
+  return post('password-reset-requests', body, signal);
+}
+
+export function resetPassword(body: IdentityRequests['resetPassword'], signal: AbortSignal) {
+  return post('password-resets', body, signal);
+}
+
+function readIdentityLink(url: string, destination: string) {
   try {
     const received = new URL(url);
-    const expected = new URL(process.env.EXPO_PUBLIC_VERIFICATION_LINK_URL ?? 'campus-lost-found://verify-email');
+    const expected = new URL(destination);
     if (received.protocol !== expected.protocol || received.host !== expected.host || received.pathname !== expected.pathname
       || received.username || received.password || received.search) return undefined;
     return { token: new URLSearchParams(received.hash.slice(1)).get('token') };
   } catch {
     return undefined;
   }
+}
+
+export function verificationLink(url: string) {
+  return readIdentityLink(url, process.env.EXPO_PUBLIC_VERIFICATION_LINK_URL ?? 'campus-lost-found://verify-email');
+}
+
+export function passwordResetLink(url: string) {
+  return readIdentityLink(url, process.env.EXPO_PUBLIC_PASSWORD_RESET_LINK_URL ?? 'campus-lost-found://reset-password');
 }
