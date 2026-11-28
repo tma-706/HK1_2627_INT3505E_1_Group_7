@@ -1,0 +1,4 @@
+interface:
+  display_name: "Review and Revise API Specifications"
+  short_description: "Review use cases and revise existing API contracts"
+  default_prompt: "Use $design-api-spec to compare this use case with the existing API contract, identify conflicts and gaps, and apply the supported changes with a compatibility and versioning assessment."

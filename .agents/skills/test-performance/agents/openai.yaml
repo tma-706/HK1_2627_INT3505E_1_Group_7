@@ -1,0 +1,7 @@
+interface:
+  display_name: "Performance Testing"
+  short_description: "Design workloads or run performance test suites"
+  default_prompt: "Use $test-performance with a UC specification to design a workload, or provide the existing suite, build, and target."
+
+policy:
+  allow_implicit_invocation: false

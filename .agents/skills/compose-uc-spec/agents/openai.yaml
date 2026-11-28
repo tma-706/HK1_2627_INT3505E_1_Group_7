@@ -1,0 +1,4 @@
+interface:
+  display_name: "Compose Use Case Specifications"
+  short_description: "Deliver UC specs, UI illustrations, and scenario traceability"
+  default_prompt: "Use $compose-uc-spec with the written UC and revised API contract to draft the specification, acceptance scenarios, and UX scenarios, then illustrate each relevant screen or state using the Lost & Found UI guidelines."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Run Secure AI-DLC"
+  short_description: "Implement and audit use cases with Secure AI-DLC"
+  default_prompt: "Use $run-secure-aidlc with the UC and API specifications to select security criteria and draft prompts before implementation, audit, and repair."
