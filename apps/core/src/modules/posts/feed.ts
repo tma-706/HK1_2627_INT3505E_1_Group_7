@@ -32,17 +32,44 @@ interface FeedRow {
 
 const nonempty = { type: 'string', minLength: 1 };
 const dateTime = { type: 'string', format: 'date-time' };
+const publicColumns = `post_id AS "postId", type, title, description, category_id AS "categoryId",
+  area_id AS "areaId", occurred_at AS "occurredAt", published_at AS "publishedAt",
+  status, visibility, json_build_object('displayName', author_display_name) AS author,
+  share_url AS "shareUrl", custody`;
+const publicCondition = "status = 'open' AND visibility = 'visible'";
 
-function problem(reply: FastifyReply, status: 400 | 503) {
+function publicPost({ custody, ...post }: FeedRow) {
+  return { ...post, ...(custody ? { custody } : {}), photos: [] };
+}
+
+function problem(reply: FastifyReply, status: 400 | 404 | 503) {
   const [slug, code, title] = status === 400
     ? ['invalid-request', 'INVALID_REQUEST', 'Tham số hoặc dữ liệu gửi lên không hợp lệ.']
-    : ['service-unavailable', 'SERVICE_UNAVAILABLE', 'Dịch vụ hoặc phụ thuộc tạm thời không khả dụng.'];
+    : status === 404
+      ? ['resource-not-found', 'RESOURCE_NOT_FOUND', 'Tài nguyên không tồn tại hoặc nằm ngoài phạm vi người gọi được xem.']
+      : ['service-unavailable', 'SERVICE_UNAVAILABLE', 'Dịch vụ hoặc phụ thuộc tạm thời không khả dụng.'];
   return reply.code(status).type('application/problem+json').send({
     type: 'urn:campus-lost-found:problem:' + slug, title, status, code,
   });
 }
 
 export function registerPosts(app: FastifyInstance, db: Pool, cursorSecret: string) {
+  app.get<{ Params: { postId: string } }>('/api/v1/posts/:postId', {
+    attachValidation: true,
+    schema: { params: { type: 'object', required: ['postId'], properties: { postId: nonempty } } },
+  }, async (request, reply) => {
+    reply.header('Cache-Control', 'no-store');
+    if (request.validationError) return problem(reply, 400);
+    try {
+      const { rows } = await db.query<FeedRow>(`
+        SELECT ${publicColumns} FROM public.posts WHERE ${publicCondition} AND post_id = $1`, [request.params.postId]);
+      return rows[0] ? publicPost(rows[0]) : problem(reply, 404);
+    } catch {
+      request.log.error('Public detail database query failed');
+      return problem(reply, 503);
+    }
+  });
+
   app.get<{ Querystring: FeedQuery }>('/api/v1/posts', {
     attachValidation: true,
     schema: {
@@ -87,12 +114,9 @@ export function registerPosts(app: FastifyInstance, db: Pool, cursorSecret: stri
 
     try {
       const { rows } = await db.query<FeedRow>(`
-        SELECT post_id AS "postId", type, title, description, category_id AS "categoryId",
-               area_id AS "areaId", occurred_at AS "occurredAt", published_at AS "publishedAt",
-               status, visibility, json_build_object('displayName', author_display_name) AS author,
-               share_url AS "shareUrl", custody
+        SELECT ${publicColumns}
         FROM public.posts
-        WHERE status = 'open' AND visibility = 'visible'
+        WHERE ${publicCondition}
           AND ($1::text IS NULL OR strpos(lower(title || ' ' || description), lower($1)) > 0)
           AND ($2::text IS NULL OR type = $2)
           AND ($3::text IS NULL OR category_id = $3)
@@ -111,8 +135,7 @@ export function registerPosts(app: FastifyInstance, db: Pool, cursorSecret: stri
         const payload = Buffer.from(JSON.stringify([last.publishedAt, last.postId])).toString('base64url');
         nextCursor = payload + '.' + sign(payload).toString('base64url');
       }
-      const items = page.map(({ custody, ...post }) => custody ? { ...post, custody } : post);
-      return { items: items.map(post => ({ ...post, photos: [] })), nextCursor };
+      return { items: page.map(publicPost), nextCursor };
     } catch {
       request.log.error('Public feed database query failed');
       return problem(reply, 503);

@@ -1,14 +1,52 @@
-import type { IdentityRequests } from './identity-api.generated';
+import type { PublicPost } from '@lost-found/public-feed';
+import type { IdentityRequests, PasswordSession } from './identity-api.generated';
 
-async function post(path: string, body: object, signal: AbortSignal) {
+function gateway(path: string) {
   const origin = process.env.EXPO_PUBLIC_GATEWAY_URL?.trim().replace(/\/+$/, '');
   if (!origin || !/^https:\/\/[^/?#@]+$/i.test(origin)) throw new Error('Gateway HTTPS chưa được cấu hình.');
-  return fetch(`${origin}/api/v1/${path}`, {
+  return `${origin}/api/v1/${path}`;
+}
+
+async function post(path: string, body: object, signal: AbortSignal) {
+  return fetch(gateway(path), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json, application/problem+json' },
     signal,
     body: JSON.stringify(body),
   });
+}
+
+export async function login(body: IdentityRequests['createPasswordSession'], signal: AbortSignal) {
+  const response = await post('auth/sessions', body, signal);
+  const retryAfter = Number(response.headers.get('Retry-After'));
+  if (response.status !== 200) return { response, retryAfter };
+  const session: PasswordSession = await response.json();
+  if (!session || typeof session.accountId !== 'string' || !session.accountId
+    || (session.role !== 'member' && session.role !== 'admin')
+    || typeof session.accessToken !== 'string' || !/^[a-zA-Z0-9_-]{43}$/.test(session.accessToken)
+    || session.tokenType !== 'Bearer' || typeof session.expiresAt !== 'string'
+    || !Number.isFinite(Date.parse(session.expiresAt)) || Date.parse(session.expiresAt) <= Date.now()) {
+    throw new Error('Phiên đăng nhập không hợp lệ.');
+  }
+  return { response, retryAfter, session };
+}
+
+export async function revoke(accessToken: string, signal: AbortSignal) {
+  return fetch(gateway('auth/sessions/current'), {
+    method: 'DELETE', signal, headers: { Authorization: `Bearer ${accessToken}` },
+  });
+}
+
+export async function loadPost(postId: string, accessToken: string | undefined, signal: AbortSignal) {
+  const headers: Record<string, string> = { Accept: 'application/json' };
+  if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+  const response = await fetch(gateway(`posts/${encodeURIComponent(postId)}`), { headers, signal });
+  if (response.status === 404) return null;
+  if (response.status !== 200) throw new Error('Chưa tải được bài.');
+  const post: PublicPost = await response.json();
+  if (!post || post.postId !== postId || (post.type !== 'lost' && post.type !== 'found')
+    || post.status !== 'open' || post.visibility !== 'visible') throw new Error('Chi tiết bài không hợp lệ.');
+  return post;
 }
 
 export function register(body: IdentityRequests['registerAccount'], signal: AbortSignal) {

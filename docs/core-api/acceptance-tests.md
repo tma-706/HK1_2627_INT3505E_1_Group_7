@@ -23,6 +23,14 @@ Kiểm cú pháp và tham chiếu bằng lệnh bundle/lint ở [hướng dẫn 
 | Giả lập lỗi gửi thư liên tiếp ở Worker. | Worker thử lại tối đa ba lần sau lần đầu rồi ghi thất bại. Các lần thử lại không trừ lượt gửi lại của khách. Biên nhận vẫn là `received` và tài khoản vẫn chưa xác thực. |
 | Thử đăng nhập bằng mật khẩu đúng trước và sau khi xác thực email. | Trước khi xác thực, Core không cấp phiên và thao tác yêu cầu đăng nhập bị từ chối. Sau khi xác thực, Core có thể cấp phiên nếu đáp ứng các điều kiện của UC02. |
 
+## UC02
+
+1. **Tiêu chí 1.** Đăng nhập với tài khoản đã xác thực ở hai vai trò `member` và `admin`. Kiểm `200`, vai trò và phiên trong phản hồi. Dùng phiên để thử thao tác hợp quyền và thao tác thiếu quyền với từng tài khoản, kể cả Admin thiếu quyền quản trị tương ứng.
+2. **Tiêu chí 2–3.** Dùng hai email tổng hợp, một thuộc tài khoản đã xác thực với mật khẩu sai và một chưa đăng ký. Hai chuỗi có cùng kết quả công khai. Bốn lần đầu trả `401 INVALID_CREDENTIALS`. Lần thứ năm trong 15 phút trả `429 LOGIN_TEMPORARILY_LOCKED` và `Retry-After: 900`. Mobile báo khóa. Kiểm các biến thể hoa/thường của email, dữ liệu sai định dạng không tính lượt, lần sai đã đủ 15 phút rời cửa sổ, đăng nhập thành công đặt lại chuỗi và các yêu cầu đồng thời tại ngưỡng giữ đúng một mốc hết khóa.
+3. **Tiêu chí 4.** Dùng đồng hồ kiểm soát để thử mật khẩu đúng ngay trước, đúng tại và sau mốc hết khóa. Khi còn khóa, `429` báo thời gian còn lại và giữ mốc cũ. Tại hoặc sau mốc, tài khoản đủ điều kiện đăng nhập được. Thử Admin có và thiếu quyền mở khóa tạm. Kiểm audit và xác nhận mở khóa tạm vẫn giữ khóa quản trị đang có hiệu lực.
+4. **Tiêu chí 5.** Từ chi tiết bài công khai, Khách chọn thao tác cần định danh, chuyển đến UC02 rồi quay lại đúng bài. Thử claim với bài Found, phản hồi với bài Lost và trường hợp sai loại hoặc thiếu quyền. Khi bài bị ẩn hoặc đóng trong lúc đăng nhập, tải lại chi tiết trả `404` và Mobile dừng thao tác. Kiểm quyết định cuối ở endpoint được bảo vệ.
+5. **Tiêu chí 6.** Dùng mật khẩu đúng của tài khoản chưa xác thực và chưa khóa tạm. Core trả `403` chung và thao tác cần `CoreSession` vẫn bị chặn. Hoàn tất UC01 rồi thử lại để kiểm điều kiện cấp phiên.
+
 ## Smoke test mock
 
 Chạy mock trước, rồi thực hiện các lệnh sau. Kết quả lần lượt là `200`, `200`, `401` và `404`.

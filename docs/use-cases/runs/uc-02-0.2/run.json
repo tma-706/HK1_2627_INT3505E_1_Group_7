@@ -1,0 +1,437 @@
+{
+  "run_id": "uc-02-0.2",
+  "use_case": "UC-02",
+  "mode": "product",
+  "status": "blocked",
+  "checkpoint": "verified_core_candidate_with_pending_mobile_and_dependency_evidence",
+  "destination": {
+    "branch": "codex/uc-01",
+    "base_commit": "fbc39731d81bda93e88175cc30881f63fc0ebf04",
+    "worktree": "current_checkout",
+    "contract_input": "working_diff",
+    "source_generation_authorized": true
+  },
+  "scenarios": [
+    "SCN-UC02-01",
+    "SCN-UC02-02",
+    "SCN-UC02-03",
+    "SCN-UC02-04",
+    "SCN-UC02-05",
+    "SCN-UC02-06",
+    "SCN-UC02-07",
+    "SCN-UC02-08"
+  ],
+  "sources": {
+    "use_case": {
+      "path": "docs/use-cases/uc-02.md",
+      "version": "0.2",
+      "approval_status": "pending",
+      "sha256": "49ccdba8a3c049688986c044144ebf0ead7837663bf7a6e3e87f2e7b50969af9"
+    },
+    "ui": {
+      "path": "docs/use-cases/uc-02-ui.md",
+      "version": "0.1",
+      "approval_status": "pending",
+      "sha256": "f14eba59c641dfda4f3a6bccb01425f732e26ca85f082c7fca0a8ef461ccc904"
+    },
+    "ui_guidelines": {
+      "path": "docs/design/ui-guidelines.md",
+      "version": "0.2",
+      "approval_status": "pending",
+      "sha256": "776541b35a1d4016c771fa6f763bebb45789c180c19ceb0bdad67e892cc59372"
+    },
+    "api": {
+      "path": "docs/api/core/v1/openapi.yaml",
+      "notes": "docs/api/core/v1-notes.md",
+      "base_path": "/api/v1",
+      "contract_version": "1.0.0",
+      "openapi_version": "3.1.0",
+      "sha256": "ba0d1fd938011becbbbbda2e824c6f4b5e0a4776a20ecc9fff917979d6b917c7"
+    },
+    "documentation_verification": "docs/use-cases/runs/uc-02-0.2/verification.md",
+    "infrastructure": {
+      "ref": "origin/implementation/infrastructure",
+      "commit": "4c3582250930cd39f035b0ab0292d582a4630da7",
+      "blob_oids": {
+        "docs/architecture/implementation-baseline.md": "b728ced24ceb41eb4903ba13123d73d1b7f9f1c6",
+        "docs/infrastructure/local-stack.md": "84f4bb6f99cbbbf07221b44af10d95b82b641549",
+        "docs/infrastructure/acceptance.md": "4f450859508612cac0045cbb0938ac4871c440ca"
+      }
+    },
+    "sha256_by_path": {
+      "docs/use-cases/uc-02.md": "49ccdba8a3c049688986c044144ebf0ead7837663bf7a6e3e87f2e7b50969af9",
+      "docs/use-cases/uc-02-ui.md": "f14eba59c641dfda4f3a6bccb01425f732e26ca85f082c7fca0a8ef461ccc904",
+      "docs/use-cases/runs/uc-02-0.2/verification.md": "7ebeaa1599a11c0426554fe083d3cf1e978ac7325c631c2025208ea8d58c0102",
+      "docs/design/ui-guidelines.md": "776541b35a1d4016c771fa6f763bebb45789c180c19ceb0bdad67e892cc59372",
+      ".agents/lost-and-found-context.md": "abefd9239f7ef2a3050baa48deaea04b03c7a7d2c124eaf4f2474f4471d58b74",
+      ".agents/skills/run-secure-aidlc/SKILL.md": "b52df2c768ccc87a5fb1a2f59ad81485baa822c49017a70439cbd3430f2fd90e",
+      ".agents/skills/run-secure-aidlc/references/workflow.md": "bf2d61cad9ef9c84091f6c823394ef02afb9131cd85432080ac4756b99e695fb",
+      ".agents/skills/run-secure-aidlc/references/project-context.md": "b9ebf04f1e5de3fc92bdcba0650a6afaa5a445662882a0ff00cff74d2f075d6b",
+      "docs/core-api/scope.md": "062344280078d1abf6e03ee4440ab71f0f635c97e96e0a4c160c332c12e12009",
+      "docs/core-api/domain-rules.md": "930b66016e6d8b97ff89080fa4044f62e4553f64869c9e7cea645fab73d6b9ba",
+      "docs/core-api/data-model.md": "39f0136cd201775ba3c125d7e7313bf90eaa75f49edf0ff3f4cf76fc83d74b79",
+      "docs/core-api/acceptance-tests.md": "79521f1324c191f840e9278d4d98f17c8c9c513cb994d0c0877c32cb3ad2c64d",
+      "docs/core-api/integration-contracts.md": "7ad382ee991855fca22f79e7fb7b1d43df5eac4db4cb776dc18ad48646d038e4",
+      "docs/api/core/v1-notes.md": "084be9c22126998c2d7df5c571764d7f5c429c8f1dec94fd4d0fd9b864e7dc2e",
+      "docs/api/core/v1/openapi.yaml": "ba0d1fd938011becbbbbda2e824c6f4b5e0a4776a20ecc9fff917979d6b917c7",
+      "docs/api/core/v1/paths/accounts.yaml": "fa65442969ba8efb31f4a06af7f5eb357d2f8b264e5a218cc759b99f18f701b0",
+      "docs/api/core/v1/paths/posts.yaml": "00cbcd55a316b2dbd3738da7e92c1cea04d738b1a85a231312694c73c798e501",
+      "docs/api/core/v1/paths/moderation.yaml": "65d995d49424465961bcd39744cfec726040d6c88254a84612da77cc069744dd",
+      "docs/api/core/v1/paths/interactions.yaml": "df1cec11dc9a1d4e3aed348857ccbe1e1b5724ed66863f147b9ca288688e4c7f",
+      "docs/api/core/v1/components/responses.yaml": "4073e90e1e476a96c051604b0ed7d312071f82963cdd4961b89d26cc88f12e5e",
+      "docs/api/core/v1/components/security-schemes.yaml": "133e55114b0f9d36afe97ac9616a010a7f700ed081576a28306200569b6fd027",
+      "docs/api/core/v1/components/schemas/EmailAndPassword.yaml": "41dab4dd8704a17b78a96f4c09e4f84340c7b7777d4d29c41ed7105f0236c272",
+      "docs/api/core/v1/components/schemas/Session.yaml": "cbe4e51258a361c07f11db4d67e6ecd70b651fba8a01cb5a8ce6b0a888e98416",
+      "docs/api/core/v1/components/schemas/SessionView.yaml": "539c37f500bef8413f5974e8873e02d72cd8162a3b75f0a88df84c74cc5b69f7",
+      "docs/api/core/v1/components/schemas/Problem.yaml": "8adfb8d70660e7bdbd3d9b049aca2f213cd86b247f68d5abed0a36248af5bdac",
+      "docs/api/core/v1/components/schemas/AccountModerationWrite.yaml": "b5d577ffaa00171e2c7e7c3152387fe02d92207f4ce1bc5dbb1e4fd5a287d568",
+      "docs/api/core/v1/components/schemas/AccountModerationAction.yaml": "892113f9daa97ac4b6cd3d16a7e05cc97a86b2b98805115b027a7bc7e644bdb9",
+      "docs/api/core/v1/components/schemas/PublicPost.yaml": "91fe024ca574dece26ffeda63f58b37055df775754d2ed539fe90cb7ef17040a",
+      "docs/api/core/v1/components/schemas/ClaimAnswerSubmission.yaml": "7f00e84404f2b29467d054932cda802d1e316889fb7d862d84a08fb0a0958b6c",
+      "docs/api/core/v1/components/schemas/FinderResponseWrite.yaml": "ae99089f4e623394dc08964f08260a1603d7043253022f1c93d3fecae42a2cd9",
+      "docs/use-cases/ui/uc-02/dang-nhap.svg": "01584c919e68810a43243e11fc5038868702badf4d316bf7f5cc5e592aafe485",
+      "docs/use-cases/ui/uc-02/dang-nhap-tu-bai.svg": "078928575688e1617ddf761bd4ad900c5d69833bed61554f2064406f2088d402",
+      "docs/use-cases/ui/uc-02/dang-nhap-dang-gui.svg": "aad547abfac7ab4bb2b0b6de9d095f5960cf3a50f56e4eb57dad87108fa20542",
+      "docs/use-cases/ui/uc-02/dang-nhap-du-lieu-loi.svg": "7e187559efd9895274a930f79dcc0eff07a6e3f547bc849017584497dfe97fe3",
+      "docs/use-cases/ui/uc-02/dang-nhap-thong-tin-sai.svg": "88c12cd4cddd8d797830904cda897912f7eac9e7070afcea3b09f80f0d2736a0",
+      "docs/use-cases/ui/uc-02/dang-nhap-khoa-tam.svg": "4a9d808904b3d002f31e859dce1fc1aee8bfcd5153149c02b6fd1d5b5617f06d",
+      "docs/use-cases/ui/uc-01/dang-nhap-bi-tu-choi.svg": "b4176ed0a44ea319af1e79e974e238fbcd1e570d16f96c9c06603e51a64820f2",
+      "docs/use-cases/ui/uc-02/dang-nhap-thu-lai.svg": "d3f99bbf67d49c1761ffad5be39bac4237c7b618aeb404b3c1a15686f39361ec",
+      "docs/use-cases/ui/uc-02/vao-bang-tin.svg": "a2714d57b0cb1bb10a18639314e01733e2663de04388f123cecebfbac98057d9",
+      "docs/use-cases/ui/uc-02/vao-quan-tri.svg": "5e45564acc21c19088cfe533c66d265c8bf156b982ad176488864adeaa1abe67",
+      "docs/use-cases/ui/uc-02/chi-tiet-can-dang-nhap.svg": "63b303a0e77fdbae6564d60e8a5a2aef36c1b513c108f0305537e48305b5aa22",
+      "docs/use-cases/ui/uc-02/tai-lai-bai.svg": "efaada3644cbd55bee642a1e43fadee5800ce1ebc47bd0ffd66527fb7e6ae82e",
+      "docs/use-cases/ui/uc-02/tiep-tuc-found.svg": "fe8a4095587b68cf51a91fcbfe7e555103346acd2b66ad0435a4c28b4d2e364e",
+      "docs/use-cases/ui/uc-02/tiep-tuc-lost.svg": "ccd5a3aaa93cdef4ffbb4a7033ca65a38316cff202c02dcc45e83bcfa96eeedf",
+      "docs/use-cases/ui/uc-02/thao-tac-bi-tu-choi.svg": "4853bdae6e758e928b76566e94d332136daf3a1ac6fc799ce926c0d1d7002ba7",
+      "docs/use-cases/ui/uc-02/bai-khong-kha-dung.svg": "89a94b0a3f51f993eede378f85545d7fea4f55efe12fc9edceb10ea49447a9af",
+      "docs/use-cases/ui/uc-02/bai-thu-tai-lai.svg": "066ada35583844e01de8e991ba96137600a944241790d35c6d85527f8985f4ba"
+    }
+  },
+  "approval_bundle": {
+    "path": "docs/use-cases/runs/uc-02-0.2/approval.md",
+    "version": 1,
+    "sha256": "38dcdba66592b3a3aea91cc8734c1b994185fe3a259e710447763c81b4c0c9eb",
+    "selected_security_criteria": [
+      "SEC-UC02-01",
+      "SEC-UC02-02",
+      "SEC-UC02-03",
+      "SEC-UC02-04",
+      "SEC-UC02-05",
+      "SEC-UC02-06",
+      "SEC-UC02-07"
+    ],
+    "prompt_e_requirements": [
+      "SR-UC02-01",
+      "SR-UC02-02",
+      "SR-UC02-03",
+      "SR-UC02-04",
+      "SR-UC02-05",
+      "SR-UC02-06",
+      "SR-UC02-07"
+    ],
+    "approval_reference": "Requester replied \"approve\" to the exact A–F v1 bundle on 2026-11-28."
+  },
+  "model_assignments": {
+    "drafting": {
+      "agent": "uc02_draft",
+      "model": "GPT-6.1 Terra",
+      "reasoning": "medium"
+    },
+    "source_generation": {
+      "role": "active orchestrator",
+      "model": "not independently selectable in this chat"
+    },
+    "audits": [
+      {
+        "phase": "first_pass",
+        "model": "GPT-6.1 Terra",
+        "reasoning": "medium"
+      },
+      {
+        "phase": "repair_001",
+        "model": "GPT-6.1 Terra",
+        "reasoning": "medium"
+      },
+      {
+        "phase": "final",
+        "model": "GPT-6.1 Terra",
+        "reasoning": "medium"
+      }
+    ]
+  },
+  "runtime_preflight": {
+    "docker_compose_version": "5.7.1",
+    "docker_engine": "accessible_with_escalated_docker_command",
+    "candidate_runtime_run": false
+  },
+  "initial_source_revision": {
+    "git_base": "fbc39731d81bda93e88175cc30881f63fc0ebf04",
+    "manifest_sha256": "74fb3925fec0cccd083718dbc7b8df004a7abb71cbffc9dd937966fa2282cc66",
+    "file_sha256": {
+      "apps/core/src/api.ts": "79437b25fdd7b6145e3f6d1694b169c5d6fe09beaac13f90667aa0456f1454e5",
+      "apps/core/src/modules/identity/routes.ts": "35d1f50b470ce50dddcd59fe0ce6821facc28495eecee9fc4f4ba72814f5af25",
+      "apps/core/src/modules/identity/service.ts": "dff5a4c6852572af55bf660ce80d9b63dc7ebae6f151b1d9df0c61d6e8b69f22",
+      "apps/core/src/modules/posts/feed.ts": "76aa2f9dc6eb096aadd9d05dcd8b1f588c81b6a85e3984ce87c0985cf1eac370",
+      "apps/mobile/App.tsx": "73b5c139c311edfcf92574c65cf484bf3620dd0d350c335e67b38588f15d9285",
+      "apps/mobile/RegistrationFlow.tsx": "49529f512f43066d1cd5d227b57e0522ad161f7c7a79c01891535ae9b304b381",
+      "apps/mobile/PostDetail.tsx": "26ff537fed7d42ee452347dc093196800495dfeae258af195c605b69df44d5c2",
+      "apps/mobile/generate-identity-types.mjs": "f666d71d478c55d6b1ede0984558fb45de21191abb22441878b1726eb704e60b",
+      "apps/mobile/identity-api.generated.ts": "419ee0099f244cfe6870dcb6cda1f9753c6d40eb007681c57529913c81a9b091",
+      "apps/mobile/identity-api.ts": "9bf154341a46610acea116834bf4da38a4238cded77839f0429352e5cbfff783",
+      "db/init-local.sql": "ac8afcd58fa870409da65e58c8362b7dfeef2ee75e73774ea504b69ba2bb91be",
+      "db/migrations/004_password_sessions.sql": "f95e55b2239209e9ec50fc2e1616a45dd8b96d8159aaf7f2bcd0f2f8da771f77",
+      "tests/core-identity.mjs": "b50b1288ca11cd7505cbcb561ceb12f27c683998db8eb8d082add9d15b52dfde"
+    }
+  },
+  "first_pass_security": {
+    "revision": "74fb3925fec0cccd083718dbc7b8df004a7abb71cbffc9dd937966fa2282cc66",
+    "auditor": "GPT-6.1 Terra, medium",
+    "counts": {
+      "met": 0,
+      "unmet": 0,
+      "not_evaluable": 7
+    },
+    "results": [
+      {
+        "sr": "SR-UC02-01",
+        "status": "not_evaluable",
+        "evidence": "HTTPS gateway, request body, scrypt/NFC, digest-only sessions, memory-only bearer and sanitized logs present in source.",
+        "gap": "Real HTTPS response and log evidence pending."
+      },
+      {
+        "sr": "SR-UC02-02",
+        "status": "not_evaluable",
+        "evidence": "Common 401/403 and normalization verified in Fastify injection against migrated PGlite.",
+        "gap": "Duplicate those cases over the deployed HTTPS API."
+      },
+      {
+        "sr": "SR-UC02-03",
+        "status": "not_evaluable",
+        "evidence": "Per-email upsert lock and controlled 15-minute cutoff, exact lock expiry and Retry-After verified with PGlite.",
+        "gap": "Concurrent requests over real PostgreSQL pending."
+      },
+      {
+        "sr": "SR-UC02-04",
+        "status": "not_evaluable",
+        "evidence": "Issuance, fixed 8h, both roles, moderation, idempotent revoke and expired Bearer checked against PGlite.",
+        "gap": "Real Gateway and PostgreSQL lifecycle checks pending."
+      },
+      {
+        "sr": "SR-UC02-05",
+        "status": "not_evaluable",
+        "evidence": "Public detail and Open+Visible database filtering verified with PGlite.",
+        "gap": "Object-level and functional authorization through UC15/17/27 operations requires those endpoints."
+      },
+      {
+        "sr": "SR-UC02-06",
+        "status": "not_evaluable",
+        "evidence": "Independent moderation state checked with PGlite.",
+        "gap": "UC27 unlock permission and audit require moderateAccount."
+      },
+      {
+        "sr": "SR-UC02-07",
+        "status": "not_evaluable",
+        "evidence": "Source guards for pending/generation, aborts and post reload reviewed; Android JS bundle exported.",
+        "gap": "No device or emulator available for real delayed-response and navigation observations."
+      }
+    ],
+    "project_findings": [
+      {
+        "id": "UC01_FORM_LABEL",
+        "file": "apps/mobile/RegistrationFlow.tsx",
+        "evidence": "Initial primaryLabel used the screen heading, changing approved UC01 action Đăng ký to Đăng ký tài khoản. Confirmed against baseline source, UC01 spec, UI and SVG."
+      }
+    ]
+  },
+  "repairs": [
+    {
+      "id": "repair-001",
+      "status": "verified_source_correction",
+      "start_revision": "74fb3925fec0cccd083718dbc7b8df004a7abb71cbffc9dd937966fa2282cc66",
+      "requirements": [
+        "SR-UC02-07",
+        "Prompt D: preserve UC01"
+      ],
+      "evidence": "UC01_FORM_LABEL from first-pass audit",
+      "attempt_started": true,
+      "result_revision": "deec6e6fabe762c7bd5680bbaae88a5d2a76c4447077f92728168fdee059c485",
+      "checks": [
+        "npm run check:clients passed",
+        "Expo Android bundle exported",
+        "git diff --check passed"
+      ],
+      "focused_audit": "GPT-6.1 Terra medium confirmed restoration of UC01 submit label and no change to UC02 async handling."
+    }
+  ],
+  "final_assessment": {
+    "status": "assessed_candidate_with_blocked_acceptance",
+    "revision": "deec6e6fabe762c7bd5680bbaae88a5d2a76c4447077f92728168fdee059c485",
+    "auditor": "GPT-6.1 Terra, medium",
+    "counts": {
+      "met": 4,
+      "unmet": 0,
+      "not_evaluable": 3
+    },
+    "results": [
+      {
+        "sr": "SR-UC02-01",
+        "status": "met",
+        "evidence": "Gateway CA-verified HTTPS, scrypt/NFC and body handling, random token stored by digest, no-store and memory-only client. Candidate nginx/Core logs sampled without synthetic password or Bearer."
+      },
+      {
+        "sr": "SR-UC02-02",
+        "status": "met",
+        "evidence": "Strict normalization and equivalent source password check. Live known-wrong and unknown shared 401. Correct password for unverified and moderation-locked accounts shared 403."
+      },
+      {
+        "sr": "SR-UC02-03",
+        "status": "met",
+        "evidence": "Real PostgreSQL requests and controlled-clock deployed Core/Gateway verified exact 15-minute exclusion, one fifth-attempt lock under concurrency, 900 and 1-second Retry-After, exact expiry, no extension, success reset and validation without failed-attempt charge."
+      },
+      {
+        "sr": "SR-UC02-04",
+        "status": "met",
+        "evidence": "Live HTTPS member/Admin issuance and current, fixed 8h schema and issuance, trusted role, missing and revoked Bearer challenge, repeated DELETE, surviving independent session and expiry. Live moderation and unverified denial verified."
+      },
+      {
+        "sr": "SR-UC02-05",
+        "status": "not_evaluable",
+        "evidence": "Public getPublicPost completed and verified live. UC15/17 protected operations and UC27 functional access are outside this approved slice, which prevents proving authorization and denial before write there."
+      },
+      {
+        "sr": "SR-UC02-06",
+        "status": "not_evaluable",
+        "evidence": "Independent moderation lock verified in login/current. UC27 moderateAccount is outside this approved slice, so authorized/denied unlock and audit evidence are absent."
+      },
+      {
+        "sr": "SR-UC02-07",
+        "status": "not_evaluable",
+        "evidence": "Async guards and post reload reviewed on candidate source. Check:clients and Android bundle pass. A device or emulator is needed for delayed-response, navigation and recovery behavior."
+      }
+    ],
+    "project_constraints": [
+      "Approved UC02 API inputs and payloads unchanged. Docker build validated OpenAPI with only existing info-license warning.",
+      "Core local build and Docker Node 22 build passed. PostgreSQL, Nginx and Android build use existing project entry points.",
+      "UC01 registration/email runtime and label retention, feed and media regressions verified.",
+      "Production provisioning and UC27/15/17 scopes deferred as approved."
+    ],
+    "remaining_scope": [
+      "Android runtime and PERF evidence",
+      "UC27 unlock/audit and authorization evidence",
+      "UC15/17 authorization and object writes"
+    ]
+  },
+  "next_action": "Resume UC02 acceptance with a real Android device or emulator and the approved dependent UC15/17/27 endpoints or a separately approved scope decision. No security criterion excluded.",
+  "baseline_checks": {
+    "redocly_recommended_lint": "passed_with_existing_info_license_warning",
+    "dereferenced_bundle": "passed_96_operations",
+    "uc02_related_operations_verified": 8
+  },
+  "pending_scope_evidence": [
+    {
+      "scenarios": [
+        "SCN-UC02-01",
+        "SCN-UC02-04"
+      ],
+      "operations": [
+        "moderateAccount"
+      ],
+      "note": "Role and lock setup via controlled test data only. Live permission, unlock and audit depend on UC27."
+    },
+    {
+      "scenarios": [
+        "SCN-UC02-05"
+      ],
+      "operations": [
+        "getClaimQuestions",
+        "submitClaim",
+        "submitFinderResponse"
+      ],
+      "note": "Implement the live public detail and post-login handoff. Live protected interactions depend on UC15 and UC17."
+    }
+  ],
+  "initial_checks": {
+    "client_typecheck": "passed, generated Identity types followed by npm run check:clients",
+    "diff_whitespace": "passed",
+    "docker": "Compose startup pending at first-pass freeze. Images pulled and candidate build underway.",
+    "android": "adb found no attached device. SDK has no emulator binary.",
+    "core_build": "passed, npm run build --prefix apps/core",
+    "test_syntax": "passed, node --check tests/core-identity.mjs",
+    "embedded_postgresql": {
+      "status": "passed",
+      "engine": "PGlite 0.5.10, serialized adapter with real Fastify route injection and controlled clock",
+      "observations": [
+        "Migration over existing fixture accounts and restricted role grants",
+        "Member and synthetic Admin issuance, common 401/403",
+        "Rolling cutoff, fifth failure, exact lock expiry and 900/1-second Retry-After",
+        "Existing session during temporary lock, idempotent token revoke, hard expiry and moderation",
+        "Public feed/detail projection and closed/unknown 404"
+      ],
+      "limitations": [
+        "No real PostgreSQL multiple connections",
+        "No Gateway TLS or Mobile evidence"
+      ]
+    },
+    "android_export": "passed, Expo Android bundle on initial revision, device runtime unobserved"
+  },
+  "first_pass_review": {
+    "status": "provisional_during_runtime_collection",
+    "revision": "74fb3925fec0cccd083718dbc7b8df004a7abb71cbffc9dd937966fa2282cc66",
+    "auditor": "GPT-6.1 Terra, medium",
+    "source_defects_confirmed": 0
+  },
+  "candidate_source_revision": {
+    "git_base": "fbc39731d81bda93e88175cc30881f63fc0ebf04",
+    "manifest_sha256": "deec6e6fabe762c7bd5680bbaae88a5d2a76c4447077f92728168fdee059c485",
+    "file_sha256": {
+      "apps/core/src/api.ts": "79437b25fdd7b6145e3f6d1694b169c5d6fe09beaac13f90667aa0456f1454e5",
+      "apps/core/src/modules/identity/routes.ts": "35d1f50b470ce50dddcd59fe0ce6821facc28495eecee9fc4f4ba72814f5af25",
+      "apps/core/src/modules/identity/service.ts": "dff5a4c6852572af55bf660ce80d9b63dc7ebae6f151b1d9df0c61d6e8b69f22",
+      "apps/core/src/modules/posts/feed.ts": "76aa2f9dc6eb096aadd9d05dcd8b1f588c81b6a85e3984ce87c0985cf1eac370",
+      "apps/mobile/App.tsx": "73b5c139c311edfcf92574c65cf484bf3620dd0d350c335e67b38588f15d9285",
+      "apps/mobile/RegistrationFlow.tsx": "cbe66aeb900fcde615da01a4474284f708f012d007956d0fbe311b82abd75c86",
+      "apps/mobile/PostDetail.tsx": "26ff537fed7d42ee452347dc093196800495dfeae258af195c605b69df44d5c2",
+      "apps/mobile/generate-identity-types.mjs": "f666d71d478c55d6b1ede0984558fb45de21191abb22441878b1726eb704e60b",
+      "apps/mobile/identity-api.generated.ts": "419ee0099f244cfe6870dcb6cda1f9753c6d40eb007681c57529913c81a9b091",
+      "apps/mobile/identity-api.ts": "9bf154341a46610acea116834bf4da38a4238cded77839f0429352e5cbfff783",
+      "db/init-local.sql": "ac8afcd58fa870409da65e58c8362b7dfeef2ee75e73774ea504b69ba2bb91be",
+      "db/migrations/004_password_sessions.sql": "f95e55b2239209e9ec50fc2e1616a45dd8b96d8159aaf7f2bcd0f2f8da771f77",
+      "tests/core-identity.mjs": "b50b1288ca11cd7505cbcb561ceb12f27c683998db8eb8d082add9d15b52dfde"
+    }
+  },
+  "runtime_verification": {
+    "revision": "deec6e6fabe762c7bd5680bbaae88a5d2a76c4447077f92728168fdee059c485",
+    "applicability": "The only initial-to-candidate change was the Mobile label restored in repair-001. Core, migration and HTTP test files match their original hashes in the Docker build. The Android export was rerun after repair.",
+    "docker": {
+      "status": "passed_with_local_runtime_override",
+      "project": "uc02-verification",
+      "gateway": "https://127.0.0.1:18443",
+      "core_image_manifest": "sha256:fba16e0e17126c260f94d58b07706023c139a5545c44157e6df65f58a2b1084e",
+      "startup": "Base Compose initially failed because the existing object-store entry script had Windows CRLF. Temporary .local compose override mounted an LF copy of the same script. Built images reused; migrate exited 0 and Core, Worker, PostgreSQL, nginx, Mailpit and media-edge reported healthy.",
+      "migration": "004 applied on a clean Postgres 17 volume. Prior UC01-account compatibility and runtime grants checked with controlled embedded PGlite.",
+      "uc01_uc02_integration": "node tests/core-identity.mjs passed through HTTPS: real registration and verification via Mailpit, prior-to-verification denial, login normalization, simultaneous member sessions, single-session revocation and repeat delete, surviving session, same unknown/wrong 401, exactly one 429 at threshold on parallel requests through Postgres, continued lock with correct password and public detail parity.",
+      "admin_fixture": "Controlled synthetic Admin and unverified accounts over live HTTPS gateway. Admin issued and current role checked. Moderation lock returned common 403 for login and denied current session. Forced expiry in the controlled fixture returned 401 with Bearer.",
+      "rolling_window": "Controlled timestamps on real Postgres and HTTPS showed expired failures leave window, correct fifth failure transition, no change to locked_until on retry, and a new 401-counted attempt after expiry. PGlite fixed clock additionally verified exact boundaries and Retry-After of 900 and 1. Exact cutoffs were also observed through the deployed Core image, real Postgres and trusted HTTPS. A temporary bind-mounted test clock gave 401 at T, four 401s followed by 429/900 at exactly T+15m, 429/1 at T+30m−1ms, and 401 at T+30m.",
+      "logs": "Sampled Core/nginx logs contained neither test passphrases nor the sampled synthetic token.",
+      "feed": "Repository shell suite hit Schannel revocation validation of the local CA in Windows curl. Equivalent HTTPS calls with trusted CA from Node and the repo validator in Docker passed fixture schemas, pagination, filters, cursor binding, and allowed/denied CORS.",
+      "media": "tests/core-media.mjs passed using its required LF_MEDIA_UPLOAD_SECONDS=10 and the same Core image.",
+      "clock_override": "Removed the temporary clock preload and restored normal media timing. Stack services healthy and Gateway GET /api/v1/posts returned 200 over trusted HTTPS after restoration."
+    },
+    "android": {
+      "bundle": "passed",
+      "bundle_sha256": "95323236213bf0310be846a6130c5cb7b50ba18c7cd1051e9210363cd4d3c936",
+      "typecheck": "passed",
+      "runtime": "unavailable without an attached Android device or emulator"
+    },
+    "missing": [
+      "Real Android navigation, failure handling and PERF measurements.",
+      "UC27 operation and permission/audit for unlock.",
+      "UC15 and UC17 protected endpoint authorization and interactions."
+    ]
+  },
+  "publication": {
+    "note": "Git normalizes line endings on staging. The PR also removes the extra blank line at the end of the UI Markdown. The approved raw-byte evidence above remains the historical run snapshot.",
+    "ui_markdown_sha256_lf": "afd1d09cf6906454667111243e0fc6d752955a48e3c386047ccf796a3b05d7ee"
+  }
+}

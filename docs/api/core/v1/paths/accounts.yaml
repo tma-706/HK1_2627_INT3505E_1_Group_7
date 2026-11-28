@@ -173,15 +173,22 @@
       - Tài khoản và phiên
     summary: Cấp phiên bằng email và mật khẩu
     description: >-
-      Guest và người dùng đã đăng nhập. Thao tác này sử dụng dữ liệu công khai hoặc dữ liệu xác thực ở đầu vào.
-      Cấp phiên cho người dùng hoặc Admin có tài khoản hoạt động. 5 lần sai liên tiếp trong 15 phút khóa đăng
-      nhập 15 phút và hệ thống thông báo người dùng. Áp dụng khóa quản trị theo UC27. Core không cấp phiên cho
-      tài khoản chưa xác thực, kể cả khi mật khẩu đúng. Sau khi xác minh thông tin hợp lệ, Core có thể trả 403 cho
-      tài khoản chưa xác thực hoặc bị khóa quản trị.
+      Khách và Admin chưa đăng nhập gửi email và mật khẩu. Core tra cứu bằng email chuẩn hóa theo UC01 và
+      chỉ cấp phiên Bearer cho tài khoản đã xác thực, đang hoạt động và đủ điều kiện đăng nhập.
+      Phiên trả vai trò tài khoản. Core kiểm quyền chức năng và quyền theo đối tượng tại từng operation được bảo vệ.
+      Với yêu cầu hợp lệ về dữ liệu, email không khớp tài khoản hoặc mật khẩu sai được tính một lần
+      theo email chuẩn hóa và dùng cùng phản hồi 401 trước ngưỡng khóa. Lần sai thứ năm liên tiếp trong
+      cửa sổ trượt 15 phút bắt đầu khóa đăng nhập 15 phút và trả 429 ngay ở lần đó. Core cập nhật chuỗi sai
+      và trạng thái khóa nhất quán khi có yêu cầu đồng thời. Trong thời gian khóa, mọi lần thử tiếp theo
+      cho email đó trả 429, kể cả mật khẩu đúng, và không kéo dài thời gian khóa. Đăng nhập thành công,
+      hết khóa tạm hoặc mở khóa tạm theo UC27 kết thúc chuỗi sai. Ngoài thời gian khóa tạm, thông tin xác thực
+      đúng của tài khoản chưa xác thực email hoặc còn bị khóa quản trị nhận 403 chung.
+      Khi được gọi từ UC13, Mobile giữ ngữ cảnh bài và thao tác để kiểm lại quyền sau khi có phiên.
     operationId: createPasswordSession
     x-use-cases:
       - UC01
       - UC02
+      - UC13
     x-access: guest
     security: []
     requestBody:
@@ -195,7 +202,7 @@
             password: fictional-secret-123
     responses:
       '200':
-        description: Thao tác hoàn tất.
+        description: Đã cấp phiên Bearer và trả vai trò của tài khoản.
         headers:
           Cache-Control:
             description: Phản hồi riêng tư hoặc chứa dữ liệu xác thực.
@@ -218,15 +225,34 @@
       '401':
         $ref: ../components/responses.yaml#/invalidCredentials
       '403':
-        $ref: ../components/responses.yaml#/forbidden
+        description: Thông tin đăng nhập đúng nhưng tài khoản chưa đủ điều kiện cấp phiên.
+        headers:
+          Cache-Control:
+            description: Phản hồi có thể thay đổi theo trạng thái tài khoản.
+            schema:
+              type: string
+              const: no-store
+            required: true
+        content:
+          application/problem+json:
+            schema:
+              $ref: ../components/schemas/Problem.yaml
+            example:
+              type: urn:campus-lost-found:problem:forbidden
+              title: Tài khoản chưa đủ điều kiện đăng nhập.
+              status: 403
+              code: FORBIDDEN
       '429':
-        description: Đã đạt hạn mức. Retry-After cho biết số giây trước thời điểm có thể thử lại.
+        description: >-
+          Đã kích hoạt hoặc vẫn đang áp dụng khóa đăng nhập tạm thời. Mobile dùng Retry-After
+          để thông báo số giây còn lại của khóa tạm.
         headers:
           Retry-After:
             description: Số giây đến mốc thử lại.
             schema:
               type: integer
               minimum: 1
+              maximum: 900
               example: 900
             required: true
           Cache-Control:
@@ -241,7 +267,7 @@
               $ref: ../components/schemas/Problem.yaml
             example:
               type: urn:campus-lost-found:problem:login-temporarily-locked
-              title: Đã đạt hạn mức. Retry-After cho biết số giây trước thời điểm có thể thử lại.
+              title: Đăng nhập tạm thời bị khóa.
               status: 429
               code: LOGIN_TEMPORARILY_LOCKED
       '503':
@@ -252,8 +278,9 @@
       - Tài khoản và phiên
     summary: Xác minh phiên hiện tại
     description: >-
-      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa và quyền theo tài nguyên.
-      Trả chủ thể, quyền và hạn sử dụng của phiên hiện tại.
+      Tài khoản đã xác thực email, có phiên hiệu lực. Core kiểm lại chính sách khóa.
+      Trả chủ thể, vai trò và hạn sử dụng của phiên hiện tại. Quyền truy cập một chức năng hoặc tài nguyên
+      cụ thể được kiểm tại operation tương ứng.
     operationId: getCurrentSession
     x-use-cases:
       - UC02

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="760" viewBox="0 0 390 760" role="img" aria-labelledby="title">
+  <title id="title">Đang tải lại chi tiết bài</title>
+  <g font-family="Inter, Roboto, Segoe UI, Arial, sans-serif">
+<rect x="0" y="0" width="390" height="760" rx="0" fill="#F8FAFC" stroke="none"/>
+<rect x="0" y="0" width="390" height="83" rx="0" fill="#FFFFFF" stroke="none"/>
+<path d="m31 45-8 8 8 8m-8-8h18" fill="none" stroke="#1E4BDD" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="57" y="60" font-size="23" font-weight="700" fill="#10192C" text-anchor="start">Chi tiết bài</text>
+<rect x="0" y="82" width="390" height="1" rx="0" fill="#D8E3F2" stroke="none"/>
+<rect x="163" y="220" width="64" height="64" rx="17" fill="#EEF5FF" stroke="none"/>
+<circle cx="195" cy="252" r="8" fill="none" stroke="#1E4BDD" opacity=".35" stroke-width="2"/>
+<path d="M195 244 a8 8 0 0 1 8 8" fill="none" stroke="#1E4BDD" stroke-width="2" stroke-linecap="round"/>
+<text x="195" y="323" font-size="23" font-weight="700" fill="#10192C" text-anchor="middle">Đang tải lại bài</text>
+<text x="195" y="354" font-size="15" font-weight="400" fill="#506279" text-anchor="middle">Vui lòng chờ trong giây lát.</text>
+  </g>
+</svg>

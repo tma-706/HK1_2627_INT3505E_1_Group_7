@@ -1,18 +1,18 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Button, FlatList, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Button, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { loadPublicPosts, type PublicPost } from '@lost-found/public-feed';
-import RegistrationFlow from './RegistrationFlow';
+import RegistrationFlow, { type FeedActions } from './RegistrationFlow';
 
 export default function App() {
   return (
     <SafeAreaProvider>
-      <RegistrationFlow feed={openRegistration => <Feed openRegistration={openRegistration} />} />
+      <RegistrationFlow feed={actions => <Feed {...actions} />} />
     </SafeAreaProvider>
   );
 }
 
-function Feed({ openRegistration }: { openRegistration: () => void }) {
+function Feed({ openRegistration, openLogin, openPost, openAdmin, logout, pending, message }: FeedActions) {
   const [posts, setPosts] = useState<PublicPost[]>();
   const [error, setError] = useState('');
   const [attempt, setAttempt] = useState(0);
@@ -34,7 +34,16 @@ function Feed({ openRegistration }: { openRegistration: () => void }) {
         <View style={styles.header}>
           <Text style={styles.brand}>Campus Lost &amp; Found</Text>
           <Text accessibilityRole="header" style={styles.heading}>Bảng tin công khai</Text>
-          <Button title="Đăng ký" onPress={openRegistration} />
+          <View style={styles.actions}>
+            {logout ? <>
+              {openAdmin && <Button title="Quản trị" onPress={openAdmin} disabled={pending} />}
+              <Button title="Đăng xuất" onPress={logout} disabled={pending} />
+            </> : <>
+              <Button title="Đăng ký" onPress={openRegistration} />
+              <Button title="Đăng nhập" onPress={openLogin} />
+            </>}
+          </View>
+          {message && <Text accessibilityRole="alert" style={styles.body}>{message}</Text>}
         </View>
         {error ? (
           <View style={styles.notice}>
@@ -48,11 +57,11 @@ function Feed({ openRegistration }: { openRegistration: () => void }) {
             contentContainerStyle={styles.list}
             ListEmptyComponent={<Text style={styles.body}>Chưa có bài đăng công khai.</Text>}
             renderItem={({ item }: { item: PublicPost }) => (
-              <View style={styles.card}>
+              <Pressable accessibilityRole="button" style={styles.card} onPress={() => openPost(item.postId)}>
                 <Text style={styles.kind}>{item.type === 'found' ? 'Tìm thấy' : 'Thất lạc'}</Text>
                 <Text accessibilityRole="header" style={styles.title}>{item.title}</Text>
                 <Text style={styles.body}>{item.description}</Text>
-              </View>
+              </Pressable>
             )}
           />
         ) : (
@@ -65,6 +74,7 @@ function Feed({ openRegistration }: { openRegistration: () => void }) {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: '#f0f5f2' },
   header: { paddingHorizontal: 24, paddingTop: 24, paddingBottom: 20 },
+  actions: { flexDirection: 'row', gap: 12, marginTop: 8 },
   brand: { color: '#27634f', fontSize: 15, fontWeight: '600' },
   heading: { marginTop: 8, fontSize: 30, fontWeight: '700', color: '#142c25' },
   list: { paddingHorizontal: 24, paddingBottom: 24, gap: 12 },

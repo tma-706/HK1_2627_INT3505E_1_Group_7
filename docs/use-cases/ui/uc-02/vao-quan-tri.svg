@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="760" viewBox="0 0 390 760" role="img" aria-labelledby="title">
+  <title id="title">Điểm vào của Admin</title>
+  <g font-family="Inter, Roboto, Segoe UI, Arial, sans-serif">
+<rect x="0" y="0" width="390" height="760" rx="0" fill="#F8FAFC" stroke="none"/>
+<rect x="0" y="0" width="390" height="83" rx="0" fill="#FFFFFF" stroke="none"/>
+<text x="24" y="60" font-size="23" font-weight="700" fill="#10192C" text-anchor="start">Quản trị</text>
+<rect x="0" y="82" width="390" height="1" rx="0" fill="#D8E3F2" stroke="none"/>
+<rect x="24" y="110" width="342" height="49" rx="12" fill="#EEF5FF" stroke="#D8E3F2"/>
+<circle cx="44" cy="132" r="8" fill="none" stroke="#1E4BDD" stroke-width="1.8"/>
+<path d="M44 128v4m0 3v.5" stroke="#1E4BDD" stroke-linecap="round" stroke-width="1.8"/>
+<text x="62" y="137" font-size="15" font-weight="400" fill="#294782" text-anchor="start">Phiên Admin đã được xác nhận.</text>
+  </g>
+</svg>

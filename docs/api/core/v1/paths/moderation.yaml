@@ -606,8 +606,10 @@
     description: >-
       Phiên hiệu lực và quyền quản trị tương ứng với thao tác. Core kiểm lại quyền mỗi lần gọi. Yêu cầu quyền
       ghi phù hợp. Vi phạm lặp lại/trung bình khóa 7 ngày, nghiêm trọng 30 ngày, đặc biệt nghiêm trọng có thể
-      khóa vĩnh viễn theo thẩm quyền. Mở khóa chỉ đúng loại theo quyền. Lưu lý do, người thao tác, thời gian và
-      phạm vi. Tài khoản bị khóa quản trị không tạo tương tác mới.
+      khóa vĩnh viễn theo thẩm quyền. Mở khóa chỉ đúng loại theo quyền. Với action unlock và lockType
+      temporaryLogin, Core kết thúc khóa tạm và xóa chuỗi sai của tài khoản. Mỗi khóa đang áp dụng
+      tiếp tục có hiệu lực cho đến khi hết hạn hoặc được mở đúng loại. Lưu lý do, người thao tác,
+      thời gian và phạm vi. Tài khoản bị khóa quản trị không tạo tương tác mới.
     operationId: moderateAccount
     x-use-cases:
       - UC02

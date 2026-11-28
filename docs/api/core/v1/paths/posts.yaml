@@ -767,8 +767,12 @@
       Guest và người dùng đã đăng nhập. Thao tác này sử dụng dữ liệu công khai hoặc dữ liệu xác thực ở đầu vào.
       Chỉ Open và Visible, kèm ảnh và mô tả đã che, khu vực được phép và tên hiển thị. shareUrl trỏ trang công
       khai và áp cùng quy tắc với API, kể cả sau khi bài bị ẩn hoặc đóng.
+      Mobile chuyển khách sang UC02 khi khách chọn thao tác yêu cầu phiên. Sau đăng nhập, Mobile tải lại
+      chi tiết công khai trước khi tiếp tục. Operation của thao tác được chọn kiểm CoreSession, loại bài,
+      trạng thái và quyền của chủ thể theo quy tắc áp dụng cho thao tác đó.
     operationId: getPublicPost
     x-use-cases:
+      - UC02
       - UC13
       - UC14
     x-access: guest

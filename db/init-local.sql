@@ -22,6 +22,12 @@ SELECT NOT EXISTS (SELECT FROM public.schema_migrations WHERE version = '003') A
     INSERT INTO public.schema_migrations VALUES ('003');
 \endif
 
+SELECT NOT EXISTS (SELECT FROM public.schema_migrations WHERE version = '004') AS apply_migration \gset
+\if :apply_migration
+    \ir migrations/004_password_sessions.sql
+    INSERT INTO public.schema_migrations VALUES ('004');
+\endif
+
 SELECT 'CREATE ROLE core_reader LOGIN' WHERE NOT EXISTS (
     SELECT FROM pg_roles WHERE rolname = 'core_reader'
 ) \gexec
@@ -55,6 +61,12 @@ GRANT USAGE ON SCHEMA public TO core_identity, identity_worker;
 GRANT SELECT, INSERT ON public.identity_accounts, public.identity_verification_tokens,
     public.identity_email_receipts, public.identity_resend_windows TO core_identity;
 GRANT UPDATE (verified_at) ON public.identity_accounts TO core_identity;
+REVOKE INSERT ON public.identity_accounts FROM core_identity;
+GRANT INSERT (account_id, email_normalized, password_hash) ON public.identity_accounts TO core_identity;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.identity_login_windows TO core_identity;
+GRANT SELECT, DELETE ON public.identity_sessions TO core_identity;
+GRANT INSERT (token_digest, account_id, issued_at, expires_at), UPDATE (revoked_at)
+    ON public.identity_sessions TO core_identity;
 GRANT UPDATE (consumed_at) ON public.identity_verification_tokens TO core_identity;
 GRANT UPDATE (accepted_at) ON public.identity_resend_windows TO core_identity;
 GRANT INSERT ON public.identity_email_jobs TO core_identity;

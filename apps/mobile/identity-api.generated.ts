@@ -10,4 +10,16 @@ export interface IdentityRequests {
   requestVerificationEmail: {
     "email": string;
   };
+  createPasswordSession: {
+    "email": string;
+    "password": string;
+  };
+}
+
+export interface PasswordSession {
+  accountId: string;
+  role: "member" | "admin";
+  accessToken: string;
+  expiresAt: string;
+  tokenType: "Bearer";
 }

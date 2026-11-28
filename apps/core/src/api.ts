@@ -26,8 +26,14 @@ const identityDb = identityPassword ? new pg.Pool({
 
 if (identityDb) {
   const identity = createIdentityService(identityDb, loadOutboxKey(process.env.LF_IDENTITY_OUTBOX_KEY));
+  const identityCleanup = setInterval(() => {
+    void identity.prunePasswordSessions().catch(() => app.log.error('Identity session cleanup did not complete'));
+  }, 60_000).unref();
   identityDb.on('error', () => app.log.error('Idle Identity database connection failed'));
-  app.addHook('onClose', async () => identityDb.end());
+  app.addHook('onClose', async () => {
+    clearInterval(identityCleanup);
+    await identityDb.end();
+  });
   app.register(scope => registerIdentityRoutes(scope, identity));
 }
 
@@ -49,7 +55,7 @@ app.get('/ready', async (_request, reply) => {
   try {
     await Promise.all([
       db.query('SELECT 1 FROM public.posts LIMIT 1'),
-      identityDb?.query('SELECT 1 FROM public.identity_email_receipts LIMIT 1'),
+      identityDb?.query('SELECT 1 FROM public.identity_sessions LIMIT 1'),
       mediaDb?.query('SELECT 1 FROM public.media_uploads LIMIT 1'),
       media?.ready(),
     ]);
